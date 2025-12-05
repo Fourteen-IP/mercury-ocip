@@ -1,0 +1,2 @@
+operation,serviceProviderId,groupId,deviceType,deviceName,deviceType,transportProtocol,netAddress,port,outboundProxyServerNetAddress,stunServerNetAddress,macAddress,serialNumber,description,physicalLocation,useCustomUserNamePassword,accessDeviceCredentials.userName,accessDeviceCredentials.password
+device.group.create,string,string,string,string,string,None | String,None | String,None | Integer,None | String,None | String,None | String,None | String,None | String,None | String,None | Boolean,None | String,None | String

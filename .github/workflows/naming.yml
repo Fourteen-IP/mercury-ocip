@@ -1,0 +1,20 @@
+name: Enforce Branch Naming Convention
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check branch name
+        run: |
+          if [[ ! "${{ github.head_ref }}" =~ ^(refactor|feature|bugfix|chore|hotfix)/[a-zA-Z0-9._-]+$ ]]; then
+            echo "Branch name '${{ github.head_ref }}' does not follow the naming convention (feature/*, bugfix/*, chore/*, hotfix/*)."
+            exit 1
+          fi

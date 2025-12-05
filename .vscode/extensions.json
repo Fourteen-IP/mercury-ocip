@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"charliermarsh.ruff",
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"ms-python.debugpy",
+		"donjayamanne.python-environment-manager",
+		"tamasfe.even-better-toml",
+	]
+}

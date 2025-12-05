@@ -1,0 +1,246 @@
+/* Custom CSS Variables */
+:root {
+  --mkdocs-dark-bg: #162227;
+  --mkdocs-dark-elements: #22333b;
+  --mkdocs-light-text: #f2f4f3;
+  --mkdocs-accent: #a9927d;
+  --mkdocs-accent-darker: #5e503f;
+}
+
+/* Dark Theme Customization */
+[data-md-color-scheme="slate"] {
+  /* Primary colors */
+  --md-primary-fg-color: var(--mkdocs-dark-elements);
+  --md-primary-fg-color--light: var(--mkdocs-accent);
+  --md-primary-fg-color--dark: var(--mkdocs-accent-darker);
+  --md-primary-bg-color: var(--mkdocs-light-text);
+  --md-primary-bg-color--light: var(--mkdocs-light-text);
+
+  /* Accent colors */
+  --md-accent-fg-color: var(--mkdocs-accent);
+  --md-accent-fg-color--transparent: rgba(169, 146, 125, 0.1);
+  --md-accent-bg-color: var(--mkdocs-accent);
+  --md-accent-bg-color--light: #a9927db3;
+
+  /* Background colors */
+  --md-default-bg-color: var(--mkdocs-dark-bg);
+  --md-default-fg-color: var(--mkdocs-light-text);
+  --md-default-fg-color--light: rgba(242, 244, 243, 0.62);
+  --md-default-fg-color--lighter: rgba(242, 244, 243, 0.32);
+  --md-default-fg-color--lightest: rgba(242, 244, 243, 0.12);
+
+  /* Code colors */
+  --md-code-bg-color: rgba(34, 51, 59, 0.5);
+
+  /* Footer */
+  --md-footer-bg-color: var(--mkdocs-dark-elements);
+  --md-footer-bg-color--dark: var(--mkdocs-accent-darker);
+  --md-footer-fg-color: var(--mkdocs-light-text);
+  --md-footer-fg-color--light: rgba(242, 244, 243, 0.7);
+  --md-footer-fg-color--lighter: rgba(242, 244, 243, 0.32);
+
+  /* Typography */
+  --md-typeset-color: var(--mkdocs-light-text);
+  --md-typeset-a-color: var(--mkdocs-accent);
+  --md-typeset-mark-color: rgba(169, 146, 125, 0.3);
+
+  /* Admonitions */
+  --md-admonition-bg-color: rgba(34, 51, 59, 0.3);
+}
+
+/* Light Theme Customization */
+[data-md-color-scheme="default"] {
+  /* Primary colors */
+  --md-primary-fg-color: var(--mkdocs-accent);
+  --md-primary-fg-color--light: var(--mkdocs-accent);
+  --md-primary-fg-color--dark: var(--mkdocs-accent-darker);
+
+  /* Accent colors */
+  --md-accent-fg-color: var(--mkdocs-accent-darker);
+  --md-accent-fg-color--transparent: rgba(94, 80, 63, 0.1);
+  --md-accent-bg-color: var(--mkdocs-accent-darker);
+  --md-accent-bg-color--light: rgba(94, 80, 63, 0.7);
+
+  /* Typography */
+  --md-typeset-a-color: var(--mkdocs-accent-darker);
+  --md-typeset-mark-color: rgba(169, 146, 125, 0.5);
+}
+
+/* Header customization */
+.md-header {
+  background: var(--mkdocs-dark-elements) !important;
+}
+
+.md-header--shadow {
+  box-shadow: 0 0 0.2rem rgba(169, 146, 125, 0.3), 
+              0 0.2rem 0.5rem rgba(169, 146, 125, 0.2);
+}
+
+/* Navigation customization */
+.md-nav__title {
+  color: var(--mkdocs-accent) !important;
+}
+
+.md-nav__item--active > .md-nav__link {
+  color: var(--mkdocs-accent) !important;
+}
+
+.md-nav__link:hover {
+  color: var(--mkdocs-accent) !important;
+}
+
+/* Search customization */
+[data-md-color-scheme="slate"] .md-search__input {
+  background-color: var(--mkdocs-dark-elements);
+  color: var(--mkdocs-light-text);
+  border: 1px solid rgba(169, 146, 125, 0.3);
+}
+
+[data-md-color-scheme="slate"] .md-search__input::placeholder {
+  color: rgba(242, 244, 243, 0.54);
+}
+
+[data-md-color-scheme="slate"] .md-search-result__item:hover {
+  background-color: rgba(169, 146, 125, 0.1);
+}
+
+/* Tabs customization */
+.md-tabs {
+  background: var(--mkdocs-dark-elements) !important;
+}
+
+.md-tabs__item {
+  height: 2.4rem;
+}
+
+.md-tabs__link {
+  color: rgba(242, 244, 243, 0.7);
+  font-weight: 500;
+}
+
+.md-tabs__link:hover {
+  color: var(--mkdocs-accent) !important;
+}
+
+.md-tabs__link--active {
+  color: var(--mkdocs-accent) !important;
+  border-bottom: 0.1rem solid var(--mkdocs-accent);
+}
+
+/* Sidebar customization */
+[data-md-color-scheme="slate"] .md-sidebar {
+  background: linear-gradient(180deg, var(--mkdocs-dark-bg) 0%, rgba(34, 51, 59, 0.1) 100%);
+}
+
+/* Copy button styling */
+[data-md-color-scheme="slate"] .md-clipboard {
+  color: var(--mkdocs-accent);
+}
+
+[data-md-color-scheme="slate"] .md-clipboard:hover {
+  color: var(--mkdocs-light-text);
+  background: var(--mkdocs-accent);
+}
+
+/* Tables customization */
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) {
+  border: 1px solid var(--mkdocs-dark-elements);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background: var(--mkdocs-dark-elements);
+  color: var(--mkdocs-accent);
+  border-bottom: 1px solid var(--mkdocs-accent);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) td {
+  border-top: 1px solid rgba(34, 51, 59, 0.5);
+}
+
+/* Admonitions styling */
+[data-md-color-scheme="slate"] .md-typeset .admonition {
+  border: 1px solid rgba(169, 146, 125, 0.3);
+  background: rgba(34, 51, 59, 0.3);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition-title {
+  background: rgba(169, 146, 125, 0.2);
+  border-bottom: 1px solid rgba(169, 146, 125, 0.3);
+}
+
+/* Buttons and links */
+[data-md-color-scheme="slate"] .md-button {
+  background: var(--mkdocs-accent);
+  color: var(--mkdocs-dark-bg);
+  border: none;
+}
+
+[data-md-color-scheme="slate"] .md-button:hover {
+  background: var(--mkdocs-accent-darker);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(169, 146, 125, 0.3);
+}
+
+[data-md-color-scheme="slate"] .md-button--primary {
+  background: var(--mkdocs-accent);
+  border-color: var(--mkdocs-accent);
+}
+
+/* Scrollbar styling for webkit browsers */
+[data-md-color-scheme="slate"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-md-color-scheme="slate"] ::-webkit-scrollbar-track {
+  background: #1a1918;
+}
+
+[data-md-color-scheme="slate"] ::-webkit-scrollbar-thumb {
+  background: var(--mkdocs-dark-elements);
+  border-radius: 4px;
+}
+
+[data-md-color-scheme="slate"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--mkdocs-accent);
+}
+
+/* TOC (Table of Contents) styling */
+[data-md-color-scheme="slate"] .md-nav--secondary .md-nav__link--active {
+  color: var(--mkdocs-accent);
+  border-left: 2px solid var(--mkdocs-accent);
+  padding-left: 0.6rem;
+}
+
+/* Footer customization */
+[data-md-color-scheme="slate"] .md-footer {
+  background: linear-gradient(135deg, var(--mkdocs-dark-elements) 0%, var(--mkdocs-accent-darker) 100%);
+}
+
+/* Logo and favicon area */
+.md-header__button.md-logo img {
+  /* Use accent background color (light) and make logo bigger */
+  height: 2rem;
+  width: auto;
+}
+
+/* Custom focus states */
+[data-md-color-scheme="slate"] .md-nav__link:focus,
+[data-md_color-scheme="slate"] .md-search__input:focus {
+  outline: 2px solid var(--mkdocs-accent);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__title[for="__drawer"] {
+    background: var(--mkdocs-dark-elements);
+  }
+}
+
+/* Print styles */
+@media print {
+  :root {
+    --md-typeset-color: #000 !important;
+  }
+}

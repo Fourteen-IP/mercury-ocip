@@ -1,0 +1,46 @@
+name: "Publish"
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@v3.91.2
+
+  build_wheels:
+    runs-on: ${{ matrix.os }}
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.12]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install cibuildwheel
+        run: uv pip install cibuildwheel
+
+      - name: Build
+        run: uv run cibuildwheel --output-dir dist
+
+      - name: Upload built wheels as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          path: dist/*.whl

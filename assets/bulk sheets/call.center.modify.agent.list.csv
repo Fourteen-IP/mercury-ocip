@@ -1,0 +1,2 @@
+operation,serviceUserId,agentUserIdList.userId[0],agentUserIdList.userId[1],agentUserIdList.userId[2],agentUserIdList.userId[3],agentUserIdList.userId[4],agentUserIdList.userId[5],agentUserIdList.userId[6],agentUserIdList.userId[7]
+call.center.update.agent.list,string,none | string,none |string,none | string,none | string,none | string,none | string,none | string,none | string

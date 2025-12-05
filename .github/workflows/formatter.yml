@@ -1,0 +1,35 @@
+name: Lint
+
+on:
+    pull_request:
+        branches:
+            - main
+        types:
+            - opened
+            - synchronize
+
+jobs:
+    run-linters:
+        name: Run linters
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.12"
+            
+            - name: Install uv
+              uses: astral-sh/setup-uv@v6
+
+            - name: Setup Venv
+              run: uv sync && uv venv
+              
+            - name: Install Ruff
+              run: pip install ruff
+
+            - name: Run Ruff linter
+              run: ruff check . --config pyproject.toml

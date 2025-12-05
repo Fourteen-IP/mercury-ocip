@@ -1,0 +1,2 @@
+operation,serviceProviderId,groupId,name,userId[0],userId[1],userId[2],userId[3],userId[4],userId[5],userId[6],userId[7]
+pickup.group.create,string,string,string,string,string,string,string,string,string,string,string

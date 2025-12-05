@@ -1,0 +1,2 @@
+operation,userId,profileAccess,userAccess,adminAccess,departmentAccess,accessDeviceAccess,enhancedServiceInstanceAccess,featureAccessCodeAccess,phoneNumberExtensionAccess,callingLineIdNumberAccess,serviceAccess,trunkGroupAccess,sessionAdmissionControlAccess,officeZoneAccess,dialableCallerIDAccess,numberActivationAccess
+group.admin.modify.policy,string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string,none | string

@@ -1,0 +1,2 @@
+operation,serviceProviderId,groupId,userId,firstName,lastName,password,language
+group.admin.create,string,string,string,none | string,none | string,none | string,none | string
