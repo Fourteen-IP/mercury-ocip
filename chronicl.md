@@ -52,6 +52,10 @@
 
 ## JOURNAL
 
+@Jordan-Prescott 09.12.25
+- Added bulk create for enterprise and service provider admins
+- Decided to give detailed options in this as the enums are not clear from BWKS 
+
 @malkin0xb8 03.12.25
 - Updated commands.py to allow for optional AS/XS parameters, alongside fixing all the typos in the command docstrings.
 
