@@ -4,11 +4,11 @@ import os
 from unittest.mock import Mock
 
 from mercury_ocip.client import Client
-from mercury_ocip.bulk.group_admin import GroupAdminBulkOperations
+from mercury_ocip.bulk.administrator import AdminBulkOperations
 from mercury_ocip.commands.commands import GroupAdminAddRequest, GroupAdminModifyPolicyRequest
 
 
-class TestGroupAdminBulkOperations:
+class TestAdminBulkOperations:
     """Simple tests for group admin bulk operations"""
 
     @pytest.fixture
@@ -32,7 +32,7 @@ group.admin.create,TestServiceProvider,SalesGroup,admin@test.com,John,Doe,passwo
             temp_file = f.name
 
         try:
-            group_admin_ops = GroupAdminBulkOperations(mock_client)
+            group_admin_ops = AdminBulkOperations(mock_client)
             mock_response = Mock()
             mock_client.command.return_value = mock_response
 
@@ -56,7 +56,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
             temp_file = f.name
 
         try:
-            group_admin_ops = GroupAdminBulkOperations(mock_client)
+            group_admin_ops = AdminBulkOperations(mock_client)
             mock_response = Mock()
             mock_client.command.return_value = mock_response
 
@@ -71,7 +71,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_direct_method_call_flow_create(self, mock_client):
         """Test direct method call with data array for create"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
         mock_response = Mock()
         mock_client.command.return_value = mock_response
 
@@ -96,7 +96,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_direct_method_call_flow_modify_policy(self, mock_client):
         """Test direct method call with data array for modify policy"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
         mock_response = Mock()
         mock_client.command.return_value = mock_response
 
@@ -118,7 +118,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_case_conversion(self, mock_client):
         """Test that camelCase is converted to snake_case"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
 
         row = {
             "operation": "group.admin.create",
@@ -140,7 +140,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_case_conversion_modify_policy(self, mock_client):
         """Test that camelCase is converted to snake_case for modify policy"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
 
         row = {
             "operation": "group.admin.modify.policy",
@@ -159,7 +159,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_defaults_application(self, mock_client):
         """Test that defaults are properly applied when not provided"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
         mock_response = Mock()
         mock_client.command.return_value = mock_response
 
@@ -183,7 +183,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_dry_run_mode(self, mock_client):
         """Test dry run doesn't make API calls"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
 
         data = [
             {
@@ -204,7 +204,7 @@ group.admin.modify.policy,admin@test.com,Full,Full,Full,Full,Read-Only,Full,Read
 
     def test_dry_run_mode_modify_policy(self, mock_client):
         """Test dry run doesn't make API calls for modify policy"""
-        group_admin_ops = GroupAdminBulkOperations(mock_client)
+        group_admin_ops = AdminBulkOperations(mock_client)
 
         data = [
             {

@@ -1,0 +1,2 @@
+operation,serviceProviderId,administratorType,userId,firstName,lastName,password,language
+service.provider.admin.modify.policy,string,Normal | Customer | Password Reset Only,string,none | string,none | string,string,none | string
