@@ -23,22 +23,23 @@ The goal of the solution is to ease the management of Broadworks and give engine
 
 ---
 
-!!! Warning "Important Legal Notice"
-    Mercury is an independent, open-source project and is NOT affiliated with, endorsed by, or supported by Cisco Systems, Inc.
+## Important Legal Notice
 
-    BroadWorks is a product and trademark of Cisco Systems, Inc. Mercury provides a client  interface to interact with BroadWorks systems via the Open Client Interface Protocol (OCI-P).
+Mercury is an independent, open-source project and is NOT affiliated with, endorsed by, or supported by Cisco Systems, Inc.
 
-    Mercury does not bypass, circumvent, or provide any additional permissions or licenses. To  use Mercury, you must:
-    - Have an active, licensed BroadWorks system from Cisco
-    - Possess valid credentials and appropriate access permissions
-    - Comply with all Cisco licensing terms and agreements
+BroadWorks is a product and trademark of Cisco Systems, Inc. Mercury provides a client  interface to interact with BroadWorks systems via the Open Client Interface Protocol(OCI-P).
 
-    The OCI-P commands implemented in Mercury are generated from XML schemas. These schemas are:
+Mercury does not bypass, circumvent, or provide any additional permissions or licenses. To  use Mercury, you must:
+- Have an active, licensed BroadWorks system from Cisco
+- Possess valid credentials and appropriate access permissions
+- Comply with all Cisco licensing terms and agreements
 
-    `Copyright © 2018 BroadSoft Inc. (now part of Cisco Systems, Inc.)
-    All rights reserved.`
+The OCI-P commands implemented in Mercury are generated from XML schemas. These schemas are:
 
-    Mercury implements these publicly documented interfaces and does not include any    proprietary Cisco code or intellectual property. All command structures follow the     official OCI-P specification.
+`Copyright © 2018 BroadSoft Inc. (now part of Cisco Systems, Inc.)
+All rights reserved.`
+
+Mercury implements these publicly documented interfaces and does not include any    proprietary Cisco code or intellectual property. All command structures follow the     official OCI-P specification.
 
 ---
 
