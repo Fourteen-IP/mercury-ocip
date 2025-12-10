@@ -31,16 +31,27 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Set up Python
-        run: uv python install ${{ matrix.python-version }}
-
-      - name: Install cibuildwheel
-        run: uv pip install cibuildwheel
+        run: uvx python install ${{ matrix.python-version }}
 
       - name: Build
-        run: uv run cibuildwheel --output-dir dist
+        run: uvx run cibuildwheel --output-dir dist
 
       - name: Upload built wheels as Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
           path: dist/*.whl
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download built wheels from Artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: Publish to PyPI
+        run: uv publish
