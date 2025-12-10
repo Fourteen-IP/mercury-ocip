@@ -438,7 +438,7 @@ wheels = [
 
 [[package]]
 name = "mercury-ocip"
-version = "0.1.0b0"
+version = "0.1.2b0"
 source = { editable = "." }
 dependencies = [
     { name = "asyncio" },
