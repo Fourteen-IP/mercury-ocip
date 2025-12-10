@@ -35,7 +35,7 @@ jobs:
         run: uvx python install ${{ matrix.python-version }}
 
       - name: Build
-        run: uvx run cibuildwheel --output-dir dist
+        run: uv build
 
       - name: Upload built wheels as Artifacts
         uses: actions/upload-artifact@v4
