@@ -31,11 +31,3 @@ jobs:
         push: true
         tags: |
           ghcr.io/fourteen-ip/mercury-ocip-docs:latest
-  deploy:
-    runs-on: self-hosted
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          cd ~ && docker compose up -d --pull=always
-          docker image prune -a -f
