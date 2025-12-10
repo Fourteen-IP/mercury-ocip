@@ -29,7 +29,7 @@ def mock_class_to_xml():
 
     assert isinstance(xml, str)
 
-
+@pytest.fixture
 def mock_xml_to_dict():
 
     xml = """<command xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="" xsi:type="AccessDevice"><deviceLevel>10</deviceLevel><deviceName>my_device</deviceName></command>"""
@@ -40,13 +40,13 @@ def mock_xml_to_dict():
     assert dictionary.get("deviceLevel") == "10"
     assert dictionary.get("deviceName") == "mydevice"
 
-# def mock_xml_to_class():
+@pytest.fixture
+def mock_xml_to_class():
 
-#     xml = """<command xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="" xsi:type="AccessDevice"><deviceLevel>10</deviceLevel><deviceName>my_device</deviceName></command>"""
+    xml = """<command xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="" xsi:type="AccessDevice"><deviceLevel>10</deviceLevel><deviceName>my_device</deviceName></command>"""
     
-#     cls = Parser.to_class_from_xml(xml)
+    cls = Parser.to_class_from_xml(xml)
 
-#     assert isinstance(cls, Example)
-#     assert cls.device_level == "10"
-#     assert cls.device_name == "mydevice"
-#     pass
+    assert isinstance(cls, Example)
+    assert cls.device_level == "10"
+    assert cls.device_name == "mydevice"
