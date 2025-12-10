@@ -51,6 +51,8 @@
 
 
 ## JOURNAL
+@KiPageFault 10.12.25
+- Updated parser to appropriately construct nested objects within a return type
 
 @malkin0xb8 03.12.25
 - Updated commands.py to allow for optional AS/XS parameters, alongside fixing all the typos in the command docstrings.
