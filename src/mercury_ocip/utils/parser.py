@@ -204,15 +204,15 @@ class Parser:
 
         assert data is not None
         assert isinstance(data, dict)
-        assert data.get("command") is not None
-        assert isinstance(data.get("command"), dict)
 
         data_dict = cast(
             Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]], data
         )
+        
+        # Handle both top-level responses (with "command" wrapper) and nested objects (without wrapper)
         command = cast(
             Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]],
-            data_dict.get("command"),
+            data_dict.get("command", data_dict),
         )
 
         snake_case_command = {to_snake_case(k): v for k, v in command.items()}
@@ -231,8 +231,16 @@ class Parser:
                     Parser.to_class_from_dict(v, subtype) if isinstance(v, dict) else v
                     for v in value
                 ]
-            elif isinstance(value, dict) and hint.__name__ == "OCIType":
-                init_args[key] = Parser.to_class_from_dict(value, hint)
+            elif isinstance(value, dict) and isinstance(hint, type) and issubclass(hint, object):
+                # Check if hint is a class that can be parsed from dict
+                try:
+                    from mercury_ocip.commands.base_command import OCIType as BaseOCIType
+                    if issubclass(hint, BaseOCIType):
+                        init_args[key] = Parser.to_class_from_dict(value, hint)
+                    else:
+                        init_args[key] = value
+                except (TypeError, ImportError):
+                    init_args[key] = value
             else:
                 init_args[key] = value
 
