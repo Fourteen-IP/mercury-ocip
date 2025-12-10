@@ -4,24 +4,26 @@ import sys
 from difflib import ndiff
 from pathlib import Path
 
-from mercury_ocip.utils.docs.correct_typo import correct_typo
+# Add the path hack to ensure the `utils` module can be imported
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from utils.correct_typo import correct_typo
 
 """
 A script to fix common typos in the schema definitions.
 
 Some schemas have incorrect response types in their doc strings, since this is used to generate the docs, we need to fix them here.
 
-This uses "correct_typo", a series of helper functions to run some heueristics. It will:
+This uses "correct_typo", a series of helper functions to run some heuristics. It will:
 
 - Strip Versioning
 - Check that the Response actually exists
-- If its not real, it will first check any missing words or moved words and re-arrange them in correct order.
-- Typo check all words - e.g Get instead of Getl
+- If it's not real, it will first check any missing words or moved words and re-arrange them in correct order.
+- Typo check all words - e.g., Get instead of Getl
 - Find the highest version of the command
 - Return the response
 
 This script will then iterate through all dataclasses and run these checks. Updating the final commands.py file.
-
 """
 
 commands_file = Path("src/mercury_ocip/commands/commands.py")
@@ -63,7 +65,7 @@ for node in tree.body:
                     "ErrorResponse",
                 )
                 and response not in defined_class_names
-            ):  # If the response from the docstring isnt found in the actual class defintions (Typo)
+            ):  # If the response from the docstring isn't found in the actual class definitions (Typo)
                 corrected_response = correct_typo(
                     class_name, response, defined_class_names
                 )
