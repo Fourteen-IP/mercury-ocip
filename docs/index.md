@@ -2,7 +2,7 @@
 
 **Mercury** is an SDK for interfacing with Broadworks OCIP interface either via TCP or SOAP.
 
-- [Documentation](https://fourteen-ip.github.io/mercury/)
+- [Documentation](https://mercury-docs.14ip.net/)
 
 ---
 
@@ -13,6 +13,26 @@
 The package is currently actively managed by the Dev Team at [Fourteen IP](https://fourteenip.com/) the leading solution of hosted telephony in the hospitality industry. The team is working with the whole company including platform and telephony engineers with decades of experience.
 
 The goal of the solution is to ease the management of Broadworks and give engineers tooling to better configure and administrate.
+
+---
+
+!!! Warning "Important Legal Notice"
+    Mercury is an independent, open-source project and is NOT affiliated with, endorsed by, or supported by Cisco Systems, Inc.
+
+    BroadWorks is a product and trademark of Cisco Systems, Inc. Mercury provides a client  interface to interact with BroadWorks systems via the Open Client Interface Protocol (OCI-P).
+
+    Mercury does not bypass, circumvent, or provide any additional permissions or licenses. To  use Mercury, you must:
+
+    * Have an active, licensed BroadWorks system from Cisco
+    * Possess valid credentials and appropriate access permissions
+    * Comply with all Cisco licensing terms and agreements
+
+    The OCI-P commands implemented in Mercury are generated from XML schemas. These schemas are:
+
+    `Copyright © 2018 BroadSoft Inc. (now part of Cisco Systems, Inc.)
+    All rights reserved.`
+
+    Mercury implements these publicly documented interfaces and does not include any    proprietary Cisco code or intellectual property. All command structures follow the     official OCI-P specification.
 
 ---
 
