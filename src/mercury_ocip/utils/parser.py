@@ -1,22 +1,36 @@
-# Responsible for parsing data between types such as JSON, XML and Classes
-
-# Design not fully fleshed out yet
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-import xml.etree.ElementTree as ET
+import xmltodict
+from typing import (
+    get_type_hints,
+    List,
+    get_args,
+    Union,
+    Type,
+    cast,
+    Dict,
+    TypeVar,
+    Any,
+    Protocol,
+    runtime_checkable,
+)
 
-from mercury_ocip.libs.basic_types import XMLDictResult
 from mercury_ocip.utils.defines import snake_to_camel, to_snake_case
-from typing import get_type_hints, List, get_args, Union, Type, cast, Dict, TypeVar
 
-OCIType = TypeVar(
-    "OCIType"
-)  # Type Annotation Linkage For OCIType Without Circular Import
+OCIType = TypeVar("OCIType")
+T = TypeVar("T")
+
+
+@runtime_checkable
+class HasFieldAliases(Protocol):
+    """Protocol for objects that have field aliases."""
+
+    def get_field_aliases(self) -> Dict[str, str]: ...
 
 
 class Parser:
     """
-    Base Class For OCI Object Parsing & Type Translation
+    Base Class For OCI Object Parsing & Type Translation using xmltodict
 
     method table:
 
@@ -30,53 +44,17 @@ class Parser:
 
     @staticmethod
     def to_xml_from_class(obj: object) -> str:
-        def serialize_value(parent: ET.Element, tag: str, value: Union[str, object]):
-            """
-            Converts any passed value into an XML Tree Element
-            """
-            from mercury_ocip.commands.base_command import OCIType as Baseclass
+        """Convert a class instance to XML string."""
+        aliases: Dict[str, str] = {}
+        if isinstance(obj, HasFieldAliases):
+            aliases = obj.get_field_aliases()
 
-            # Sanitises Boolean Values
-            if isinstance(value, bool):
-                value = str(value).lower()
-
-            # If The Value Being Passed Inherets From OCIType We Recursively Process The Element Into XML Elements
-            if isinstance(value, Baseclass):
-                child = ET.SubElement(parent, tag)
-                data = Parser.to_dict_from_class(value)
-
-                assert isinstance(data, dict)
-
-                for k, v in data.items():
-                    if isinstance(v, list):
-                        for item in v:
-                            if isinstance(item, bool):
-                                item = str(item).lower()
-                            ET.SubElement(child, snake_to_camel(k)).text = str(item)
-                    elif isinstance(v, dict):
-                        nested_child = ET.SubElement(child, snake_to_camel(k))
-                        for sub_k, sub_v in v.items():
-                            if isinstance(sub_v, bool):
-                                sub_v = str(sub_v).lower()
-                            ET.SubElement(
-                                nested_child, snake_to_camel(sub_k)
-                            ).text = str(sub_v)
-                    else:
-                        if isinstance(v, bool):
-                            v = str(v).lower()
-                        ET.SubElement(child, snake_to_camel(k)).text = str(v)
-            else:
-                ET.SubElement(parent, tag).text = str(value)
-
-        root = ET.Element(
-            "command",
-            attrib={
-                "xmlns": "",
-                "{http://www.w3.org/2001/XMLSchema-instance}type": obj.__class__.__name__,
-            },
-        )
-
-        aliases = obj.get_field_aliases()
+        # ensure default empty namespace on <command> and declare the xsi namespace using prefix "C"
+        root_content: Dict[str, Any] = {
+            "@xmlns": "",
+            "@xmlns:C": "http://www.w3.org/2001/XMLSchema-instance",
+            "@C:type": obj.__class__.__name__,
+        }
 
         type_hints = get_type_hints(obj.__class__)
         for attr, hint in type_hints.items():
@@ -84,162 +62,291 @@ class Parser:
             if value is None:
                 continue
 
-            args = get_args(hint)
-            if args:
-                if isinstance(value, list):
+            key = aliases.get(attr, snake_to_camel(attr))
+
+            def convert_keys(d: Any) -> Any:
+                """Recursively convert dictionary keys to camelCase."""
+                if isinstance(d, dict):
+                    new_d: Dict[str, Any] = {}
+                    for k, v in d.items():
+                        new_k = snake_to_camel(k)
+                        new_d[new_k] = convert_keys(v)
+                    return new_d
+                elif isinstance(d, list):
+                    result_list = []
+                    for i in d:
+                        # If list item is an object, convert it to dict first
+                        if hasattr(i, "__dict__"):
+                            result_list.append(
+                                convert_keys(Parser.to_dict_from_class(i))
+                            )
+                        else:
+                            result_list.append(convert_keys(i))
+                    return result_list
+                elif isinstance(d, bool):
+                    return str(d).lower()
+                else:
+                    return d
+
+            # Check if this is a table structure (list of dicts with consistent keys)
+            if isinstance(value, list) and value and isinstance(value[0], dict):
+                # Check if all items have the same keys (table-like structure)
+                first_keys = set(value[0].keys())
+                is_table = all(
+                    set(item.keys()) == first_keys
+                    for item in value
+                    if isinstance(item, dict)
+                )
+
+                if is_table and key.endswith("Table"):
+                    # This is a table structure
+                    table_dict: Dict[str, Any] = {}
+
+                    # Add column headings (from dict keys)
+                    table_dict["colHeading"] = list(first_keys)
+
+                    # Add rows
+                    rows = []
                     for item in value:
-                        serialize_value(root, aliases.get(attr), item)
+                        cols = [str(item.get(k, "")) for k in first_keys]
+                        rows.append({"col": cols})
+                    table_dict["row"] = rows
+
+                    root_content[key] = table_dict
                     continue
 
-            serialize_value(root, aliases.get(attr), value)
+            if isinstance(value, list):
+                if not value:  # empty list
+                    continue
 
-        return ET.tostring(root, encoding="ISO-8859-1", xml_declaration=False).decode()
+                processed_list: List[Any] = []
+                for item in value:
+                    if hasattr(item, "__dict__"):
+                        # Convert to dict first
+                        item_dict = Parser.to_dict_from_class(item)
+
+                        # Then convert keys to camelCase
+                        item_dict_camel = convert_keys(item_dict)
+
+                        processed_list.append(item_dict_camel)
+                    else:
+                        processed_list.append(
+                            str(item).lower() if isinstance(item, bool) else item
+                        )
+
+                # Assign the processed list
+                root_content[key] = processed_list
+            elif hasattr(value, "__dict__"):
+                root_content[key] = convert_keys(Parser.to_dict_from_class(value))
+            else:
+                root_content[key] = (
+                    str(value).lower() if isinstance(value, bool) else value
+                )
+
+        output = xmltodict.unparse(
+            {"command": root_content}, full_document=False, short_empty_elements=True
+        )
+
+        if not isinstance(output, str):
+            raise ValueError("XML output is not a string")
+
+        return output
 
     @staticmethod
-    def to_xml_from_dict(data: XMLDictResult, cls: Type[OCIType]) -> str:
+    def to_xml_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> str:
+        """Convert a dictionary to XML via class instance."""
         obj = Parser.to_class_from_dict(data, cls)
         return Parser.to_xml_from_class(obj)
 
     @staticmethod
-    def to_dict_from_class(obj: object) -> XMLDictResult:
-        result: XMLDictResult = {}
+    def to_dict_from_class(obj: object) -> Dict[str, Any]:
+        """Convert a class instance to a dictionary."""
+        result: Dict[str, Any] = {}
         type_hints = get_type_hints(obj.__class__)
+
         for attr, hint in type_hints.items():
             value = getattr(obj, attr, None)
             if value is None:
                 continue
 
-            from mercury_ocip.commands.base_command import OCIType as Baseclass
-
-            origin = getattr(hint, "__origin__", None)
-            if origin in (list, List):
-                if isinstance(result, dict):
-                    attr_value = result.setdefault(attr, [])
-                    if isinstance(attr_value, list):
-                        for item in value:
-                            attr_value.append(
-                                Parser.to_dict_from_class(item)
-                                if isinstance(value, Baseclass)
-                                else item
-                            )
-            elif isinstance(value, Baseclass):
-                if isinstance(result, dict):
-                    result[attr] = Parser.to_dict_from_class(value)
-                else:
-                    result = Parser.to_dict_from_class(value)
-            else:
-                if isinstance(result, dict):
-                    result[attr] = value
-                else:
-                    result = value
-        return result
-
-    @staticmethod
-    def to_dict_from_xml(xml: Union[str, ET.Element]) -> XMLDictResult:
-        if isinstance(xml, str):
-            xml = ET.fromstring(xml)
-
-        result: XMLDictResult = {}
-
-        if xml.attrib:
-            if isinstance(result, dict):
-                result["attributes"] = dict(xml.attrib)
-
-        children = list(xml)
-
-        if xml.tag.__contains__("Table"):
-            from mercury_ocip.commands.base_command import (
-                OCITable,
-                OCITableRow,
-            )  # Inline Table Import
-
-            col_headings: list[str] = []
-            rows: list[OCITableRow] = []
-
-            for child in children:
-                if child.tag == "colHeading":
-                    col_headings.append(child.text or "")
-                elif child.tag == "row":
-                    col_values = [col.text or "" for col in child.findall("col")]
-                    rows.append(OCITableRow(col=col_values))
-
-            result = OCITable(col_heading=col_headings, row=rows)
-        elif children:
-            for child in children:
-                child_dict = Parser.to_dict_from_xml(child)
-
-                if child.tag in result:
-                    if isinstance(result, dict):
-                        existing = result[child.tag]
-                    if isinstance(existing, list):
-                        cast(List[XMLDictResult], existing).append(child_dict)
+            # Handle lists
+            if isinstance(value, list):
+                processed_list = []
+                for item in value:
+                    if hasattr(item, "__dict__"):
+                        # Recursively convert nested objects to dict
+                        processed_list.append(Parser.to_dict_from_class(item))
                     else:
-                        items: List[XMLDictResult] = []
-                        if isinstance(existing, dict):
-                            items.append(existing)
-                        else:
-                            items.append(existing)
-                        if isinstance(child_dict, dict):
-                            items.append(child_dict)
-                        else:
-                            items.append(child_dict)
-
-                        if isinstance(result, dict):
-                            result[child.tag] = items
-                else:
-                    if isinstance(result, dict):
-                        result[child.tag] = (
-                            child_dict if isinstance(child_dict, dict) else child_dict
-                        )
-        else:
-            text = xml.text.strip() if xml.text else ""
-            result = text
+                        processed_list.append(item)
+                result[attr] = processed_list
+            # Handle nested objects
+            elif hasattr(value, "__dict__"):
+                result[attr] = Parser.to_dict_from_class(value)
+            else:
+                result[attr] = value
 
         return result
 
     @staticmethod
-    def to_class_from_dict(data: XMLDictResult, cls: Type[OCIType]) -> OCIType:
+    def to_dict_from_xml(xml: str) -> Dict[str, Any]:
+        """Parse XML string to dictionary."""
+        if not isinstance(xml, str):
+            return {}
+
+        parsed = xmltodict.parse(xml)
+        if not parsed or not isinstance(parsed, dict):
+            return {}
+
+        root_key = next(iter(parsed.keys()))
+        root_val = parsed[root_key]
+
+        return cast(Dict[str, Any], Parser._process_dict_item(root_key, root_val))
+
+    @staticmethod
+    def _process_dict_item(key: str, value: Any) -> Any:
+        """Process individual dictionary items during XML parsing."""
+        # Handle OCITable special case
+        if (
+            "Table" in key
+            and isinstance(value, dict)
+            and "colHeading" in value
+            and "row" in value
+        ):
+            from mercury_ocip.commands.base_command import OCITable, OCITableRow
+
+            col_headings = value["colHeading"]
+            if not isinstance(col_headings, list):
+                col_headings = [col_headings]
+
+            rows_data = value["row"]
+            if not isinstance(rows_data, list):
+                rows_data = [rows_data]
+
+            rows: List[OCITableRow] = []
+            for r in rows_data:
+                cols = r.get("col", [])
+                if not isinstance(cols, list):
+                    cols = [cols]
+                rows.append(OCITableRow(col=cols))
+
+            return OCITable(col_heading=col_headings, row=rows)
+
+        # Handle dictionaries
+        if isinstance(value, dict):
+            if "#text" in value:
+                return value["#text"]
+
+            new_val: Dict[str, Any] = {}
+            attributes: Dict[str, Any] = {}
+
+            for k, v in value.items():
+                if k.startswith("@"):
+                    # Handle attributes
+                    attr_name = k[1:]
+                    if ":" in attr_name:
+                        prefix, local = attr_name.split(":", 1)
+                        attributes[attr_name] = v
+                        attributes[local] = v
+                        if prefix in ("xsi", "C"):
+                            attributes[
+                                f"{{http://www.w3.org/2001/XMLSchema-instance}}{local}"
+                            ] = v
+                    else:
+                        attributes[attr_name] = v
+                else:
+                    if isinstance(v, list):
+                        new_val[k] = [Parser._process_dict_item(k, i) for i in v]
+                    else:
+                        new_val[k] = Parser._process_dict_item(k, v)
+
+            if attributes:
+                new_val["attributes"] = attributes
+
+            return new_val
+
+        # Handle None
+        if value is None:
+            return ""
+
+        return value
+
+    @staticmethod
+    def to_class_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> OCIType:
+        """Convert a dictionary to a class instance."""
         type_hints = get_type_hints(cls)
-        init_args = {}
 
-        assert data is not None
-        assert isinstance(data, dict)
-        assert data.get("command") is not None
-        assert isinstance(data.get("command"), dict)
+        if not isinstance(data, dict):
+            raise TypeError(
+                f"Expected dict for {cls.__name__}, got {type(data).__name__}"
+            )
 
-        data_dict = cast(
-            Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]], data
-        )
-        command = cast(
-            Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]],
-            data_dict.get("command"),
-        )
+        source = data
+        if "command" in data:
+            command_data = data["command"]
+            if not isinstance(command_data, dict):
+                raise TypeError(
+                    f"Expected dict for command, got {type(command_data).__name__}"
+                )
+            source = command_data
 
-        snake_case_command = {to_snake_case(k): v for k, v in command.items()}
+        snake_case_source: Dict[str, Any] = {
+            to_snake_case(k): v for k, v in source.items()
+        }
+
+        init_args: Dict[str, Any] = {}
 
         for key, hint in type_hints.items():
-            if key not in snake_case_command:
+            if key not in snake_case_source:
                 continue
 
-            value = snake_case_command[key]
-            args = get_args(hint)
+            val = snake_case_source[key]
             origin = getattr(hint, "__origin__", None)
+            args = get_args(hint)
 
+            # Handle Optional types (which are Union[T, None])
+            if origin is Union:
+                non_none_args = [arg for arg in args if arg is not type(None)]
+                if non_none_args:
+                    hint = non_none_args[0]
+                    origin = getattr(hint, "__origin__", None)
+                    args = get_args(hint)
+
+            # Handle List types
             if origin in (list, List):
+                if not args:
+                    init_args[key] = val if isinstance(val, list) else [val]
+                    continue
+
                 subtype = args[0]
-                init_args[key] = [
-                    Parser.to_class_from_dict(v, subtype) if isinstance(v, dict) else v
-                    for v in value
-                ]
-            elif isinstance(value, dict) and hint.__name__ == "OCIType":
-                init_args[key] = Parser.to_class_from_dict(value, hint)
+                if isinstance(val, list):
+                    init_args[key] = [
+                        Parser.to_class_from_dict(v, subtype)
+                        if isinstance(v, dict)
+                        and hasattr(subtype, "__mro__")
+                        and subtype is not Any
+                        else v
+                        for v in val
+                    ]
+                else:
+                    init_args[key] = [
+                        Parser.to_class_from_dict(val, subtype)
+                        if isinstance(val, dict)
+                        and hasattr(subtype, "__mro__")
+                        and subtype is not Any
+                        else val
+                    ]
+            # Handle nested class types (but not Any)
+            elif hint is not Any and isinstance(val, dict) and hasattr(hint, "__mro__"):
+                init_args[key] = Parser.to_class_from_dict(val, hint)
+            # Handle primitive types and Any
             else:
-                init_args[key] = value
+                init_args[key] = val
 
         return cls(**init_args)
 
     @staticmethod
-    def to_class_from_xml(xml: Union[str, ET.Element], cls: Type[OCIType]) -> OCIType:
+    def to_class_from_xml(xml: str, cls: Type[OCIType]) -> OCIType:
+        """Parse XML string and convert to class instance."""
         return Parser.to_class_from_dict(Parser.to_dict_from_xml(xml), cls)
 
 
@@ -272,33 +379,31 @@ class AsyncParser:
         )
 
     @staticmethod
-    async def to_xml_from_dict(data: XMLDictResult, cls: Type[OCIType]) -> str:
+    async def to_xml_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> str:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_xml_from_dict, data, cls
         )
 
     @staticmethod
-    async def to_dict_from_class(obj: OCIType) -> XMLDictResult:
+    async def to_dict_from_class(obj: OCIType) -> Dict[str, Any]:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_dict_from_class, obj
         )
 
     @staticmethod
-    async def to_dict_from_xml(xml: Union[str, ET.Element]) -> XMLDictResult:
+    async def to_dict_from_xml(xml: str) -> Dict[str, Any]:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_dict_from_xml, xml
         )
 
     @staticmethod
-    async def to_class_from_dict(data: XMLDictResult, cls: Type[OCIType]) -> OCIType:
+    async def to_class_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> OCIType:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_class_from_dict, data, cls
         )
 
     @staticmethod
-    async def to_class_from_xml(
-        xml: Union[str, ET.Element], cls: Type[OCIType]
-    ) -> OCIType:
+    async def to_class_from_xml(xml: str, cls: Type[OCIType]) -> OCIType:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_class_from_xml, xml, cls
         )

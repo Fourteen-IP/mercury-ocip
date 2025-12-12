@@ -185,3 +185,74 @@ def expand_phone_range(range_str: str) -> list[str]:
         numbers.append(f"{prefix}{num}")
 
     return numbers
+
+
+def parse_version(command: str) -> tuple[str, int, int, int]:
+    """
+    Parse a versioned command/class name into its components.
+
+    The expected form is:
+      <base><major>[sp<service_patch>][V<subsequent_patch>]
+    where:
+      - <base> is any prefix - UserGetRequest | SystemSoftwareVersionGetRequest
+      - <major> is an optional integer - 18 in UserDeleteRequest18
+      - sp<service_patch> is an optional service patch integer (e.g. "sp3")
+      - V<subsequent_patch> (or v) is an optional subsequent patch integer (e.g. "V2")
+
+    Args:
+        command (str): The versioned name to parse (e.g. "UserGetRequest22", "Foo12sp3V2").
+
+    Returns:
+        tuple[str, int, int, int]: (base_name, major, service_patch, subsequent_patch)
+            service_patch and subsequent_patch default to 0 when absent.
+
+    Raises:
+        ValueError: If `command` does not match the expected pattern.
+    """
+    pattern = r"^([A-Za-z]+)(?:(\d+)(?:sp(\d+))?(?:V(\d+))?)?$"
+
+    match = re.match(pattern, command)
+    if not match:
+        raise ValueError(f"Invalid command format: {command}")
+
+    base_name = match.group(1)
+    major = int(match.group(2)) if match.group(2) else 0
+    service_patch: int = int(match.group(3)) if match.group(3) else 0
+    subsequent_patch: int = int(match.group(4)) if match.group(4) else 0
+
+    return (base_name, major, service_patch, subsequent_patch)
+
+
+def highest_version_for(command: str, defined_names: set[str]) -> str | None:
+    """
+    Finds the highest version of a class name based on its base name.
+
+    This function identifies the class in `names` that starts with `base` and has the highest
+    version number. If an exact match exists, it is returned. Otherwise, the highest version
+    is determined based on the naming convention.
+
+    Args:
+        command (str): The name of the command class (e.g., "UserGetRequest22V2").
+        defined_names (set[str]: A set of class names to search.
+
+    Returns:
+        str: The highest version of the class name, or None if no versioned variant is found.
+    """
+
+    base_command, _, _, _ = parse_version(command)
+
+    matching = []
+    for name in defined_names:
+        try:
+            base, major, sp, v = parse_version(name)
+            if base_command == base:
+                matching.append((name, major, sp, v))
+        except ValueError:
+            continue
+
+    if not matching:
+        return None
+
+    matching.sort(key=lambda x: (x[1], x[2], x[3]), reverse=True)
+
+    return matching[0][0]
