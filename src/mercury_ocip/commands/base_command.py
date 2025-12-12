@@ -1,3 +1,4 @@
+from typing import Any
 from typing import get_type_hints, Union, Optional
 from dataclasses import fields, is_dataclass
 from mercury_ocip.utils.parser import Parser, AsyncParser
@@ -41,34 +42,32 @@ class OCIType:
             return {}
         return {f.name: f.metadata.get("alias", f.name) for f in fields(cls)}
 
-    def to_dict(self) -> XMLDictResult:
+    def to_dict(self) -> dict[str, Any]:
         return Parser.to_dict_from_class(self)
 
     def to_xml(self) -> str:
         return Parser.to_xml_from_class(self)
 
     @classmethod
-    def from_dict(cls: type["OCIType"], data: XMLDictResult) -> "OCIType":
+    def from_dict(cls: type["OCIType"], data: dict[str, Any]) -> "OCIType":
         return Parser.to_class_from_dict(data, cls)
 
     @classmethod
-    def from_xml(cls, xml: Union[str, ET.Element]) -> "OCIType":
+    def from_xml(cls, xml: str) -> "OCIType":
         return Parser.to_class_from_xml(xml, cls)
 
-    async def to_dict_async(self) -> XMLDictResult:
+    async def to_dict_async(self) -> dict[str, Any]:
         return await AsyncParser.to_dict_from_class(self)
 
     async def to_xml_async(self) -> str:
         return await AsyncParser.to_xml_from_class(self)
 
     @classmethod
-    async def from_dict_async(cls: type["OCIType"], data: XMLDictResult) -> "OCIType":
+    async def from_dict_async(cls: type["OCIType"], data: dict[str, Any]) -> "OCIType":
         return await AsyncParser.to_class_from_dict(data, cls)
 
     @classmethod
-    async def from_xml_async(
-        cls: type["OCIType"], xml: Union[str, ET.Element]
-    ) -> "OCIType":
+    async def from_xml_async(cls: type["OCIType"], xml: str) -> "OCIType":
         return await AsyncParser.to_class_from_xml(xml, cls)
 
 
