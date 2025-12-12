@@ -51,6 +51,8 @@
 
 
 ## JOURNAL
+@KiPageFault 10.12.25
+- Updated parser to appropriately construct nested objects within a return type
 
 @Jordan-Prescott 09.12.25
 - Added bulk create for enterprise and service provider admins

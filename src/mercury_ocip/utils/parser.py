@@ -7,10 +7,17 @@ import xml.etree.ElementTree as ET
 
 from mercury_ocip.libs.basic_types import XMLDictResult
 from mercury_ocip.utils.defines import snake_to_camel, to_snake_case
-from typing import get_type_hints, List, get_args, Union, Type, cast, Dict, TypeVar
+from typing import get_type_hints, List, get_args, Union, Type, cast, Dict, TypeVar, Protocol
+
+
+# using typing protocol to populate static object info with the get_field_aliases member to prevent pyrefly warnings
+class HasFieldAliases(Protocol):
+    def get_field_aliases(self) -> Dict[str, str]:
+        ...
+
 
 OCIType = TypeVar(
-    "OCIType"
+    "OCIType", bound=HasFieldAliases
 )  # Type Annotation Linkage For OCIType Without Circular Import
 
 
@@ -29,7 +36,7 @@ class Parser:
     """
 
     @staticmethod
-    def to_xml_from_class(obj: object) -> str:
+    def to_xml_from_class(obj: HasFieldAliases) -> str:
         def serialize_value(parent: ET.Element, tag: str, value: Union[str, object]):
             """
             Converts any passed value into an XML Tree Element
@@ -88,10 +95,10 @@ class Parser:
             if args:
                 if isinstance(value, list):
                     for item in value:
-                        serialize_value(root, aliases.get(attr), item)
+                        serialize_value(root, aliases.get(attr, attr), item)
                     continue
 
-            serialize_value(root, aliases.get(attr), value)
+            serialize_value(root, aliases.get(attr, attr), value)
 
         return ET.tostring(root, encoding="ISO-8859-1", xml_declaration=False).decode()
 
@@ -123,10 +130,11 @@ class Parser:
                                 else item
                             )
             elif isinstance(value, Baseclass):
+                parsed = Parser.to_dict_from_class(value)
                 if isinstance(result, dict):
-                    result[attr] = Parser.to_dict_from_class(value)
+                    result[attr] = parsed
                 else:
-                    result = Parser.to_dict_from_class(value)
+                    result = parsed
             else:
                 if isinstance(result, dict):
                     result[attr] = value
@@ -171,14 +179,15 @@ class Parser:
                 if child.tag in result:
                     if isinstance(result, dict):
                         existing = result[child.tag]
-                    if isinstance(existing, list):
-                        cast(List[XMLDictResult], existing).append(child_dict)
-                    else:
                         items: List[XMLDictResult] = []
-                        if isinstance(existing, dict):
-                            items.append(existing)
+
+                        if isinstance(existing, list):
+                            existing.append(child_dict)
                         else:
-                            items.append(existing)
+                            if isinstance(existing, dict):
+                                items.append(existing)
+                            else:
+                                items.append(existing)
                         if isinstance(child_dict, dict):
                             items.append(child_dict)
                         else:
@@ -204,15 +213,15 @@ class Parser:
 
         assert data is not None
         assert isinstance(data, dict)
-        assert data.get("command") is not None
-        assert isinstance(data.get("command"), dict)
 
         data_dict = cast(
             Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]], data
         )
+        
+        # Handle both top-level responses (with "command" wrapper) and nested objects (without wrapper)
         command = cast(
             Dict[str, Union[str, XMLDictResult, List[XMLDictResult]]],
-            data_dict.get("command"),
+            data_dict.get("command", data_dict),
         )
 
         snake_case_command = {to_snake_case(k): v for k, v in command.items()}
@@ -231,8 +240,16 @@ class Parser:
                     Parser.to_class_from_dict(v, subtype) if isinstance(v, dict) else v
                     for v in value
                 ]
-            elif isinstance(value, dict) and hint.__name__ == "OCIType":
-                init_args[key] = Parser.to_class_from_dict(value, hint)
+            elif isinstance(value, dict) and isinstance(hint, type) and issubclass(hint, object):
+                # Check if hint is a class that can be parsed from dict
+                try:
+                    from mercury_ocip.commands.base_command import OCIType as BaseOCIType
+                    if issubclass(hint, BaseOCIType):
+                        init_args[key] = Parser.to_class_from_dict(value, hint)
+                    else:
+                        init_args[key] = value
+                except (TypeError, ImportError):
+                    init_args[key] = value
             else:
                 init_args[key] = value
 
