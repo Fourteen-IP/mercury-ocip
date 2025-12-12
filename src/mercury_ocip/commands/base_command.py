@@ -1,9 +1,7 @@
 from typing import Any
-from typing import get_type_hints, Union, Optional
+from typing import get_type_hints, Optional
 from dataclasses import fields, is_dataclass
 from mercury_ocip.utils.parser import Parser, AsyncParser
-from mercury_ocip.libs.basic_types import XMLDictResult
-import xml.etree.ElementTree as ET
 from mercury_ocip.utils.defines import to_snake_case
 
 
