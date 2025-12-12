@@ -97,19 +97,15 @@ class Parser:
                     if hasattr(item, "__dict__"):
                         # Convert to dict first
                         item_dict = Parser.to_dict_from_class(item)
+
                         # Then convert keys to camelCase
                         item_dict_camel = convert_keys(item_dict)
+
                         processed_list.append(item_dict_camel)
                     else:
                         processed_list.append(
                             str(item).lower() if isinstance(item, bool) else item
                         )
-
-                import json
-
-                print(
-                    f"DEBUG {key}: {json.dumps(processed_list, indent=2, default=str)}"
-                )
 
                 # Assign the processed list
                 root_content[key] = processed_list
@@ -146,16 +142,17 @@ class Parser:
             if value is None:
                 continue
 
-            origin = getattr(hint, "__origin__", None)
-            if origin in (list, List):
-                if isinstance(value, list):
-                    res_list: List[Any] = []
-                    for item in value:
-                        if hasattr(item, "__dict__"):
-                            res_list.append(Parser.to_dict_from_class(item))
-                        else:
-                            res_list.append(item)
-                    result[attr] = res_list
+            # Handle lists
+            if isinstance(value, list):
+                processed_list = []
+                for item in value:
+                    if hasattr(item, "__dict__"):
+                        # Recursively convert nested objects to dict
+                        processed_list.append(Parser.to_dict_from_class(item))
+                    else:
+                        processed_list.append(item)
+                result[attr] = processed_list
+            # Handle nested objects
             elif hasattr(value, "__dict__"):
                 result[attr] = Parser.to_dict_from_class(value)
             else:
