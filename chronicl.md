@@ -51,6 +51,12 @@
 
 
 ## JOURNAL
+@malkin0xb8 12.12.25
+- Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.
+- Updated some tests to reflect the changes in the Parser.
+- Fixed some issues with OCITable parsing in the Parser.
+- OCITable when returned as a class is actually a dictionary inside the response object, this will need changing in future, as it is incorrect.
+- to_xml() method in Parser was updated to handle OCITable col and row correctly.
 
 @Jordan-Prescott 09.12.25
 - Added bulk create for enterprise and service provider admins
