@@ -170,3 +170,6 @@ def test_parser_large_nested_class_to_xml():
 
     xml_output = Parser.to_xml_from_class(command)
     assert "<command xmlns=\"\" xmlns:C=\"http://www.w3.org/2001/XMLSchema-instance\" C:type=\"GroupAutoAttendantAddInstanceRequest20\"><serviceProviderId>TestingNested</serviceProviderId><groupId>TestGroup</groupId><serviceUserId>AutoAttendant1</serviceUserId><serviceInstanceProfile><name>NestedProfile</name><callingLineIdLastName>Last</callingLineIdLastName><callingLineIdFirstName>First</callingLineIdFirstName></serviceInstanceProfile><firstDigitTimeoutSeconds>1</firstDigitTimeoutSeconds><enableVideo>false</enableVideo><extensionDialingScope>Group</extensionDialingScope><nameDialingScope>Group</nameDialingScope><businessHoursMenu><announcementSelection>Default</announcementSelection><enableFirstMenuLevelExtensionDialing>false</enableFirstMenuLevelExtensionDialing><keyConfiguration><key>0</key><entry><action>TransferToExtension</action><audioFile><name>File1</name><mediaFileType>wav</mediaFileType><level>Group</level></audioFile></entry></keyConfiguration><keyConfiguration><key>1</key><entry><action>TransferToExtension</action><audioFile><name>File2</name><mediaFileType>wav</mediaFileType><level>Group</level></audioFile></entry></keyConfiguration></businessHoursMenu></command>" in xml_output
+
+def test_parser_oci_table():
+    

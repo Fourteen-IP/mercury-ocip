@@ -88,6 +88,33 @@ class Parser:
                 else:
                     return d
 
+            # Check if this is a table structure (list of dicts with consistent keys)
+            if isinstance(value, list) and value and isinstance(value[0], dict):
+                # Check if all items have the same keys (table-like structure)
+                first_keys = set(value[0].keys())
+                is_table = all(
+                    set(item.keys()) == first_keys
+                    for item in value
+                    if isinstance(item, dict)
+                )
+
+                if is_table and key.endswith("Table"):
+                    # This is a table structure
+                    table_dict: Dict[str, Any] = {}
+
+                    # Add column headings (from dict keys)
+                    table_dict["colHeading"] = list(first_keys)
+
+                    # Add rows
+                    rows = []
+                    for item in value:
+                        cols = [str(item.get(k, "")) for k in first_keys]
+                        rows.append({"col": cols})
+                    table_dict["row"] = rows
+
+                    root_content[key] = table_dict
+                    continue
+
             if isinstance(value, list):
                 if not value:  # empty list
                     continue

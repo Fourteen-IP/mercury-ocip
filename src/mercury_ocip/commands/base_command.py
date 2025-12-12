@@ -123,6 +123,9 @@ class OCITableRow:
 
 
 class OCITable:
+    col_heading: list[str]
+    row: list[OCITableRow]
+
     def __new__(cls, col_heading, row):
         # Build table and return directly, skipping instance creation
         normalised_headings = [to_snake_case(h) for h in col_heading]
