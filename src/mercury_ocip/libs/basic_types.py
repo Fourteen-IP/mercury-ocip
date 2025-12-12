@@ -12,7 +12,5 @@ type DisconnectResult = None
 
 # Used In Parser For XMLToDict / ClassToDict Conversions
 type XMLDictResult = Union[
-    Dict[str, Union[str, "XMLDictResult", List["XMLDictResult"]]], 
-    str,
-    List[Dict[str, Union[str, "XMLDictResult", List["XMLDictResult"]]]]
+    Dict[str, Union[str, "XMLDictResult", List["XMLDictResult"]]], str
 ]
