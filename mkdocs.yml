@@ -1,12 +1,12 @@
 site_name: Mercury
 site_description: A Python SDK for interacting with BroadWorks OCIP API's (SOAP/TCP).
 
-site_url: "https://fourteen-ip.github.io/mercury-ocip/"
+site_url: "https://mercury-docs.14ip.net/"
 repo_url: "https://github.com/fourteen-ip/mercury-ocip"
 repo_name: "fourteen-ip/mercury-ocip"
 dev_addr: 0.0.0.0:8000
 extra_css:
-  - styles/extra.css
+- styles/extra.css
 
 theme:
   name: material
@@ -14,93 +14,93 @@ theme:
   favicon: assets/favicon.ico
 
   palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: "custom"
-      accent: "custom"
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: "custom"
+    accent: "custom"
+    toggle:
+      icon: material/brightness-4
+      name: Switch to light mode
 
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: "custom"
-      accent: "custom"
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: "custom"
+    accent: "custom"
+    toggle:
+      icon: material/brightness-7
+      name: Switch to dark mode
 
   font:
     text: "Inter"
     code: "JetBrains Mono"
 
   features:
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.top
-    - toc.integrate
-    - header.autohide
-    - content.code.copy
-    - content.code.annotate
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - toc.integrate
+  - header.autohide
+  - content.code.copy
+  - content.code.annotate
 
 nav:
-  - Overview: index.md
-  - Client:
-      - Client: client/client.md
-      - Async Client: client/async-client.md
-  - Commands Reference: commands/
-  - Agent:
-      - Agent: agent/index.md
-      - Bulk Operations:
-          - Create Auto Attendant: agent/bulk-operations/create-auto-attendant.md
-          - Create Call Centers: agent/bulk-operations/create-call-centers.md
-          - Create Call Pickup Groups: agent/bulk-operations/create-call-pickup-groups.md
-          - Create Devices: agent/bulk-operations/create-devices.md
-          - Create Group Admins: agent/bulk-operations/create-group-admins.md
-          - Create Hunt Groups: agent/bulk-operations/create-hunt-groups.md
-          - Create Users: agent/bulk-operations/create-users.md
-          - Modify Call Center Agent List: agent/bulk-operations/modify-call-center-agent-list.md
-          - Modify Group Admin Policy: agent/bulk-operations/modify-group-admin-policy.md
-      - Automations:
-          - Find Alias: agent/automations/find-alias.md
-          - Group Audit: agent/automations/group-audit.md
-  - Developer:
-      - Bulk Operations:
-          - Bulk Operations: developer/bulk-operations/index.md
-          - Adding Bulk Operations: developer/bulk-operations/adding-bulk-operations.md
-          - Bulk Operations Reference: developer/bulk-operations/bulk-operations-reference.md
-          - Bulk Operations Overview: developer/bulk-operations/bulk-operations-overview.md
-      - Plugins: developer/plugins/index.md
-  - CLI: https://mercury-cli-docs.14ip.net/
+- Overview: index.md
+- Client:
+  - Client: client/client.md
+  - Async Client: client/async-client.md
+- Commands Reference: commands/
+- Agent:
+  - Agent: agent/index.md
+  - Bulk Operations:
+    - Create Auto Attendant: agent/bulk-operations/create-auto-attendant.md
+    - Create Call Centers: agent/bulk-operations/create-call-centers.md
+    - Create Call Pickup Groups: agent/bulk-operations/create-call-pickup-groups.md
+    - Create Devices: agent/bulk-operations/create-devices.md
+    - Create Group Admins: agent/bulk-operations/create-group-admins.md
+    - Create Hunt Groups: agent/bulk-operations/create-hunt-groups.md
+    - Create Users: agent/bulk-operations/create-users.md
+    - Modify Call Center Agent List: agent/bulk-operations/modify-call-center-agent-list.md
+    - Modify Group Admin Policy: agent/bulk-operations/modify-group-admin-policy.md
+  - Automations:
+    - Find Alias: agent/automations/find-alias.md
+    - Group Audit: agent/automations/group-audit.md
+- Developer:
+  - Bulk Operations:
+    - Bulk Operations: developer/bulk-operations/index.md
+    - Adding Bulk Operations: developer/bulk-operations/adding-bulk-operations.md
+    - Bulk Operations Reference: developer/bulk-operations/bulk-operations-reference.md
+    - Bulk Operations Overview: developer/bulk-operations/bulk-operations-overview.md
+  - Plugins: developer/plugins/index.md
+- CLI: https://mercury-cli-docs.14ip.net/
 
 markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-      use_pygments: true
-  - pymdownx.inlinehilite
-  - pymdownx.superfences
-  - pymdownx.magiclink
-  - pymdownx.snippets
-  - admonition
-  - pymdownx.details
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+    use_pygments: true
+- pymdownx.inlinehilite
+- pymdownx.superfences
+- pymdownx.magiclink
+- pymdownx.snippets
+- admonition
+- pymdownx.details
 
 plugins:
-  - search
-  - gen-files:
-      scripts:
-        - scripts/generate_command_docs.py
-  - literate-nav
-  - minify_html
-  - mkdocstrings:
-      handlers:
-        python:
-          paths: ["src"]
-          options:
-            show_source: true
-            show_signature: true
-            docstring_style: google
-            selection:
-              filters:
-                - "!^_"
+- search
+- gen-files:
+    scripts:
+    - scripts/generate_command_docs.py
+- literate-nav
+- minify_html
+- mkdocstrings:
+    handlers:
+      python:
+        paths: [ "src" ]
+        options:
+          show_source: true
+          show_signature: true
+          docstring_style: google
+          selection:
+            filters:
+            - "!^_"

@@ -161,16 +161,25 @@ for node in tree.body:
 
                 doc_string = ast.get_docstring(node)
 
-                if responses := re.findall(
-                    r"\b([A-Za-z]+(?:[A-Z][a-z]+)*Response(?:\d+V?\d*)?)\b",
-                    doc_string,
-                ):  # type: ignore
+                if doc_string and (
+                    responses := re.findall(
+                        r"\b([A-Za-z]+(?:[A-Z][a-z]+)*Response(?:\d+V?\d*)?)\b",
+                        doc_string,
+                    )
+                ):
                     for response in responses:
                         resolved = (
                             response
                             if response in ("SuccessResponse", "ErrorResponse")
                             else highest_version_for(response, defined_class_names)
                         )
+
+                        if not resolved:
+                            print(
+                                f"Warning: Could not resolve response type '{response}' for request '{class_name}'"
+                            )
+                            continue
+
                         if resolved in ("SuccessResponse", "ErrorResponse"):
                             response_section += dedent(f"""
                             ::: mercury_ocip.commands.base_command.{resolved}

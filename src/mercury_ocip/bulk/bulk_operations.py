@@ -6,7 +6,7 @@ from mercury_ocip.bulk.hunt_group import HuntGroupBulkOperations
 from mercury_ocip.bulk.auto_attendant import AutoAttendantBulkOperations
 from mercury_ocip.bulk.device import DeviceBulkOperations
 from mercury_ocip.bulk.user import UserBulkOperations
-from mercury_ocip.bulk.group_admin import GroupAdminBulkOperations
+from mercury_ocip.bulk.administrator import AdminBulkOperations
 
 
 class BulkOperations:
@@ -28,7 +28,7 @@ class BulkOperations:
         self.auto_attendant = AutoAttendantBulkOperations(client)
         self.devices = DeviceBulkOperations(client)
         self.users = UserBulkOperations(client)
-        self.group_admin = GroupAdminBulkOperations(client)
+        self.administrator = AdminBulkOperations(client)
 
     # Call Pickup
     def create_call_pickup_from_csv(
@@ -110,20 +110,42 @@ class BulkOperations:
     def create_group_admin_from_csv(
         self, csv_path: str, dry_run: bool = False
     ) -> List[Dict[str, Any]]:
-        return self.group_admin.execute_from_csv(csv_path, dry_run)
+        return self.administrator.execute_from_csv(csv_path, dry_run)
 
     def create_group_admin_from_data(
         self, group_admin_data: List[Dict[str, Any]], dry_run: bool = False
     ) -> List[Dict[str, Any]]:
-        return self.group_admin.execute_from_data(group_admin_data, dry_run)
+        return self.administrator.execute_from_data(group_admin_data, dry_run)
 
     # Group Admin Modify Policy
     def modify_group_admin_policy_from_csv(
         self, csv_path: str, dry_run: bool = False
     ) -> List[Dict[str, Any]]:
-        return self.group_admin.execute_from_csv(csv_path, dry_run)
+        return self.administrator.execute_from_csv(csv_path, dry_run)
 
     def modify_group_admin_policy_from_data(
         self, group_admin_policy_data: List[Dict[str, Any]], dry_run: bool = False
     ) -> List[Dict[str, Any]]:
-        return self.group_admin.execute_from_data(group_admin_policy_data, dry_run)
+        return self.administrator.execute_from_data(group_admin_policy_data, dry_run)
+
+    # Service Provider Admin
+    def create_service_provider_admin_from_csv(
+        self, csv_path: str, dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_csv(csv_path, dry_run)
+
+    def create_service_provider_from_data(
+        self, group_admin_data: List[Dict[str, Any]], dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_data(group_admin_data, dry_run)
+
+    # Service Provider Admin Modify Policy
+    def modify_service_provider_admin_policy_from_csv(
+        self, csv_path: str, dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_csv(csv_path, dry_run)
+
+    def modify_service_provider_admin_policy_from_data(
+        self, group_admin_policy_data: List[Dict[str, Any]], dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_data(group_admin_policy_data, dry_run)
