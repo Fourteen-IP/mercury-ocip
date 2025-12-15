@@ -1,5 +1,6 @@
 from typing import cast, Optional, Dict
 from dataclasses import dataclass, field
+import time
 
 from mercury_ocip.automate.base_automation import BaseAutomation
 from mercury_ocip.client import BaseClient
@@ -13,11 +14,14 @@ from mercury_ocip.commands.commands import (
     UserCallForwardingSelectiveGetRequest16,
     UserCallForwardingSelectiveGetResponse16,
     UserDoNotDisturbGetRequest,
-    UserAccessDeviceDeviceActivationGetListRequest,
-    UserAccessDeviceDeviceActivationGetListResponse,
+    UserGetRegistrationListRequest,
+    UserGetRegistrationListResponse,
+    UserCallCenterGetRequest23,
+    UserCallCenterGetResponse23,
 )
 from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import ErrorResponse, SuccessResponse, OCITable
+from mercury_ocip.utils.defines import to_snake_case
 
 
 @dataclass(slots=True)
@@ -27,6 +31,7 @@ class UserDigestRequest:
 
 @dataclass(slots=True)
 class ForwardingDetails:
+    variant: str
     is_active: bool
     forward_to_phone_number: Optional[str] = None
     selective_criteria: Optional[OCITable] = None
@@ -35,9 +40,8 @@ class ForwardingDetails:
 @dataclass(slots=True)
 class DeviceDetails:
     device_name: str
-    device_type: str
+    endpoint_type: str
     line_port: str
-    activation_status: str
 
 
 @dataclass(slots=True)
@@ -45,14 +49,16 @@ class UserDetailsResult:
     user_info: Optional[UserGetResponse23V2] = None
     forwards: list[ForwardingDetails] = field(default_factory=list)
     dnd_status: Optional[bool] = None
-    regstered_devices: Dict[str, str] = field(default_factory=dict)
+    registered_devices: list[DeviceDetails] = field(default_factory=list)
 
 
 @dataclass(slots=True)
 class CallCentreDetails:
     call_center_id: str
     call_center_name: str
-    agent_level: str
+    call_center_type: str
+    agent_acd_state: str | None = None
+    agent_cc_available: str | None = None
 
 
 @dataclass(slots=True)
@@ -71,7 +77,7 @@ class CallPickupGroupDetails:
 @dataclass(slots=True)
 class UserDigestResult:
     user_details: Optional[UserDetailsResult] = None
-    call_center_membership: Optional[CallCentreDetails] = None
+    call_center_membership: Optional[list[CallCentreDetails]] = None
     hunt_group_membership: Optional[HuntGroupDetails] = None
     call_pickup_group_membership: Optional[CallPickupGroupDetails] = None
 
@@ -82,6 +88,7 @@ class UserDigest(BaseAutomation):
     def __init__(self, client: BaseClient) -> None:
         super().__init__(client)
         self.forwarding_details = []
+        self.user_details: Optional[UserDetailsResult] = None
 
     def _run(self, request: UserDigestRequest) -> UserDigestResult:
         """
@@ -95,8 +102,13 @@ class UserDigest(BaseAutomation):
         Returns:
             UserDigestResult containing the summarized user information.
         """
+        self.user_details = self._fetch_user_details(user_id=request.user_id) # We need to use this for service_provider_id/group_id later
+
         return UserDigestResult(
-            user_details=self._fetch_user_details(user_id=request.user_id)
+            user_details=self.user_details,
+            call_center_membership=self._fetch_call_center_membership(
+                user_id=request.user_id
+            ),
         )
 
     def _fetch_user_details(self, user_id: str) -> UserDetailsResult:
@@ -132,10 +144,7 @@ class UserDigest(BaseAutomation):
             dnd_status=dnd_response.is_active
             if not isinstance(dnd_response, (ErrorResponse, SuccessResponse))
             else None,
-            regstered_devices={
-                device.device_name: device.activation_status
-                for device in device_details
-            },
+            registered_devices=device_details,
         )
 
     def _fetch_forwarding_details(self, user_id: str) -> list[ForwardingDetails]:
@@ -161,11 +170,19 @@ class UserDigest(BaseAutomation):
             ):
                 continue
 
+            forwarding_variant = to_snake_case(
+                type(forwarding_request)
+                .__name__.removeprefix("UserCallForwarding")
+                .removesuffix("13mp16")
+                .removesuffix("GetRequest")
+            )
+
             if isinstance(
                 forwarding_response, UserCallForwardingSelectiveGetResponse16
             ):
                 self.forwarding_details.append(
                     ForwardingDetails(
+                        variant="Selective",
                         is_active=forwarding_response.is_active,
                         selective_criteria=forwarding_response.criteria_table,
                     )
@@ -173,6 +190,7 @@ class UserDigest(BaseAutomation):
             else:
                 self.forwarding_details.append(
                     ForwardingDetails(
+                        variant=forwarding_variant,
                         is_active=forwarding_response.is_active,
                         forward_to_phone_number=forwarding_response.forward_to_phone_number,
                     )
@@ -183,32 +201,88 @@ class UserDigest(BaseAutomation):
     def _fetch_device_details(self, user_id: str) -> list[DeviceDetails]:
         """Fetch registered device details for the user."""
 
-        device_details: OCIResponse[UserAccessDeviceDeviceActivationGetListResponse] = (
-            self._dispatch(
-                UserAccessDeviceDeviceActivationGetListRequest(user_id=user_id)
-            )
-        )
-
         device_details_list = []
+
+        try:
+            device_details: OCIResponse[UserGetRegistrationListResponse] = (
+                self._dispatch(UserGetRegistrationListRequest(user_id=user_id))
+            )
+
+        except Exception as e:
+            print(f"Error fetching device details for {user_id}: {e}")
+            return []
 
         if isinstance(device_details, ErrorResponse) or isinstance(
             device_details, SuccessResponse
         ):
             return device_details_list
 
-        for device in device_details.access_device_table.to_dict():
+        device_table = device_details.registration_table.to_dict()
+
+        if len(device_table) == 0:
+            return device_details_list
+
+        for device in device_table:
             device_name = device.get("device_name", "Unknown Device")
-            device_type = device.get("device_type", "Unknown Type")
-            line_port = device.get("line_port", "Unknown Line Port")
-            activation_status = device.get("activation_status", "Unknown Status")
+            endpoint_type = device.get("endpoint_type", "Unknown Type")
+            line_port = device.get("line/port", "No Active Line Port")
 
             device_details_list.append(
                 DeviceDetails(
                     device_name=device_name,
-                    device_type=device_type,
+                    endpoint_type=endpoint_type,
                     line_port=line_port,
-                    activation_status=activation_status,
                 )
             )
 
         return device_details_list
+
+    def _fetch_call_center_membership(self, user_id: str) -> list[CallCentreDetails]:
+        """Fetch call center membership details for the user."""
+
+        call_center_list = []
+
+        try:
+            cc_response: OCIResponse[UserCallCenterGetResponse23] = self._dispatch(
+                UserCallCenterGetRequest23(user_id=user_id)
+            )
+
+            if isinstance(cc_response, ErrorResponse) or isinstance(
+                cc_response, SuccessResponse
+            ):
+                return []
+
+            cc_table = cc_response.call_center_table.to_dict()
+
+            if len(cc_table) == 0:
+                return []
+
+            for call_center in cc_table:
+                call_center_id = call_center.get("service_user_id", "Unknown ID")
+                call_center_extension = call_center.get(
+                    "extension", "Unknown Extension"
+                )
+                call_center_type = call_center.get("type", "Unknown Type")
+                agent_available_level = call_center.get("available", "")
+
+                call_center_list.append(
+                    CallCentreDetails(
+                        call_center_id=call_center_id,
+                        call_center_name=call_center_extension,
+                        call_center_type=call_center_type,
+                        agent_cc_available=agent_available_level,
+                        agent_acd_state=cc_response.agent_acd_state,
+                    )
+                )
+
+        except Exception as e:
+            print(f"Error fetching call center membership for {user_id}: {e}")
+            return []
+
+        return call_center_list
+
+    def _fetch_hunt_group_membership(self, user_id: str) -> list[HuntGroupDetails]:
+        """Fetch hunt group membership details for the user."""
+        
+        try:
+
