@@ -93,7 +93,7 @@ class SharedOperations:
 
     def fetch_hunt_group_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupHuntGroupGetInstanceListResponse]]:
         """Get all hunt groups in a specific group.
 
         This differs to group_hunt_groups as the response is a list of detailed objects including all

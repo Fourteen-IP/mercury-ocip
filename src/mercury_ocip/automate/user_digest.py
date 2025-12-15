@@ -18,6 +18,10 @@ from mercury_ocip.commands.commands import (
     UserGetRegistrationListResponse,
     UserCallCenterGetRequest23,
     UserCallCenterGetResponse23,
+    GroupHuntGroupGetInstancePagedSortedListRequest,
+    GroupHuntGroupGetInstancePagedSortedListResponse,
+    GroupHuntGroupGetInstanceRequest20,
+    GroupHuntGroupGetInstanceResponse20,
 )
 from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import ErrorResponse, SuccessResponse, OCITable
@@ -65,7 +69,8 @@ class CallCentreDetails:
 class HuntGroupDetails:
     hunt_group_id: str
     hunt_group_name: str
-    extension: str
+    extension: str | None = None
+    hunt_group_busy: bool = False
 
 
 @dataclass(slots=True)
@@ -78,8 +83,8 @@ class CallPickupGroupDetails:
 class UserDigestResult:
     user_details: Optional[UserDetailsResult] = None
     call_center_membership: Optional[list[CallCentreDetails]] = None
-    hunt_group_membership: Optional[HuntGroupDetails] = None
-    call_pickup_group_membership: Optional[CallPickupGroupDetails] = None
+    hunt_group_membership: Optional[list[HuntGroupDetails]] = None
+    call_pickup_group_membership: Optional[list[CallPickupGroupDetails]] = None
 
 
 class UserDigest(BaseAutomation):
@@ -102,11 +107,16 @@ class UserDigest(BaseAutomation):
         Returns:
             UserDigestResult containing the summarized user information.
         """
-        self.user_details = self._fetch_user_details(user_id=request.user_id) # We need to use this for service_provider_id/group_id later
+        self.user_details = self._fetch_user_details(
+            user_id=request.user_id
+        )  # We need to use this for service_provider_id/group_id later
 
         return UserDigestResult(
             user_details=self.user_details,
             call_center_membership=self._fetch_call_center_membership(
+                user_id=request.user_id
+            ),
+            hunt_group_membership=self._fetch_hunt_group_membership(
                 user_id=request.user_id
             ),
         )
@@ -283,6 +293,55 @@ class UserDigest(BaseAutomation):
 
     def _fetch_hunt_group_membership(self, user_id: str) -> list[HuntGroupDetails]:
         """Fetch hunt group membership details for the user."""
-        
-        try:
 
+        try:
+            if not self.user_details or not self.user_details.user_info:
+                raise ValueError("User details not loaded.")
+
+            service_provider_id = self.user_details.user_info.service_provider_id
+            group_id = self.user_details.user_info.group_id
+
+            hunt_group_response = self.shared_ops.fetch_hunt_group_details(
+                service_provider_id=service_provider_id, group_id=group_id
+            )
+
+            hunt_group_list = []
+
+            for hunt_group in hunt_group_response:
+                hunt_group_id = hunt_group.get("service_user_id", "")
+
+                try:
+                    detailed_hunt_group: OCIResponse[
+                        GroupHuntGroupGetInstanceResponse20
+                    ] = self._dispatch(
+                        GroupHuntGroupGetInstanceRequest20(
+                            service_user_id=hunt_group_id,
+                        )
+                    )
+
+                    if isinstance(detailed_hunt_group, ErrorResponse) or isinstance(
+                        detailed_hunt_group, SuccessResponse
+                    ):
+                        continue
+
+                    for agent in detailed_hunt_group.agent_user_table.to_dict():
+                        if agent.get("user_id") == user_id:
+                            hunt_group_list.append(
+                                HuntGroupDetails(
+                                    hunt_group_id=hunt_group_id,
+                                    hunt_group_name=detailed_hunt_group.service_instance_profile.name,
+                                    extension=detailed_hunt_group.service_instance_profile.extension,
+                                    hunt_group_busy=detailed_hunt_group.enable_group_busy,
+                                )
+                            )
+                except Exception as e:
+                    print(
+                        f"Error fetching detailed hunt group {hunt_group_id} for {user_id}: {e}"
+                    )
+                    continue
+
+        except Exception as e:
+            print(f"Error fetching hunt group membership for {user_id}: {e}")
+            return []
+
+        return hunt_group_list
