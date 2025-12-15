@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, TypeVar, Generic
 from mercury_ocip.commands.base_command import (
     ErrorResponse,
     SuccessResponse,
@@ -22,8 +22,10 @@ __all__ = [
     "CommandResult",
 ]
 
-# Response types from OCI
-type OCIResponse = Union[ErrorResponse, SuccessResponse, OCIDataResponse]
+T = TypeVar("T", bound=OCIDataResponse)
+
+# Generic response type
+type OCIResponse[T] = Union[ErrorResponse, SuccessResponse, T]
 
 # What client.command() accepts and returns
 type CommandInput = OCICommand

@@ -1,6 +1,6 @@
 from typing import Any
 from typing import get_type_hints, Optional
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, dataclass
 from mercury_ocip.utils.parser import Parser, AsyncParser
 from mercury_ocip.utils.defines import to_snake_case
 
@@ -90,6 +90,7 @@ class SuccessResponse(OCIResponse):
     pass
 
 
+@dataclass
 class OCITableRow:
     col: list[str]
 
@@ -97,42 +98,22 @@ class OCITableRow:
         self.col = col
 
 
-# class OCITable:
-#    col_heading: list[str]
-#    row: list[OCITableRow]
-#
-#    def __init__(self, col_heading, row):
-#        self.col_heading = col_heading
-#        self.row = row
-#
-#        return self.entries()
-#
-#    def entries(self) -> list[dict]:
-#        """Converts the entire table to a list of dictionaries."""
-#        dict_list = []
-#        for row in self.row:
-#            row_dict = {
-#                self.col_heading[i]: row.col[i]
-#                for i in range(min(len(self.col_heading), len(row.col)))
-#            }
-#            dict_list.append(row_dict)
-#        return dict_list
-
-
+@dataclass
 class OCITable:
     col_heading: list[str]
     row: list[OCITableRow]
 
-    def __new__(cls, col_heading, row):
-        # Build table and return directly, skipping instance creation
-        normalised_headings = [to_snake_case(h) for h in col_heading]
+    def __init__(self, col_heading, row=None):
+        self.col_heading = col_heading
+        self.row = row if row is not None else []
 
+    def to_dict(self):
         return [
             {
-                normalised_headings[i]: r.col[i]
-                for i in range(min(len(col_heading), len(r.col)))
+                to_snake_case(self.col_heading[i]): row.col[i]
+                for i in range(len(self.col_heading))
             }
-            for r in row
+            for row in self.row
         ]
 
 
