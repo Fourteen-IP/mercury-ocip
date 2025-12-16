@@ -1,6 +1,5 @@
-from typing import cast, Optional, Dict
+from typing import cast, Optional, TypeVar, Union
 from dataclasses import dataclass, field
-import time
 
 from mercury_ocip.automate.base_automation import BaseAutomation
 from mercury_ocip.client import BaseClient
@@ -18,14 +17,12 @@ from mercury_ocip.commands.commands import (
     UserGetRegistrationListResponse,
     UserCallCenterGetRequest23,
     UserCallCenterGetResponse23,
-    GroupHuntGroupGetInstancePagedSortedListRequest,
-    GroupHuntGroupGetInstancePagedSortedListResponse,
-    GroupHuntGroupGetInstanceRequest20,
-    GroupHuntGroupGetInstanceResponse20,
 )
 from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import ErrorResponse, SuccessResponse, OCITable
 from mercury_ocip.utils.defines import to_snake_case
+
+T = TypeVar("T")
 
 
 @dataclass(slots=True)
@@ -269,8 +266,8 @@ class UserDigest(BaseAutomation):
 
             for call_center in cc_table:
                 call_center_id = call_center.get("service_user_id", "Unknown ID")
-                call_center_extension = call_center.get(
-                    "extension", "Unknown Extension"
+                call_center_name = call_center.get("service_instance_profile", {}).get(
+                    "name", "Unknown Name"
                 )
                 call_center_type = call_center.get("type", "Unknown Type")
                 agent_available_level = call_center.get("available", "")
@@ -278,7 +275,7 @@ class UserDigest(BaseAutomation):
                 call_center_list.append(
                     CallCentreDetails(
                         call_center_id=call_center_id,
-                        call_center_name=call_center_extension,
+                        call_center_name=call_center_name,
                         call_center_type=call_center_type,
                         agent_cc_available=agent_available_level,
                         agent_acd_state=cc_response.agent_acd_state,
@@ -308,40 +305,29 @@ class UserDigest(BaseAutomation):
             hunt_group_list = []
 
             for hunt_group in hunt_group_response:
+                hunt_group = self._clean_response(hunt_group)
+
                 hunt_group_id = hunt_group.get("service_user_id", "")
 
-                try:
-                    detailed_hunt_group: OCIResponse[
-                        GroupHuntGroupGetInstanceResponse20
-                    ] = self._dispatch(
-                        GroupHuntGroupGetInstanceRequest20(
-                            service_user_id=hunt_group_id,
-                        )
-                    )
-
-                    if isinstance(detailed_hunt_group, ErrorResponse) or isinstance(
-                        detailed_hunt_group, SuccessResponse
-                    ):
-                        continue
-
-                    for agent in detailed_hunt_group.agent_user_table.to_dict():
-                        if agent.get("user_id") == user_id:
-                            hunt_group_list.append(
-                                HuntGroupDetails(
-                                    hunt_group_id=hunt_group_id,
-                                    hunt_group_name=detailed_hunt_group.service_instance_profile.name,
-                                    extension=detailed_hunt_group.service_instance_profile.extension,
-                                    hunt_group_busy=detailed_hunt_group.enable_group_busy,
-                                )
+                for agent in detailed_hunt_group.agent_user_table.to_dict():
+                    if agent.get("user_id") == user_id:
+                        hunt_group_list.append(
+                            HuntGroupDetails(
+                                hunt_group_id=hunt_group_id,
+                                hunt_group_name=detailed_hunt_group.service_instance_profile.name,
+                                extension=detailed_hunt_group.service_instance_profile.extension,
+                                hunt_group_busy=detailed_hunt_group.enable_group_busy,
                             )
-                except Exception as e:
-                    print(
-                        f"Error fetching detailed hunt group {hunt_group_id} for {user_id}: {e}"
-                    )
-                    continue
-
+                        )
         except Exception as e:
             print(f"Error fetching hunt group membership for {user_id}: {e}")
             return []
-
         return hunt_group_list
+
+    def _clean_response(self, response: OCIResponse[T]) -> T:
+        """Cleans the response object by removing non relevant potential types."""
+        if isinstance(response, ErrorResponse):
+            raise ValueError(f"Error in response: {response.summary}")
+        if isinstance(response, SuccessResponse):
+            raise ValueError("Received a success response without data.")
+        return response

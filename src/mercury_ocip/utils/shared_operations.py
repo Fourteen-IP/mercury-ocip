@@ -46,7 +46,7 @@ class SharedOperations:
 
     def fetch_user_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[UserGetListInGroupResponse]]:
         """Get all users in a specific group.
 
         This differs to group_users as the response is a list of detailed objects including all
@@ -140,7 +140,7 @@ class SharedOperations:
 
     def fetch_call_center_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupCallCenterGetInstanceListResponse]]:
         """Get all call centers in a specific group.
 
         This differs to group_call_centers as the response is a list of detailed objects including all
@@ -187,7 +187,7 @@ class SharedOperations:
 
     def fetch_auto_attendant_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupAutoAttendantGetInstanceListResponse]]:
         """Get all auto attendants in a specific group.
 
         This differs to group_auto_attendants as the response is a list of detailed objects including all
