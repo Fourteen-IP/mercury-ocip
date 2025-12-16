@@ -1,4 +1,4 @@
-from typing import Union, TypeVar, Generic
+from typing import Union, TypeVar
 from mercury_ocip.commands.base_command import (
     ErrorResponse,
     SuccessResponse,
