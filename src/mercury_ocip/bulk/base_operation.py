@@ -145,6 +145,7 @@ class BaseBulkOperations(ABC):
             # Skip None values and empty strings
             if value is None or (isinstance(value, str) and is_none(value)):
                 continue
+            value = value.strip()
 
             # Type conversions
             if isinstance(value, str) and is_boolean(value):
