@@ -96,6 +96,9 @@ class UserDigest(BaseAutomation):
     def __init__(self, client: BaseClient) -> None:
         super().__init__(client)
         self.user_details: Optional[UserDetailsResult] = None
+        self.call_center_membership: Optional[list[CallCentreDetails]] = None
+        self.hunt_group_membership: Optional[list[HuntGroupDetails]] = None
+        self.call_pickup_group_membership: Optional[CallPickupGroupDetails] = None
 
     def _run(self, request: UserDigestRequest) -> UserDigestResult:
         """
@@ -113,17 +116,23 @@ class UserDigest(BaseAutomation):
             user_id=request.user_id
         )  # We need to use this for service_provider_id/group_id later
 
+        self.call_center_membership = self._fetch_call_center_membership(
+            user_id=request.user_id
+        )
+
+        self.hunt_group_membership = self._fetch_hunt_group_membership(
+            user_id=request.user_id
+        )
+
+        self.call_pickup_group_membership = self._fetch_pickup_group_details(
+            user_id=request.user_id
+        )
+
         return UserDigestResult(
             user_details=self.user_details,
-            call_center_membership=self._fetch_call_center_membership(
-                user_id=request.user_id
-            ),
-            hunt_group_membership=self._fetch_hunt_group_membership(
-                user_id=request.user_id
-            ),
-            call_pickup_group_membership=self._fetch_pickup_group_details(
-                user_id=request.user_id
-            ),
+            call_center_membership=self.call_center_membership,
+            hunt_group_membership=self.hunt_group_membership,
+            call_pickup_group_membership=self.call_pickup_group_membership,
         )
 
     def _fetch_user_details(self, user_id: str) -> UserDetailsResult:
@@ -183,7 +192,8 @@ class UserDigest(BaseAutomation):
                 .__name__.removeprefix("UserCallForwarding")
                 .removesuffix("13mp16")
                 .removesuffix("GetRequest")
-            )
+            )  # UserCallForwardingAlwaysGetRequest -> always
+            # UserCallForwardingNoAnswerGetRequest13mp16 -> no_answer
 
             if isinstance(
                 forwarding_response, UserCallForwardingSelectiveGetResponse16

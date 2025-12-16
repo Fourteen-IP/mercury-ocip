@@ -129,9 +129,6 @@ class AliasFinder(BaseAutomation[AliasRequest, AliasResult]):
 
         sip = getattr(entity, "service_instance_profile", None)
 
-        # if hasattr(sip, "extension") and getattr(sip, "extension") == "141415":  # type: ignore
-        #     breakpoint()
-
         if hasattr(entity, "alias"):
             raw = getattr(entity, "alias")
         else:
@@ -140,7 +137,7 @@ class AliasFinder(BaseAutomation[AliasRequest, AliasResult]):
                 sip.get("alias")
                 if isinstance(sip, Mapping)
                 else getattr(sip, "alias", None)
-            )
+            )  # SIP can be dict or object due to Parser changes
 
         if raw is None:
             return []
