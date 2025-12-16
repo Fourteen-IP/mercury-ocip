@@ -64,7 +64,6 @@ class UserDetailsResult:
 @dataclass(slots=True)
 class CallCentreDetails:
     call_center_id: str
-    call_center_name: str
     call_center_type: str
     agent_acd_state: str | None = None
     agent_cc_available: str | None = None
@@ -259,7 +258,6 @@ class UserDigest(BaseAutomation):
                 call_center_list.append(
                     CallCentreDetails(
                         call_center_id=call_center.get("service_user_id", "Unknown ID"),
-                        call_center_name=call_center.get("name", "Unknown Name"),
                         call_center_type=call_center.get("type", "Unknown Type"),
                         agent_cc_available=call_center.get("available", ""),
                         agent_acd_state=cc_response.agent_acd_state,
