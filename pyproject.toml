@@ -93,7 +93,7 @@ docs = [
 ]
 
 [tool.pyrefly]
-project-excludes = ["tests/", "sandbox.py", "*/commands.py", "docs/"]
+project-excludes = ["tests/", "sandbox.py", "*/commands.py", "docs/", "scripts/"]
 
 [[tool.uv.index]]
 name = "pypi"
