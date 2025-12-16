@@ -95,7 +95,6 @@ class UserDigest(BaseAutomation):
 
     def __init__(self, client: BaseClient) -> None:
         super().__init__(client)
-        self.forwarding_details = []
         self.user_details: Optional[UserDetailsResult] = None
 
     def _run(self, request: UserDigestRequest) -> UserDigestResult:
@@ -168,6 +167,8 @@ class UserDigest(BaseAutomation):
             UserCallForwardingSelectiveGetRequest16(user_id=user_id),
         ]
 
+        forwarding_details = []
+
         for forwarding_request in user_forwarding_requests:
             try:
                 forwarding_response = self._dispatch(forwarding_request)
@@ -187,7 +188,7 @@ class UserDigest(BaseAutomation):
             if isinstance(
                 forwarding_response, UserCallForwardingSelectiveGetResponse16
             ):
-                self.forwarding_details.append(
+                forwarding_details.append(
                     ForwardingDetails(
                         variant="Selective",
                         is_active=forwarding_response.is_active,
@@ -195,7 +196,7 @@ class UserDigest(BaseAutomation):
                     )
                 )
             else:
-                self.forwarding_details.append(
+                forwarding_details.append(
                     ForwardingDetails(
                         variant=forwarding_variant,
                         is_active=forwarding_response.is_active,
@@ -203,7 +204,7 @@ class UserDigest(BaseAutomation):
                     )
                 )
 
-        return self.forwarding_details
+        return forwarding_details
 
     def _fetch_device_details(self, user_id: str) -> list[DeviceDetails]:
         """Fetch registered device details for the user."""
