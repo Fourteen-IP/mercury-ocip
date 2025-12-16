@@ -1,4 +1,4 @@
-from typing import cast, Optional, TypeVar, Union
+from typing import cast, Optional, TypeVar
 from dataclasses import dataclass, field
 
 from mercury_ocip.automate.base_automation import BaseAutomation
@@ -13,16 +13,24 @@ from mercury_ocip.commands.commands import (
     UserCallForwardingSelectiveGetRequest16,
     UserCallForwardingSelectiveGetResponse16,
     UserDoNotDisturbGetRequest,
+    UserDoNotDisturbGetResponse,
     UserGetRegistrationListRequest,
     UserGetRegistrationListResponse,
     UserCallCenterGetRequest23,
     UserCallCenterGetResponse23,
+    UserCallPickupGetRequest,
+    UserCallPickupGetResponse,
 )
 from mercury_ocip.libs.types import OCIResponse
-from mercury_ocip.commands.base_command import ErrorResponse, SuccessResponse, OCITable
+from mercury_ocip.commands.base_command import (
+    ErrorResponse,
+    SuccessResponse,
+    OCITable,
+    OCIDataResponse,
+)
 from mercury_ocip.utils.defines import to_snake_case
 
-T = TypeVar("T")
+T = TypeVar("T", bound=OCIDataResponse)
 
 
 @dataclass(slots=True)
@@ -72,7 +80,6 @@ class HuntGroupDetails:
 
 @dataclass(slots=True)
 class CallPickupGroupDetails:
-    call_pickup_group_id: str
     call_pickup_group_name: str
 
 
@@ -81,7 +88,7 @@ class UserDigestResult:
     user_details: Optional[UserDetailsResult] = None
     call_center_membership: Optional[list[CallCentreDetails]] = None
     hunt_group_membership: Optional[list[HuntGroupDetails]] = None
-    call_pickup_group_membership: Optional[list[CallPickupGroupDetails]] = None
+    call_pickup_group_membership: Optional[CallPickupGroupDetails] = None
 
 
 class UserDigest(BaseAutomation):
@@ -116,6 +123,9 @@ class UserDigest(BaseAutomation):
             hunt_group_membership=self._fetch_hunt_group_membership(
                 user_id=request.user_id
             ),
+            call_pickup_group_membership=self._fetch_pickup_group_details(
+                user_id=request.user_id
+            ),
         )
 
     def _fetch_user_details(self, user_id: str) -> UserDetailsResult:
@@ -126,19 +136,15 @@ class UserDigest(BaseAutomation):
                 UserGetRequest23V2(user_id=user_id)
             )
 
-            if isinstance(user_details, ErrorResponse):
-                raise ValueError(
-                    f"Failed to fetch user details for {user_id}: {user_details.summary}"
-                )
+            user_details = self._clean_response(user_details)
 
             forwarding_details = self._fetch_forwarding_details(user_id=user_id)
 
-            dnd_response = self._dispatch(UserDoNotDisturbGetRequest(user_id=user_id))
+            dnd_response: OCIResponse[UserDoNotDisturbGetResponse] = self._dispatch(
+                UserDoNotDisturbGetRequest(user_id=user_id)
+            )
 
-            if isinstance(dnd_response, ErrorResponse):
-                raise ValueError(
-                    f"Failed to fetch DND status for {user_id}: {dnd_response.summary}"
-                )
+            dnd_response = self._clean_response(dnd_response)
 
             device_details = self._fetch_device_details(user_id=user_id)
 
@@ -146,11 +152,9 @@ class UserDigest(BaseAutomation):
             raise ValueError(f"Error fetching user details for {user_id}: {e}")
 
         return UserDetailsResult(
-            user_info=cast(UserGetResponse23V2, user_details),
+            user_info=user_details,
             forwards=forwarding_details,
-            dnd_status=dnd_response.is_active
-            if not isinstance(dnd_response, (ErrorResponse, SuccessResponse))
-            else None,
+            dnd_status=dnd_response.is_active if dnd_response else None,
             registered_devices=device_details,
         )
 
@@ -172,10 +176,7 @@ class UserDigest(BaseAutomation):
                 print(f"Error fetching forwarding details for {user_id}: {e}")
                 continue
 
-            if isinstance(forwarding_response, ErrorResponse) or isinstance(
-                forwarding_response, SuccessResponse
-            ):
-                continue
+            forwarding_response = self._clean_response(forwarding_response)
 
             forwarding_variant = to_snake_case(
                 type(forwarding_request)
@@ -219,10 +220,7 @@ class UserDigest(BaseAutomation):
             print(f"Error fetching device details for {user_id}: {e}")
             return []
 
-        if isinstance(device_details, ErrorResponse) or isinstance(
-            device_details, SuccessResponse
-        ):
-            return device_details_list
+        device_details = self._clean_response(device_details)
 
         device_table = device_details.registration_table.to_dict()
 
@@ -230,15 +228,11 @@ class UserDigest(BaseAutomation):
             return device_details_list
 
         for device in device_table:
-            device_name = device.get("device_name", "Unknown Device")
-            endpoint_type = device.get("endpoint_type", "Unknown Type")
-            line_port = device.get("line/port", "No Active Line Port")
-
             device_details_list.append(
                 DeviceDetails(
-                    device_name=device_name,
-                    endpoint_type=endpoint_type,
-                    line_port=line_port,
+                    device_name=device.get("device_name", "Unknown Device"),
+                    endpoint_type=device.get("endpoint_type", "Unknown Type"),
+                    line_port=device.get("line/port", "No Active Line Port"),
                 )
             )
 
@@ -254,10 +248,7 @@ class UserDigest(BaseAutomation):
                 UserCallCenterGetRequest23(user_id=user_id)
             )
 
-            if isinstance(cc_response, ErrorResponse) or isinstance(
-                cc_response, SuccessResponse
-            ):
-                return []
+            cc_response = self._clean_response(cc_response)
 
             cc_table = cc_response.call_center_table.to_dict()
 
@@ -265,19 +256,12 @@ class UserDigest(BaseAutomation):
                 return []
 
             for call_center in cc_table:
-                call_center_id = call_center.get("service_user_id", "Unknown ID")
-                call_center_name = call_center.get("service_instance_profile", {}).get(
-                    "name", "Unknown Name"
-                )
-                call_center_type = call_center.get("type", "Unknown Type")
-                agent_available_level = call_center.get("available", "")
-
                 call_center_list.append(
                     CallCentreDetails(
-                        call_center_id=call_center_id,
-                        call_center_name=call_center_name,
-                        call_center_type=call_center_type,
-                        agent_cc_available=agent_available_level,
+                        call_center_id=call_center.get("service_user_id", "Unknown ID"),
+                        call_center_name=call_center.get("name", "Unknown Name"),
+                        call_center_type=call_center.get("type", "Unknown Type"),
+                        agent_cc_available=call_center.get("available", ""),
                         agent_acd_state=cc_response.agent_acd_state,
                     )
                 )
@@ -295,11 +279,9 @@ class UserDigest(BaseAutomation):
             if not self.user_details or not self.user_details.user_info:
                 raise ValueError("User details not loaded.")
 
-            service_provider_id = self.user_details.user_info.service_provider_id
-            group_id = self.user_details.user_info.group_id
-
             hunt_group_response = self.shared_ops.fetch_hunt_group_details(
-                service_provider_id=service_provider_id, group_id=group_id
+                service_provider_id=self.user_details.user_info.service_provider_id,
+                group_id=self.user_details.user_info.group_id,
             )
 
             hunt_group_list = []
@@ -307,16 +289,14 @@ class UserDigest(BaseAutomation):
             for hunt_group in hunt_group_response:
                 hunt_group = self._clean_response(hunt_group)
 
-                hunt_group_id = hunt_group.get("service_user_id", "")
-
-                for agent in detailed_hunt_group.agent_user_table.to_dict():
+                for agent in hunt_group.agent_user_table.to_dict():
                     if agent.get("user_id") == user_id:
                         hunt_group_list.append(
                             HuntGroupDetails(
-                                hunt_group_id=hunt_group_id,
-                                hunt_group_name=detailed_hunt_group.service_instance_profile.name,
-                                extension=detailed_hunt_group.service_instance_profile.extension,
-                                hunt_group_busy=detailed_hunt_group.enable_group_busy,
+                                hunt_group_id=hunt_group.service_user_id,  # type: ignore
+                                hunt_group_name=hunt_group.service_instance_profile.name,
+                                extension=hunt_group.service_instance_profile.extension,
+                                hunt_group_busy=hunt_group.enable_group_busy,
                             )
                         )
         except Exception as e:
@@ -324,10 +304,34 @@ class UserDigest(BaseAutomation):
             return []
         return hunt_group_list
 
+    def _fetch_pickup_group_details(
+        self, user_id: str
+    ) -> Optional[CallPickupGroupDetails]:
+        """Fetch call pickup group membership details for the user."""
+
+        try:
+            if not self.user_details or not self.user_details.user_info:
+                raise ValueError("User details not loaded.")
+
+            pickup_group_response: OCIResponse[UserCallPickupGetResponse] = (
+                self._dispatch(UserCallPickupGetRequest(user_id=user_id))
+            )
+
+            pickup_group_response = self._clean_response(pickup_group_response)
+
+            if pickup_group_response.name:
+                return CallPickupGroupDetails(
+                    call_pickup_group_name=pickup_group_response.name,
+                )
+
+        except Exception as e:
+            print(f"Error fetching call pickup group membership for {user_id}: {e}")
+            return None
+
     def _clean_response(self, response: OCIResponse[T]) -> T:
         """Cleans the response object by removing non relevant potential types."""
         if isinstance(response, ErrorResponse):
             raise ValueError(f"Error in response: {response.summary}")
         if isinstance(response, SuccessResponse):
             raise ValueError("Received a success response without data.")
-        return response
+        return cast(T, response)  # type: ignore
