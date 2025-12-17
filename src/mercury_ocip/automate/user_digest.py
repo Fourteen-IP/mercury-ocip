@@ -20,6 +20,9 @@ from mercury_ocip.commands.commands import (
     UserCallCenterGetResponse23,
     UserCallPickupGetRequest,
     UserCallPickupGetResponse,
+    UserVoiceMessagingUserGetVoiceManagementRequest23,
+    UserVoiceMessagingUserGetVoiceManagementResponse23,
+    GroupCallCenterGetInstanceRequest22,
 )
 from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import (
@@ -39,11 +42,23 @@ class UserDigestRequest:
 
 
 @dataclass(slots=True)
-class ForwardingDetails:
+class UserForwardingDetails:
     variant: str
     is_active: bool
     forward_to_phone_number: Optional[str] = None
     selective_criteria: Optional[OCITable] = None
+
+
+@dataclass(slots=True)
+class VoicemailForwardingDetails:
+    variant: str
+    is_active: bool
+
+
+@dataclass(slots=True)
+class ForwardingDetails:
+    user_forwarding: Optional[list[UserForwardingDetails]] = None
+    voicemail_forwarding: Optional[list[VoicemailForwardingDetails]] = None
 
 
 @dataclass(slots=True)
@@ -56,7 +71,7 @@ class DeviceDetails:
 @dataclass(slots=True)
 class UserDetailsResult:
     user_info: Optional[UserGetResponse23V2] = None
-    forwards: list[ForwardingDetails] = field(default_factory=list)
+    forwards: ForwardingDetails = field(default_factory=ForwardingDetails)
     dnd_status: Optional[bool] = None
     registered_devices: list[DeviceDetails] = field(default_factory=list)
 
@@ -65,6 +80,7 @@ class UserDetailsResult:
 class CallCentreDetails:
     call_center_id: str
     call_center_type: str
+    call_center_name: str
     agent_acd_state: str | None = None
     agent_cc_available: str | None = None
 
@@ -145,10 +161,21 @@ class UserDigest(BaseAutomation):
 
             user_details = self._clean_response(user_details)
 
-            forwarding_details = self._fetch_forwarding_details(user_id=user_id)
-
             dnd_response: OCIResponse[UserDoNotDisturbGetResponse] = self._dispatch(
                 UserDoNotDisturbGetRequest(user_id=user_id)
+            )
+
+            user_forwarding_details = self._fetch_user_forwarding_details(
+                user_id=user_id
+            )
+
+            voicemail_forwarding_details = self._fetch_voicemail_forwards(
+                user_id=user_id
+            )
+
+            forwarding_details = ForwardingDetails(
+                user_forwarding=user_forwarding_details,
+                voicemail_forwarding=voicemail_forwarding_details,
             )
 
             dnd_response = self._clean_response(dnd_response)
@@ -165,7 +192,9 @@ class UserDigest(BaseAutomation):
             registered_devices=device_details,
         )
 
-    def _fetch_forwarding_details(self, user_id: str) -> list[ForwardingDetails]:
+    def _fetch_user_forwarding_details(
+        self, user_id: str
+    ) -> list[UserForwardingDetails]:
         """Fetch call forwarding settings for the user."""
 
         user_forwarding_requests = [
@@ -199,7 +228,7 @@ class UserDigest(BaseAutomation):
                 forwarding_response, UserCallForwardingSelectiveGetResponse16
             ):
                 forwarding_details.append(
-                    ForwardingDetails(
+                    UserForwardingDetails(
                         variant="Selective",
                         is_active=forwarding_response.is_active,
                         selective_criteria=forwarding_response.criteria_table,
@@ -207,7 +236,7 @@ class UserDigest(BaseAutomation):
                 )
             else:
                 forwarding_details.append(
-                    ForwardingDetails(
+                    UserForwardingDetails(
                         variant=forwarding_variant,
                         is_active=forwarding_response.is_active,
                         forward_to_phone_number=forwarding_response.forward_to_phone_number,
@@ -215,6 +244,38 @@ class UserDigest(BaseAutomation):
                 )
 
         return forwarding_details
+
+    def _fetch_voicemail_forwards(
+        self, user_id: str
+    ) -> list[VoicemailForwardingDetails]:
+        """Fetch voicemail forwarding settings for the user."""
+
+        try:
+            response: OCIResponse[
+                UserVoiceMessagingUserGetVoiceManagementResponse23
+            ] = self._dispatch(
+                UserVoiceMessagingUserGetVoiceManagementRequest23(user_id=user_id)
+            )
+        except Exception as e:
+            print(f"Error fetching voicemail forwarding details for {user_id}: {e}")
+            return []
+
+        voicemail_response = self._clean_response(response)
+
+        return [
+            VoicemailForwardingDetails(
+                variant="always_redirect_to_voice_mail",
+                is_active=voicemail_response.always_redirect_to_voice_mail,
+            ),
+            VoicemailForwardingDetails(
+                variant="busy_redirect_to_voice_mail",
+                is_active=voicemail_response.busy_redirect_to_voice_mail,
+            ),
+            VoicemailForwardingDetails(
+                variant="no_answer_redirect_to_voice_mail",
+                is_active=voicemail_response.no_answer_redirect_to_voice_mail,
+            ),
+        ]
 
     def _fetch_device_details(self, user_id: str) -> list[DeviceDetails]:
         """Fetch registered device details for the user."""
@@ -266,9 +327,18 @@ class UserDigest(BaseAutomation):
                 return []
 
             for call_center in cc_table:
+                call_center_name = self._clean_response(
+                    self._dispatch(
+                        GroupCallCenterGetInstanceRequest22(
+                            service_user_id=call_center.get("service_user_id", "")
+                        )
+                    )
+                ).service_instance_profile.name
+
                 call_center_list.append(
                     CallCentreDetails(
                         call_center_id=call_center.get("service_user_id", "Unknown ID"),
+                        call_center_name=call_center_name,
                         call_center_type=call_center.get("type", "Unknown Type"),
                         agent_cc_available=call_center.get("available", ""),
                         agent_acd_state=cc_response.agent_acd_state,
