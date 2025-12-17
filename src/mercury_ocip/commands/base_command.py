@@ -1,8 +1,7 @@
-from typing import get_type_hints, Union, Optional
-from dataclasses import fields, is_dataclass
+from typing import Any
+from typing import get_type_hints, Optional
+from dataclasses import fields, is_dataclass, dataclass
 from mercury_ocip.utils.parser import Parser, AsyncParser
-from mercury_ocip.libs.basic_types import XMLDictResult
-import xml.etree.ElementTree as ET
 from mercury_ocip.utils.defines import to_snake_case
 
 
@@ -41,34 +40,32 @@ class OCIType:
             return {}
         return {f.name: f.metadata.get("alias", f.name) for f in fields(cls)}
 
-    def to_dict(self) -> XMLDictResult:
+    def to_dict(self) -> dict[str, Any]:
         return Parser.to_dict_from_class(self)
 
     def to_xml(self) -> str:
         return Parser.to_xml_from_class(self)
 
     @classmethod
-    def from_dict(cls: type["OCIType"], data: XMLDictResult) -> "OCIType":
+    def from_dict(cls: type["OCIType"], data: dict[str, Any]) -> "OCIType":
         return Parser.to_class_from_dict(data, cls)
 
     @classmethod
-    def from_xml(cls, xml: Union[str, ET.Element]) -> "OCIType":
+    def from_xml(cls, xml: str) -> "OCIType":
         return Parser.to_class_from_xml(xml, cls)
 
-    async def to_dict_async(self) -> XMLDictResult:
+    async def to_dict_async(self) -> dict[str, Any]:
         return await AsyncParser.to_dict_from_class(self)
 
     async def to_xml_async(self) -> str:
         return await AsyncParser.to_xml_from_class(self)
 
     @classmethod
-    async def from_dict_async(cls: type["OCIType"], data: XMLDictResult) -> "OCIType":
+    async def from_dict_async(cls: type["OCIType"], data: dict[str, Any]) -> "OCIType":
         return await AsyncParser.to_class_from_dict(data, cls)
 
     @classmethod
-    async def from_xml_async(
-        cls: type["OCIType"], xml: Union[str, ET.Element]
-    ) -> "OCIType":
+    async def from_xml_async(cls: type["OCIType"], xml: str) -> "OCIType":
         return await AsyncParser.to_class_from_xml(xml, cls)
 
 
@@ -93,6 +90,7 @@ class SuccessResponse(OCIResponse):
     pass
 
 
+@dataclass
 class OCITableRow:
     col: list[str]
 
@@ -100,39 +98,22 @@ class OCITableRow:
         self.col = col
 
 
-# class OCITable:
-#    col_heading: list[str]
-#    row: list[OCITableRow]
-#
-#    def __init__(self, col_heading, row):
-#        self.col_heading = col_heading
-#        self.row = row
-#
-#        return self.entries()
-#
-#    def entries(self) -> list[dict]:
-#        """Converts the entire table to a list of dictionaries."""
-#        dict_list = []
-#        for row in self.row:
-#            row_dict = {
-#                self.col_heading[i]: row.col[i]
-#                for i in range(min(len(self.col_heading), len(row.col)))
-#            }
-#            dict_list.append(row_dict)
-#        return dict_list
-
-
+@dataclass
 class OCITable:
-    def __new__(cls, col_heading, row):
-        # Build table and return directly, skipping instance creation
-        normalised_headings = [to_snake_case(h) for h in col_heading]
+    col_heading: list[str]
+    row: list[OCITableRow]
 
+    def __init__(self, col_heading, row=None):
+        self.col_heading = col_heading
+        self.row = row if row is not None else []
+
+    def to_dict(self):
         return [
             {
-                normalised_headings[i]: r.col[i]
-                for i in range(min(len(col_heading), len(r.col)))
+                to_snake_case(self.col_heading[i]): row.col[i]
+                for i in range(len(self.col_heading))
             }
-            for r in row
+            for row in self.row
         ]
 
 

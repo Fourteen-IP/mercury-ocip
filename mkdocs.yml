@@ -64,6 +64,7 @@ nav:
   - Automations:
     - Find Alias: agent/automations/find-alias.md
     - Group Audit: agent/automations/group-audit.md
+    - User Digest: agent/automations/user-digest.md
 - Developer:
   - Bulk Operations:
     - Bulk Operations: developer/bulk-operations/index.md

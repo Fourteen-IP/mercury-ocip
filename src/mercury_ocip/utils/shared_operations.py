@@ -7,6 +7,9 @@ from mercury_ocip.commands.commands import (
     UserGetListInGroupResponse,
     GroupCallCenterGetInstanceListResponse,
     GroupAutoAttendantGetInstanceListResponse,
+    GroupHuntGroupGetInstanceResponse20,
+    GroupCallCenterGetInstanceResponse22,
+    GroupAutoAttendantGetInstanceResponse24,
 )
 from mercury_ocip.client import BaseClient
 from mercury_ocip.libs.types import OCIResponse
@@ -46,7 +49,7 @@ class SharedOperations:
 
     def fetch_user_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[UserGetListInGroupResponse]]:
         """Get all users in a specific group.
 
         This differs to group_users as the response is a list of detailed objects including all
@@ -93,7 +96,7 @@ class SharedOperations:
 
     def fetch_hunt_group_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupHuntGroupGetInstanceResponse20]]:
         """Get all hunt groups in a specific group.
 
         This differs to group_hunt_groups as the response is a list of detailed objects including all
@@ -140,7 +143,7 @@ class SharedOperations:
 
     def fetch_call_center_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupCallCenterGetInstanceResponse22]]:
         """Get all call centers in a specific group.
 
         This differs to group_call_centers as the response is a list of detailed objects including all
@@ -187,7 +190,7 @@ class SharedOperations:
 
     def fetch_auto_attendant_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[OCIResponse[GroupAutoAttendantGetInstanceResponse24]]:
         """Get all auto attendants in a specific group.
 
         This differs to group_auto_attendants as the response is a list of detailed objects including all
@@ -240,6 +243,7 @@ class SharedOperations:
 
         results: List[OCIResponse] = []
         rows: Iterable[Mapping[str, object]] = getattr(typed_summary, table_attr, [])
+        rows = rows.to_dict() if hasattr(rows, "to_dict") else rows
         for row in rows:
             identifier = row.get(id_field)
             if identifier is None:

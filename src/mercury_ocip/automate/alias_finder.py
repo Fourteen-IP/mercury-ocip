@@ -126,11 +126,18 @@ class AliasFinder(BaseAutomation[AliasRequest, AliasResult]):
         Returns:
             List of alias strings found, or empty list if none exist.
         """
+
+        sip = getattr(entity, "service_instance_profile", None)
+
         if hasattr(entity, "alias"):
             raw = getattr(entity, "alias")
         else:
             sip = getattr(entity, "service_instance_profile", None)
-            raw = sip.get("alias") if isinstance(sip, Mapping) else None
+            raw = (
+                sip.get("alias")
+                if isinstance(sip, Mapping)
+                else getattr(sip, "alias", None)
+            )  # SIP can be dict or object due to Parser changes
 
         if raw is None:
             return []
