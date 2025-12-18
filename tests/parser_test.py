@@ -200,7 +200,7 @@ def test_parser_to_dict_from_class_with_oci_table():
         ]
     )
 
-    command = GroupGetListInSystemResponse(  # Replace with actual command class that has an OCITable field
+    command = GroupGetListInSystemResponse(
         group_table=table
     )
 
