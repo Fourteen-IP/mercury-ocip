@@ -4,7 +4,7 @@ from typing import Optional, Callable, TypedDict, List, Iterable, Mapping
 
 from mercury_ocip.automate.base_automation import BaseAutomation, AutomationResult
 from mercury_ocip.client import BaseClient
-from mercury_ocip.libs.types import OCIResponse
+from mercury_ocip.commands.base_command import OCIResponse
 
 
 @dataclass(slots=True)

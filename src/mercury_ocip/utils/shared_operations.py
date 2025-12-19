@@ -1,7 +1,12 @@
 from collections.abc import Callable, Iterable, Mapping
 from typing import TypeVar, cast, List
 
-from mercury_ocip.commands.base_command import OCICommand, OCIResponse, ErrorResponse
+from mercury_ocip.commands.base_command import (
+    OCICommand,
+    OCIResponse,
+    OCIRequest,
+    ErrorResponse,
+)
 from mercury_ocip.commands.commands import (
     GroupHuntGroupGetInstanceListResponse,
     UserGetListInGroupResponse,
@@ -15,6 +20,7 @@ from mercury_ocip.client import BaseClient
 from mercury_ocip.exceptions import MErrorResponse
 
 SummaryResponse = TypeVar("SummaryResponse", bound=OCIResponse)
+DetailResponse = TypeVar("DetailResponse", bound=OCIResponse)
 
 
 class SharedOperations:
@@ -95,7 +101,7 @@ class SharedOperations:
 
     def fetch_hunt_group_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse]:
+    ) -> List[GroupHuntGroupGetInstanceResponse20]:
         """Get all hunt groups in a specific group.
 
         This differs to group_hunt_groups as the response is a list of detailed objects including all
@@ -142,7 +148,7 @@ class SharedOperations:
 
     def fetch_call_center_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse[GroupCallCenterGetInstanceResponse22]]:
+    ) -> List[GroupCallCenterGetInstanceResponse22]:
         """Get all call centers in a specific group.
 
         This differs to group_call_centers as the response is a list of detailed objects including all
@@ -189,7 +195,7 @@ class SharedOperations:
 
     def fetch_auto_attendant_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse[GroupAutoAttendantGetInstanceResponse24]]:
+    ) -> List[GroupAutoAttendantGetInstanceResponse24]:
         """Get all auto attendants in a specific group.
 
         This differs to group_auto_attendants as the response is a list of detailed objects including all
@@ -228,7 +234,8 @@ class SharedOperations:
         detail_command: str,
         payload_builder: Callable[[Mapping[str, object]], dict[str, object]]
         | None = None,
-    ) -> List[OCIResponse]:
+        detail_response_type: type[DetailResponse] | None = None,
+    ) -> List[DetailResponse]:
         summary = summary_fetcher(**summary_kwargs)
         if summary is None:
             return []
@@ -240,7 +247,7 @@ class SharedOperations:
             )
         typed_summary: SummaryResponse = cast(SummaryResponse, summary)
 
-        results: List[OCIResponse] = []
+        results: List[DetailResponse] = []
         rows: Iterable[Mapping[str, object]] = getattr(typed_summary, table_attr, [])
         rows = rows.to_dict() if hasattr(rows, "to_dict") else rows
         for row in rows:
@@ -257,7 +264,7 @@ class SharedOperations:
                 current_value = getattr(response, id_field, None)
                 if current_value is None:
                     setattr(response, id_field, identifier)
-                results.append(response)
+                results.append(cast(DetailResponse, response))
         return results
 
     def _get_command(self, command_name: str) -> type[OCICommand]:
@@ -269,5 +276,5 @@ class SharedOperations:
         return command_factory
 
     def _execute_command(self, command_name: str, **kwargs) -> OCIResponse | None:
-        cmd: type[OCICommand] = self._get_command(command_name)
+        cmd: type[OCIRequest] = self._get_command(command_name)
         return cast(OCIResponse | None, self.client.command(cmd(**kwargs)))

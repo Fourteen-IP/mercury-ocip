@@ -11,7 +11,7 @@ from mercury_ocip.commands.commands import (
     GroupServiceGetAuthorizationListRequest,
     GroupServiceGetAuthorizationListResponse,
 )
-from mercury_ocip.libs.types import OCIResponse
+from mercury_ocip.commands.base_command import OCIResponse
 from mercury_ocip.utils.defines import expand_phone_range
 
 
