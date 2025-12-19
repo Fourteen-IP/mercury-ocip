@@ -64,7 +64,7 @@ from mercury import Client
 
 #SOAP (recommended for most cases):
 client = Client(
-    host="https://your-server.com",  # No /wsdl suffix needed
+    host="https://your-server.com/webservice/services/ProvisioningService",  # No /wsdl suffix needed
     username="your_user",
     password="your_pass",
     conn_type="SOAP"
@@ -88,9 +88,6 @@ print(response)
 
 print(response.to_dict()) 
 # Returns: {'version': '24'}
-
-print(response.to_json()) 
-# Returns: '{'version': '24'}'
 
 print(response.to_xml()) 
 # Returns: <command ... "SystemSoftwareVersionGetResponse"><version>24</version></command>
