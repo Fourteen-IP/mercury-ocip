@@ -159,9 +159,18 @@ class Parser:
         return Parser.to_xml_from_class(obj)
 
     @staticmethod
-    def to_dict_from_class(obj: object) -> Dict[str, Any]:
-        """Convert a class instance to a dictionary."""
-        result: Dict[str, Any] = {}
+    def to_dict_from_class(
+        obj: object,
+        wrap_in_class_name: bool = False,  # Changed default to False
+    ) -> Dict[str, Any]:
+        """Convert a class instance to a dictionary.
+
+        Args:
+            obj: The object to convert
+            wrap_in_class_name: If True, wraps the result in {ClassName: attributes}.
+                               If False (default), returns just the attributes dict.
+        """
+        attributes: Dict[str, Any] = {}
         type_hints = get_type_hints(obj.__class__)
 
         for attr, hint in type_hints.items():
@@ -169,23 +178,37 @@ class Parser:
             if value is None:
                 continue
 
+            # Handle OCITable first (most specific)
+            if type(value).__name__ == "OCITable":
+                table_dict = value.to_dict()
+                if "OciTable" in table_dict:
+                    attributes[attr] = table_dict["OciTable"]
+                else:
+                    attributes[attr] = table_dict
             # Handle lists
-            if isinstance(value, list):
+            elif isinstance(value, list):
                 processed_list = []
                 for item in value:
                     if hasattr(item, "__dict__"):
-                        # Recursively convert nested objects to dict
-                        processed_list.append(Parser.to_dict_from_class(item))
+                        processed_list.append(
+                            Parser.to_dict_from_class(item, wrap_in_class_name=False)
+                        )
                     else:
                         processed_list.append(item)
-                result[attr] = processed_list
+                attributes[attr] = processed_list
             # Handle nested objects
             elif hasattr(value, "__dict__"):
-                result[attr] = Parser.to_dict_from_class(value)
+                attributes[attr] = Parser.to_dict_from_class(
+                    value, wrap_in_class_name=False
+                )
+            # Handle primitives
             else:
-                result[attr] = value
+                attributes[attr] = value
 
-        return result
+        # Optionally wrap attributes in command name
+        if wrap_in_class_name:
+            return {obj.__class__.__name__: attributes}
+        return attributes
 
     @staticmethod
     def to_dict_from_xml(xml: str) -> Dict[str, Any]:
@@ -281,7 +304,16 @@ class Parser:
             )
 
         source = data
-        if "command" in data:
+
+        # Handle wrapped format: {"ClassName": {...attributes...}}
+        if cls.__name__ in data:
+            source = data[cls.__name__]
+            if not isinstance(source, dict):
+                raise TypeError(
+                    f"Expected dict for {cls.__name__}, got {type(source).__name__}"
+                )
+        # Legacy: handle "command" wrapper
+        elif "command" in data:
             command_data = data["command"]
             if not isinstance(command_data, dict):
                 raise TypeError(
@@ -320,7 +352,7 @@ class Parser:
                 subtype = args[0]
                 if isinstance(val, list):
                     init_args[key] = [
-                        Parser.to_class_from_dict(v, subtype)
+                        Parser.to_class_from_dict({subtype.__name__: v}, subtype)
                         if isinstance(v, dict)
                         and hasattr(subtype, "__mro__")
                         and subtype is not Any
@@ -329,7 +361,7 @@ class Parser:
                     ]
                 else:
                     init_args[key] = [
-                        Parser.to_class_from_dict(val, subtype)
+                        Parser.to_class_from_dict({subtype.__name__: val}, subtype)
                         if isinstance(val, dict)
                         and hasattr(subtype, "__mro__")
                         and subtype is not Any
@@ -337,7 +369,7 @@ class Parser:
                     ]
             # Handle nested class types (but not Any)
             elif hint is not Any and isinstance(val, dict) and hasattr(hint, "__mro__"):
-                init_args[key] = Parser.to_class_from_dict(val, hint)
+                init_args[key] = Parser.to_class_from_dict({hint.__name__: val}, hint)
             # Handle primitive types and Any
             else:
                 init_args[key] = val
@@ -385,9 +417,11 @@ class AsyncParser:
         )
 
     @staticmethod
-    async def to_dict_from_class(obj: OCIType) -> Dict[str, Any]:
+    async def to_dict_from_class(
+        obj: OCIType, wrap_in_class_name: bool = True
+    ) -> Dict[str, Any]:
         return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_dict_from_class, obj
+            AsyncParser._executor, Parser.to_dict_from_class, obj, wrap_in_class_name
         )
 
     @staticmethod

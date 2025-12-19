@@ -32,7 +32,9 @@ def test_to_dict_and_from_dict():
     original = TestType(device_level="Level1", device_name="DeviceA", device_order=1)
     dict_data = original.to_dict()
 
-    rebuilt = TestType.from_dict({"command": dict_data})
+    print(dict_data)
+
+    rebuilt = TestType.from_dict(dict_data)
     assert rebuilt.device_level == "Level1"
     assert rebuilt.device_name == "DeviceA"
     assert rebuilt.device_order == 1

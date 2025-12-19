@@ -113,8 +113,8 @@ class GroupAuditor(BaseAutomation[GroupAuditRequest, GroupAuditResult]):
         )
         response = cast(GroupDnGetAssignmentListResponse18, response)
         dns = set()
-        for dn in response.dn_table:  # type: ignore
-            phone_numbers = dn.get("phone_numbers")
+        for dn in response.dn_table.to_dict():
+            phone_numbers = dn.get("phone_numbers") if dn.get("phone_numbers") else ""
             if " - " in phone_numbers:
                 dns.update(expand_phone_range(phone_numbers))
                 continue

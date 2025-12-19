@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from mercury_ocip.client import Client
 from mercury_ocip.agent import Agent
+from mercury_ocip.commands.base_command import OCITable, OCITableRow
 
 
 @dataclass
@@ -67,11 +68,14 @@ class TestGroupAuditor:
 
         # Mock DN response with individual numbers
         mock_dn_response = MockDnResponse(
-            dn_table=[
-                {"phone_numbers": "1000"},
-                {"phone_numbers": "1001"},
-                {"phone_numbers": "1002"},
-            ]
+            dn_table=OCITable(
+                col_heading=["phone_numbers"],
+                row=[
+                    OCITableRow(["1000"]),
+                    OCITableRow(["1001"]),
+                    OCITableRow(["1002"]),
+                ]
+            )
         )
 
         # Mock client.command to return appropriate responses based on command type
@@ -118,12 +122,14 @@ class TestGroupAuditor:
 
         # Mock DN response with a range
         mock_dn_response = MockDnResponse(
-            dn_table=[
-                {"phone_numbers": "1000 - 1002"},  # Range should be expanded
-                {"phone_numbers": "2000"},  # Single number
-            ]
+            dn_table=OCITable(
+                col_heading=["phone_numbers"],
+                row=[
+                    OCITableRow(["1000 - 1002"]),  # Range should be expanded
+                    OCITableRow(["2000"]),  # Single number
+                ]
+            )
         )
-
         def mock_command(command):
             command_name = command.__class__.__name__
             if command_name == "GroupGetRequest22V5":
@@ -166,8 +172,8 @@ class TestGroupAuditor:
             "user_services_authorization_table": [],
         }
 
-        # Mock DN response
-        mock_dn_response = MockDnResponse(dn_table=[])
+        # Mock DN response with empty list of rows
+        mock_dn_response = MockDnResponse(dn_table=OCITable(col_heading=["phone_numbers"], row=[]))
 
         def mock_command(command):
             command_name = command.__class__.__name__
