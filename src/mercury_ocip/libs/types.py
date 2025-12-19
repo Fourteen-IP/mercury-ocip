@@ -3,7 +3,7 @@ from mercury_ocip.commands.base_command import (
     ErrorResponse,
     SuccessResponse,
     OCIDataResponse,
-    OCICommand,
+    OCIRequest,
 )
 from mercury_ocip.libs.basic_types import (
     RequestResult,
@@ -17,16 +17,12 @@ __all__ = [
     "ConnectResult",
     "DisconnectResult",
     "XMLDictResult",
-    "OCIResponse",
     "CommandInput",
     "CommandResult",
 ]
 
-T = TypeVar("T", bound=OCIDataResponse)
+# What Client Sends
+type CommandInput = OCIRequest
 
-# Generic response type
-type OCIResponse[T] = Union[ErrorResponse, SuccessResponse, T]
-
-# What client.command() accepts and returns
-type CommandInput = OCICommand
-type CommandResult = Union[OCIResponse, None]
+# What it Receives - runtime could be any response type
+type CommandResult = Union[ErrorResponse, SuccessResponse, OCIDataResponse, None]

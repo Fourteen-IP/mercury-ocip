@@ -7,9 +7,13 @@ from mercury_ocip.commands.commands import (
     UserGetRequest23V2,
     UserGetResponse23V2,
     UserCallForwardingAlwaysGetRequest,
+    UserCallForwardingAlwaysGetResponse,
     UserCallForwardingBusyGetRequest,
+    UserCallForwardingBusyGetResponse,
     UserCallForwardingNoAnswerGetRequest13mp16,
+    UserCallForwardingNoAnswerGetResponse13mp16,
     UserCallForwardingNotReachableGetRequest,
+    UserCallForwardingNotReachableGetResponse,
     UserCallForwardingSelectiveGetRequest16,
     UserCallForwardingSelectiveGetResponse16,
     UserDoNotDisturbGetRequest,
@@ -23,17 +27,12 @@ from mercury_ocip.commands.commands import (
     UserVoiceMessagingUserGetVoiceManagementRequest23,
     UserVoiceMessagingUserGetVoiceManagementResponse23,
     GroupCallCenterGetInstanceRequest22,
+    GroupCallCenterGetInstanceResponse22,
 )
-from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import (
-    ErrorResponse,
-    SuccessResponse,
     OCITable,
-    OCIDataResponse,
 )
 from mercury_ocip.utils.defines import to_snake_case
-
-T = TypeVar("T", bound=OCIDataResponse)
 
 
 @dataclass(slots=True)
@@ -155,14 +154,12 @@ class UserDigest(BaseAutomation):
         """Fetch detailed information about the user."""
 
         try:
-            user_details: OCIResponse[UserGetResponse23V2] = self._dispatch(
-                UserGetRequest23V2(user_id=user_id)
+            user_details = self._dispatch_cast(
+                UserGetRequest23V2(user_id=user_id), UserGetResponse23V2
             )
 
-            user_details = self._clean_response(user_details)
-
-            dnd_response: OCIResponse[UserDoNotDisturbGetResponse] = self._dispatch(
-                UserDoNotDisturbGetRequest(user_id=user_id)
+            dnd_response = self._dispatch_cast(
+                UserDoNotDisturbGetRequest(user_id=user_id), UserDoNotDisturbGetResponse
             )
 
             user_forwarding_details = self._fetch_user_forwarding_details(
@@ -177,8 +174,6 @@ class UserDigest(BaseAutomation):
                 user_forwarding=user_forwarding_details,
                 voicemail_forwarding=voicemail_forwarding_details,
             )
-
-            dnd_response = self._clean_response(dnd_response)
 
             device_details = self._fetch_device_details(user_id=user_id)
 
@@ -197,24 +192,38 @@ class UserDigest(BaseAutomation):
     ) -> list[UserForwardingDetails]:
         """Fetch call forwarding settings for the user."""
 
-        user_forwarding_requests = [
-            UserCallForwardingAlwaysGetRequest(user_id=user_id),
-            UserCallForwardingBusyGetRequest(user_id=user_id),
-            UserCallForwardingNoAnswerGetRequest13mp16(user_id=user_id),
-            UserCallForwardingNotReachableGetRequest(user_id=user_id),
-            UserCallForwardingSelectiveGetRequest16(user_id=user_id),
-        ]
+        user_forwarding_requests = {
+            UserCallForwardingAlwaysGetRequest(
+                user_id=user_id
+            ): UserCallForwardingAlwaysGetResponse,
+            UserCallForwardingBusyGetRequest(
+                user_id=user_id
+            ): UserCallForwardingBusyGetResponse,
+            UserCallForwardingNoAnswerGetRequest13mp16(
+                user_id=user_id
+            ): UserCallForwardingNoAnswerGetResponse13mp16,
+            UserCallForwardingNotReachableGetRequest(
+                user_id=user_id
+            ): UserCallForwardingNotReachableGetResponse,
+            UserCallForwardingSelectiveGetRequest16(
+                user_id=user_id
+            ): UserCallForwardingSelectiveGetResponse16,
+        }
 
         forwarding_details = []
 
-        for forwarding_request in user_forwarding_requests:
+        for (
+            forwarding_request,
+            forwarding_response_type,
+        ) in user_forwarding_requests.items():
             try:
-                forwarding_response = self._dispatch(forwarding_request)
+                forwarding_response = self._dispatch_cast(
+                    forwarding_request,
+                    forwarding_response_type,  # type: ignore
+                )
             except Exception as e:
                 print(f"Error fetching forwarding details for {user_id}: {e}")
                 continue
-
-            forwarding_response = self._clean_response(forwarding_response)
 
             forwarding_variant = to_snake_case(
                 type(forwarding_request)
@@ -251,16 +260,13 @@ class UserDigest(BaseAutomation):
         """Fetch voicemail forwarding settings for the user."""
 
         try:
-            response: OCIResponse[
-                UserVoiceMessagingUserGetVoiceManagementResponse23
-            ] = self._dispatch(
-                UserVoiceMessagingUserGetVoiceManagementRequest23(user_id=user_id)
+            voicemail_response = self._dispatch_cast(
+                UserVoiceMessagingUserGetVoiceManagementRequest23(user_id=user_id),
+                UserVoiceMessagingUserGetVoiceManagementResponse23,
             )
         except Exception as e:
             print(f"Error fetching voicemail forwarding details for {user_id}: {e}")
             return []
-
-        voicemail_response = self._clean_response(response)
 
         return [
             VoicemailForwardingDetails(
@@ -283,15 +289,14 @@ class UserDigest(BaseAutomation):
         device_details_list = []
 
         try:
-            device_details: OCIResponse[UserGetRegistrationListResponse] = (
-                self._dispatch(UserGetRegistrationListRequest(user_id=user_id))
+            device_details = self._dispatch_cast(
+                UserGetRegistrationListRequest(user_id=user_id),
+                UserGetRegistrationListResponse,
             )
 
         except Exception as e:
             print(f"Error fetching device details for {user_id}: {e}")
             return []
-
-        device_details = self._clean_response(device_details)
 
         device_table = device_details.registration_table.to_dict()
 
@@ -315,24 +320,21 @@ class UserDigest(BaseAutomation):
         call_center_list = []
 
         try:
-            cc_response: OCIResponse[UserCallCenterGetResponse23] = self._dispatch(
-                UserCallCenterGetRequest23(user_id=user_id)
+            cc_response = self._dispatch_cast(
+                UserCallCenterGetRequest23(user_id=user_id),
+                UserCallCenterGetResponse23,
             )
-
-            cc_response = self._clean_response(cc_response)
-
             cc_table = cc_response.call_center_table.to_dict()
 
             if len(cc_table) == 0:
                 return []
 
             for call_center in cc_table:
-                call_center_name = self._clean_response(
-                    self._dispatch(
-                        GroupCallCenterGetInstanceRequest22(
-                            service_user_id=call_center.get("service_user_id", "")
-                        )
-                    )
+                call_center_name = self._dispatch_cast(
+                    GroupCallCenterGetInstanceRequest22(
+                        service_user_id=call_center.get("service_user_id", "")
+                    ),
+                    GroupCallCenterGetInstanceResponse22,
                 ).service_instance_profile.name
 
                 call_center_list.append(
@@ -366,8 +368,6 @@ class UserDigest(BaseAutomation):
             hunt_group_list = []
 
             for hunt_group in hunt_group_response:
-                hunt_group = self._clean_response(hunt_group)
-
                 for agent in hunt_group.agent_user_table.to_dict():
                     if agent.get("user_id") == user_id:
                         hunt_group_list.append(
@@ -406,11 +406,3 @@ class UserDigest(BaseAutomation):
         except Exception as e:
             print(f"Error fetching call pickup group membership for {user_id}: {e}")
             return None
-
-    def _clean_response(self, response: OCIResponse[T]) -> T:
-        """Cleans the response object by removing non relevant potential types."""
-        if isinstance(response, ErrorResponse):
-            raise ValueError(f"Error in response: {response.summary}")
-        if isinstance(response, SuccessResponse):
-            raise ValueError("Received a success response without data.")
-        return cast(T, response)  # type: ignore

@@ -4,12 +4,12 @@ from typing import Any, Generic, Optional, TypeVar, cast
 
 from mercury_ocip.client import BaseClient
 from mercury_ocip.utils.shared_operations import SharedOperations
-from mercury_ocip.libs.types import OCIResponse
-from mercury_ocip.commands.base_command import OCICommand, ErrorResponse
+from mercury_ocip.commands.base_command import OCIRequest, OCIResponse, ErrorResponse
 from mercury_ocip.exceptions import MErrorUnknown, MErrorResponse, MError
 
 RequestT = TypeVar("RequestT")
 PayloadT = TypeVar("PayloadT")
+ResponseT = TypeVar("ResponseT", bound=OCIResponse)
 
 
 @dataclass(slots=True)
@@ -48,7 +48,7 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
         """Standardise the outward result."""
         return AutomationResult(ok=payload is not None, payload=payload)
 
-    def _dispatch(self, command: OCICommand) -> OCIResponse:
+    def _dispatch(self, command: OCIRequest) -> OCIResponse:
         """Send a single OCI command and normalise failures."""
         try:
             response = self.client.command(command)
@@ -73,3 +73,25 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
             )
 
         return cast(OCIResponse, response)
+
+    def _dispatch_cast(
+        self, command: OCIRequest, response_type: type[ResponseT]
+    ) -> ResponseT:
+        """
+        Dispatch and cast the response to the expected type.
+
+        Args:
+            command: The OCI request to send
+            response_type: The expected response type class
+
+        Returns:
+            The response cast to ResponseT with full IntelliSense
+
+        Example:
+            user_info = self._dispatch_cast(
+                UserGetRequest23V2(user_id="user"),
+                UserGetResponse23V2
+            )
+        """
+        response = self._dispatch(command)
+        return cast(ResponseT, response)

@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable, Mapping
 from typing import TypeVar, cast, List
 
-from mercury_ocip.commands.base_command import OCICommand, ErrorResponse
+from mercury_ocip.commands.base_command import OCICommand, OCIResponse, ErrorResponse
 from mercury_ocip.commands.commands import (
     GroupHuntGroupGetInstanceListResponse,
     UserGetListInGroupResponse,
@@ -12,7 +12,6 @@ from mercury_ocip.commands.commands import (
     GroupAutoAttendantGetInstanceResponse24,
 )
 from mercury_ocip.client import BaseClient
-from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.exceptions import MErrorResponse
 
 SummaryResponse = TypeVar("SummaryResponse", bound=OCIResponse)
@@ -49,7 +48,7 @@ class SharedOperations:
 
     def fetch_user_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse[UserGetListInGroupResponse]]:
+    ) -> List[OCIResponse]:
         """Get all users in a specific group.
 
         This differs to group_users as the response is a list of detailed objects including all
@@ -96,7 +95,7 @@ class SharedOperations:
 
     def fetch_hunt_group_details(
         self, service_provider_id: str, group_id: str
-    ) -> List[OCIResponse[GroupHuntGroupGetInstanceResponse20]]:
+    ) -> List[OCIResponse]:
         """Get all hunt groups in a specific group.
 
         This differs to group_hunt_groups as the response is a list of detailed objects including all

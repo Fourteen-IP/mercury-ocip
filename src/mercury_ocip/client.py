@@ -9,10 +9,13 @@ from abc import ABC, abstractmethod
 import importlib
 
 from mercury_ocip.commands import commands
-from mercury_ocip.commands.base_command import OCICommand as BWKSCommand
-from mercury_ocip.commands.base_command import OCIType as BWKSType
-from mercury_ocip.commands.base_command import ErrorResponse as BWKSErrorResponse
-from mercury_ocip.commands.base_command import SuccessResponse as BWKSSucessResponse
+from mercury_ocip.commands.base_command import (
+    OCIType,
+    OCICommand,
+    OCIRequest,
+    ErrorResponse,
+    SuccessResponse,
+)
 from mercury_ocip.requester import (
     create_requester,
     BaseRequester,
@@ -29,8 +32,6 @@ from mercury_ocip.libs.types import (
     CommandInput,
     CommandResult,
 )
-
-type ClientResult = Union[None, BWKSCommand]  # Inlined To Prevent Circular Definition
 
 
 @attr.s(slots=True, kw_only=True)
@@ -60,8 +61,8 @@ class BaseClient(ABC):
     session_id: str = attr.ib(default=str(uuid.uuid4()))
     tls: bool = attr.ib(default=True)
 
-    _dispatch_table: Dict[str, Type[BWKSCommand]] = attr.ib(default=None)
-    _type_table: Dict[str, Type[BWKSType]] = attr.ib(default=None)
+    _dispatch_table: Dict[str, Type[OCICommand]] = attr.ib(default=None)
+    _type_table: Dict[str, Type[OCIType]] = attr.ib(default=None)
     _requester: BaseRequester = attr.ib(default=None)
 
     def __attrs_post_init__(self):
@@ -137,7 +138,7 @@ class BaseClient(ABC):
                 self._dispatch_table[cls.__name__] = cls
 
         # manually append as we handle ErrorResponse & SucessResponse in base_command
-        for cls in [BWKSErrorResponse, BWKSSucessResponse]:
+        for cls in [ErrorResponse, SuccessResponse]:
             self._dispatch_table[cls.__name__] = cls
 
     def _set_up_logging(self):
@@ -187,10 +188,10 @@ class Client(BaseClient):
         If the client is not authenticated, it will authenticate first.
 
         Args:
-            command (BWKSCommand): The command class to execute
+            command (CommandInput): The command class to execute
 
         Returns:
-            BWKSCommand: The response from the server
+            CommandResult: The response from the server (ErrorResponse, SuccessResponse, or OCIDataResponse)
         """
         if not self.authenticated:
             self.authenticate()
@@ -214,9 +215,15 @@ class Client(BaseClient):
             ValueError: If the command is not found in the dispatch table
         """
         command_class = self._dispatch_table.get(command)
+
         if not command_class:
             self.logger.error(f"Command {command} not found in dispatch table")
             raise ValueError(f"Command {command} not found in dispatch table")
+
+        if not issubclass(command_class, OCIRequest):
+            self.logger.error(f"Command {command} is not a valid OCIRequest")
+            raise ValueError(f"Command {command} is not a valid OCIRequest")
+
         return self.command(command_class(**kwargs))
 
     def authenticate(self) -> CommandResult:
@@ -277,7 +284,7 @@ class Client(BaseClient):
             self._requester.send_request(request.to_xml())
         )
 
-        if isinstance(login_resp, BWKSErrorResponse):
+        if isinstance(login_resp, ErrorResponse):
             raise MError(f"Failed to authenticate: {login_resp.summary}")
 
         self.logger.info("Authenticated with server")
@@ -304,7 +311,7 @@ class Client(BaseClient):
                 "{http://www.w3.org/2001/XMLSchema-instance}type"
             )
         else:
-            return BWKSSucessResponse()
+            return SuccessResponse()
 
         # Validate Typename Extraction
         if not type_name or not isinstance(type_name, str):
@@ -381,10 +388,10 @@ class AsyncClient(BaseClient):
         If the client is not authenticated, it will authenticate first.
 
         Args:
-            command (BWKSCommand): The command class to execute
+            command (CommandInput): The command class to execute
 
         Returns:
-            BWKSCommand: The response from the server
+            CommandResult: The response from the server (ErrorResponse, SuccessResponse, or OCIDataResponse)
         """
 
         if not self.authenticated:
