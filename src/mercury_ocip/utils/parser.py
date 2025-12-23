@@ -64,6 +64,11 @@ class Parser:
 
             key = aliases.get(attr, snake_to_camel(attr))
 
+            if type(value).__name__ == "_NullType":
+                # Handle Nillable type
+                root_content[key] = {"@C:nil": "true"}
+                continue
+
             def convert_keys(d: Any) -> Any:
                 """Recursively convert dictionary keys to camelCase."""
                 if isinstance(d, dict):

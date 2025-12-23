@@ -74,6 +74,21 @@ class OCICommand(OCIType):
         super().__init__(**kwargs)
 
 
+class _NullType:
+    """Sentinel type for explicit null/nil values in OCI commands."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "NULL"
+
+    def __bool__(self) -> bool:
+        return False
+
+
+NULL = _NullType()
+
+
 class OCIRequest(OCICommand):
     pass
 
