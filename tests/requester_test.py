@@ -167,7 +167,7 @@ class TestSyncSOAPRequester:
         assert requester.client is not None
         assert requester.zclient is not None
         mock_logger.info.assert_called_once_with(
-            "Initiated socket on SyncSOAPRequester: localhost:2209"
+            "Initiated client on SyncSOAPRequester: localhost:2209"
         )
 
     @patch(

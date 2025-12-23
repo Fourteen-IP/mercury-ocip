@@ -13,7 +13,6 @@ from mercury_ocip.plugins.base_plugin import BasePlugin
 
 class Agent:
     __instance: Optional["Agent"] = None
-    _installed_plugins: list[EntryPoint] = []
 
     @classmethod
     def get_instance(cls: Type["Agent"], client: BaseClient) -> "Agent":
@@ -36,6 +35,7 @@ class Agent:
         self.client = client
         self.bulk = BulkOperations(client)
         self.automate = AutomationTasks(client)
+        self._installed_plugins: list[EntryPoint] = []
         self.load_plugins()
 
     def load_plugins(self) -> None:

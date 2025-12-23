@@ -86,7 +86,7 @@ class GroupAuditor(BaseAutomation[GroupAuditRequest, GroupAuditResult]):
             )
         )
         response = cast(GroupServiceGetAuthorizationListResponse, response)
-        breakdown: dict[str:Any] = response.to_dict()  # type: ignore
+        breakdown: dict[str, Any] = response.to_dict()  # type: ignore
         parsed_results: dict[str, dict] = {}
         for key, value in breakdown.items():
             if not value:

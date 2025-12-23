@@ -438,22 +438,21 @@ wheels = [
 
 [[package]]
 name = "mercury-ocip"
-version = "1.0.0b0"
+version = "1.0.1b0"
 source = { editable = "." }
 dependencies = [
     { name = "asyncio" },
     { name = "attrs" },
     { name = "httpx" },
-    { name = "lxml-stubs" },
     { name = "pydantic" },
     { name = "requests" },
-    { name = "types-lxml" },
     { name = "xmltodict" },
     { name = "zeep" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "lxml-stubs" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
     { name = "mkdocstrings", extra = ["python"] },
@@ -462,6 +461,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+    { name = "types-lxml" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -478,16 +478,15 @@ requires-dist = [
     { name = "asyncio", specifier = ">=3.4.3" },
     { name = "attrs", specifier = ">=21.4.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "lxml-stubs", specifier = ">=0.5.1" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "requests", specifier = ">=2.32.3" },
-    { name = "types-lxml", specifier = ">=2025.3.30" },
     { name = "xmltodict", specifier = ">=1.0.2" },
     { name = "zeep", specifier = ">=4.3.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "lxml-stubs", specifier = ">=0.5.1" },
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-material", specifier = ">=9.6.15" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.29.1" },
@@ -496,6 +495,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-asyncio", specifier = ">=1.1.0" },
     { name = "ruff", specifier = ">=0.8.1" },
+    { name = "types-lxml", specifier = ">=2025.3.30" },
 ]
 docs = [
     { name = "mkdocs", specifier = ">=1.6.1" },

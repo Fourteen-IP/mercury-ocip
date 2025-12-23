@@ -3,4 +3,4 @@ from .client import Client as Client
 from .client import AsyncClient as AsyncClient
 from .agent import Agent as Agent
 
-__all__ = ["Client", "AsyncClient", "Agent"]
+__all__ = ["BaseClient", "Client", "AsyncClient", "Agent"]

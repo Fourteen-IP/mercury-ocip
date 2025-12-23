@@ -12,7 +12,7 @@ from mercury_ocip.commands import commands
 from mercury_ocip.commands.base_command import OCICommand as BWKSCommand
 from mercury_ocip.commands.base_command import OCIType as BWKSType
 from mercury_ocip.commands.base_command import ErrorResponse as BWKSErrorResponse
-from mercury_ocip.commands.base_command import SuccessResponse as BWKSSucessResponse
+from mercury_ocip.commands.base_command import SuccessResponse as BWKSSuccessResponse
 from mercury_ocip.requester import (
     create_requester,
     BaseRequester,
@@ -57,7 +57,7 @@ class BaseClient(ABC):
     timeout: int = attr.ib(default=30)
     logger: logging.Logger = attr.ib(default=None)
     authenticated: bool = attr.ib(default=False)
-    session_id: str = attr.ib(default=str(uuid.uuid4()))
+    session_id: str = attr.ib(factory=lambda: str(uuid.uuid4()))
     tls: bool = attr.ib(default=True)
 
     _dispatch_table: Dict[str, Type[BWKSCommand]] = attr.ib(default=None)
@@ -136,8 +136,8 @@ class BaseClient(ABC):
             for _, cls in inspect.getmembers(module, inspect.isclass):
                 self._dispatch_table[cls.__name__] = cls
 
-        # manually append as we handle ErrorResponse & SucessResponse in base_command
-        for cls in [BWKSErrorResponse, BWKSSucessResponse]:
+        # manually append as we handle ErrorResponse & SuccessResponse in base_command
+        for cls in [BWKSErrorResponse, BWKSSuccessResponse]:
             self._dispatch_table[cls.__name__] = cls
 
     def _set_up_logging(self):
@@ -229,7 +229,7 @@ class Client(BaseClient):
             BWKSCommand: The response from the server
 
         Raises:
-            THError: If the command is not found in the dispatch table
+            MError: If the command is not found in the dispatch table
         """
         # If client is already authenticated, return
         if self.authenticated:
@@ -304,7 +304,7 @@ class Client(BaseClient):
                 "{http://www.w3.org/2001/XMLSchema-instance}type"
             )
         else:
-            return BWKSSucessResponse()
+            return BWKSSuccessResponse()
 
         # Validate Typename Extraction
         if not type_name or not isinstance(type_name, str):
@@ -425,7 +425,7 @@ class AsyncClient(BaseClient):
             BWKSCommand: The response from the server
 
         Raises:
-            THError: If the command is not found in the dispatch table
+            MError: If the command is not found in the dispatch table
         """
         # If client is already authenticated, return
         if self.authenticated:
@@ -501,7 +501,7 @@ class AsyncClient(BaseClient):
                 "{http://www.w3.org/2001/XMLSchema-instance}type"
             )
         else:
-            return BWKSSucessResponse()
+            return BWKSSuccessResponse()
 
         # Validate Typename Extraction
         if not type_name or not isinstance(type_name, str):

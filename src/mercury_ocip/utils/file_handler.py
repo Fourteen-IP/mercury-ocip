@@ -16,6 +16,7 @@ class FileHandler:
             reader = csv.DictReader(file)
             return [dict(row) for row in reader if any(row.values())]
 
+    @staticmethod
     def _check_file_exists(file_path: str) -> bool:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File {file_path} does not exist")

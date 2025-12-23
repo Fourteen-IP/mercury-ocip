@@ -114,9 +114,6 @@ class BaseRequester(ABC):
             broadsoft_doc, xml_declaration=True, encoding="ISO-8859-1"
         )
 
-    def __del__(self) -> None:
-        self.disconnect()
-
 
 class SyncTCPRequester(BaseRequester):
     """A synchronous TCP requester for BroadWorks OCI-P.
@@ -293,7 +290,7 @@ class SyncSOAPRequester(BaseRequester):
                     wsdl=f"{self.host}?wsdl", transport=transport, settings=settings
                 )
                 self.logger.info(
-                    f"Initiated socket on {self.__class__.__name__}: {self.host}:{self.port}"
+                    f"Initiated client on {self.__class__.__name__}: {self.host}:{self.port}"
                 )
             except Exception as e:
                 self.logger.error(
@@ -543,11 +540,22 @@ class AsyncSOAPRequester(BaseRequester):
                 await self.async_client.aclose()
             except Exception as e:
                 self.logger.warning(
-                    f"Exception: {e} was raised when attemping to close {self.__class__.__name__}, but was ignored."
+                    f"Exception: {e} was raised when attemping to close async_client in {self.__class__.__name__}, but was ignored."
                 )
                 pass
             finally:
                 self.async_client = None
+
+        if self.wsdl_client:
+            try:
+                self.wsdl_client.close()
+            except Exception as e:
+                self.logger.warning(
+                    f"Exception: {e} was raised when attemping to close wsdl_client in {self.__class__.__name__}, but was ignored."
+                )
+            finally:
+                self.wsdl_client = None
+                self.zeep_client = None
 
     async def send_request(self, command: str) -> RequestResult:
         """Sends a request to the server.

@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+from mercury_ocip.client import BaseClient
 from mercury_ocip.bulk.call_pickup import CallPickupBulkOperations
 from mercury_ocip.bulk.call_center import CallCenterBulkOperations
 from mercury_ocip.bulk.hunt_group import HuntGroupBulkOperations
@@ -20,7 +21,7 @@ class BulkOperations:
         client (BaseClient): Client object to be used in the scripts.
     """
 
-    def __init__(self, client):
+    def __init__(self, client: BaseClient):
         self.client = client
         self.call_center = CallCenterBulkOperations(client)
         self.call_pickup = CallPickupBulkOperations(client)

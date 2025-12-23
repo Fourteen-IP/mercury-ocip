@@ -407,7 +407,11 @@ class AsyncParser:
 
     @staticmethod
     def _get_loop():
-        return asyncio.get_event_loop()
+        try:
+            return asyncio.get_running_loop()
+        except RuntimeError:
+            # Fallback for non-async context
+            return asyncio.get_event_loop()
 
     @staticmethod
     async def to_xml_from_class(obj: OCIType) -> str:
@@ -446,3 +450,8 @@ class AsyncParser:
         return await AsyncParser._get_loop().run_in_executor(
             AsyncParser._executor, Parser.to_class_from_xml, xml, cls
         )
+
+    @classmethod
+    def shutdown(cls):
+        """Shutdown the executor pool."""
+        cls._executor.shutdown(wait=True)
