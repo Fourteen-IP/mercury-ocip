@@ -59,7 +59,15 @@ class Parser:
         type_hints = get_type_hints(obj.__class__)
         for attr, hint in type_hints.items():
             value = getattr(obj, attr, None)
+
             if value is None:
+                continue
+
+            if type(value).__name__ == "OCINil" or (
+                isinstance(value, type) and value.__name__ == "OCINil"
+            ):
+                key = aliases.get(attr, snake_to_camel(attr))
+                root_content[key] = {"@C:nil": "true"}
                 continue
 
             key = aliases.get(attr, snake_to_camel(attr))
