@@ -1,3 +1,4 @@
+from mercury_ocip.commands.base_command import Nillable, OCIType
 from mercury_ocip.utils.parser import Parser
 from mercury_ocip.commands.commands import (
    UserConsolidatedModifyRequest22, 
@@ -9,7 +10,8 @@ from mercury_ocip.commands.commands import (
    AutoAttendantKeyConfiguration20,
    AutoAttendantAddMenu20,
    ServiceInstanceAddProfile,
-   GroupGetListInSystemResponse
+   GroupGetListInSystemResponse,
+   AlternateNumberEntry21
 )
 from mercury_ocip.commands.base_command import OCITable, OCITableRow
 
@@ -212,3 +214,9 @@ def test_parser_to_dict_from_class_with_oci_table():
     assert dict_output["group_table"][1]["column2"] == "Column2_Row2"
     
     
+def test_nillable_type_creates_null_field():
+
+    ob = AlternateNumberEntry21(phone_number="").to_xml()
+
+    assert ob == '<command xmlns="" xmlns:C="http://www.w3.org/2001/XMLSchema-instance" C:type="AlternateNumberEntry21"><phoneNumber C:nil="true"/></command>'
+
