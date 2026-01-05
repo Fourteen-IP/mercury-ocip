@@ -11,6 +11,7 @@ from mercury_ocip.automate.user_digest import (
     UserDigest,
 )
 from mercury_ocip.automate.base_automation import AutomationResult
+import logging
 
 
 class AutomationTasks:
@@ -18,26 +19,37 @@ class AutomationTasks:
 
     def __init__(self, client: BaseClient):
         self.client = client
+        self.logger = logging.getLogger(__name__)
         self._alias_finder = AliasFinder(client)
         self._group_auditor = GroupAuditor(client)
         self._user_digest = UserDigest(client)
+        self.logger.debug("AutomationTasks initialized")
 
     def find_alias(
         self, service_provider_id: str, group_id: str, alias: str
     ) -> AutomationResult[AliasResult]:
+        self.logger.info(f"Executing find_alias automation for {service_provider_id}/{group_id}/{alias}")
         request = AliasRequest(
             service_provider_id=service_provider_id, group_id=group_id, alias=alias
         )
-        return self._alias_finder.execute(request=request)
+        result = self._alias_finder.execute(request=request)
+        self.logger.debug(f"find_alias automation completed with status: {result.ok}")
+        return result
 
     def audit_group(
         self, service_provider_id: str, group_id: str
     ) -> AutomationResult[GroupAuditResult]:
+        self.logger.info(f"Executing audit_group automation for {service_provider_id}/{group_id}")
         request = GroupAuditRequest(
             service_provider_id=service_provider_id, group_id=group_id
         )
-        return self._group_auditor.execute(request=request)
+        result = self._group_auditor.execute(request=request)
+        self.logger.debug(f"audit_group automation completed with status: {result.ok}")
+        return result
 
     def user_digest(self, user_id: str) -> AutomationResult[UserDigestResult]:
+        self.logger.info(f"Executing user_digest automation for {user_id}")
         request = UserDigestRequest(user_id=user_id)
-        return self._user_digest.execute(request=request)
+        result = self._user_digest.execute(request=request)
+        self.logger.debug(f"user_digest automation completed with status: {result.ok}")
+        return result

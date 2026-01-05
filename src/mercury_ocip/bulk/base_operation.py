@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import List, Dict, Any, cast
 import re
+import logging
 
 
 from mercury_ocip.client import BaseClient
@@ -30,6 +31,7 @@ class BaseBulkOperations(ABC):
 
     def __init__(self, client: BaseClient) -> None:
         self.client = client
+        self.logger = logging.getLogger(__name__)
 
     def execute_from_csv(
         self, csv_path: str, dry_run: bool = False
@@ -45,7 +47,9 @@ class BaseBulkOperations(ABC):
         Returns:
             List[Dict[str, Any]]: List of bwks entities created.
         """
+        self.logger.info(f"Starting bulk operation from CSV: {csv_path}, dry_run={dry_run}")
         data: list[dict[str, Any]] = FileHandler.read_csv_to_dict(csv_path)
+        self.logger.debug(f"Loaded {len(data)} rows from CSV file")
         parsed_data: list[Dict[str, Any]] = self._parse_csv(data)
         return self.execute_from_data(parsed_data, dry_run)
 
@@ -63,7 +67,11 @@ class BaseBulkOperations(ABC):
         Returns:
             List[Dict[str, Any]]: List of bwks entities created.
         """
+        operation_class = self.__class__.__name__
+        self.logger.info(f"Starting bulk operation: {operation_class} with {len(data)} items, dry_run={dry_run}")
         results: list[dict[str, Any]] = []
+        success_count = 0
+        failure_count = 0
 
         for i, row in enumerate(data):
             try:
@@ -90,11 +98,18 @@ class BaseBulkOperations(ABC):
                     return_data["response"] = response.summary  # type: ignore
                     return_data["detail"] = response.detail  # type: ignore
                     return_data["success"] = False
+                    failure_count += 1
+                    self.logger.warning(f"Row {i}: {operation} failed - {response.summary}")
+                else:
+                    success_count += 1
+                    self.logger.debug(f"Row {i}: {operation} succeeded")
 
                 results.append(return_data)
 
             except Exception as e:
+                failure_count += 1
                 # Pydantic validation errors or other failures
+                self.logger.error(f"Row {i}: Failed to execute operation - {str(e)}")
                 results.append(
                     {
                         "index": i,
@@ -106,6 +121,7 @@ class BaseBulkOperations(ABC):
                     }
                 )
 
+        self.logger.info(f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed")
         return results
 
     def _parse_csv(self, data: list[dict[str, Any]]) -> List[Dict[str, Any]]:
