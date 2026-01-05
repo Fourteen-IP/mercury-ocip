@@ -351,6 +351,12 @@ class Parser:
                     origin = getattr(hint, "__origin__", None)
                     args = get_args(hint)
 
+            # Handle Nillable[T]
+            while origin is not None and origin not in (list, List) and args:
+                hint = args[0]
+                origin = getattr(hint, "__origin__", None)
+                args = get_args(hint)
+
             # Handle List types
             if origin in (list, List):
                 if not args:
