@@ -1,5 +1,3 @@
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import xmltodict
 from typing import (
     get_type_hints,
@@ -380,64 +378,3 @@ class Parser:
     def to_class_from_xml(xml: str, cls: Type[OCIType]) -> OCIType:
         """Parse XML string and convert to class instance."""
         return Parser.to_class_from_dict(Parser.to_dict_from_xml(xml), cls)
-
-
-class AsyncParser:
-    """
-    Base Class For Async OCI Object Parsing & Type Translation
-
-    It is doing the exact same thing as Parser, except adding each call onto the event loop.
-
-    method table:
-
-    - to_xml_from_class: Translates class object to xml
-    - to_xml_from_dict: Translates dictionary object to xml
-    - to_dict_from_class: Translates class object to dictionary
-    - to_dict_from_xml: Translates xml into dictionary
-    - to_class_from_dict: Translates dictionary object to class
-    - to_class_from_xml: Translates xml to class
-    """
-
-    _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="async_parser")
-
-    @staticmethod
-    def _get_loop():
-        return asyncio.get_event_loop()
-
-    @staticmethod
-    async def to_xml_from_class(obj: OCIType) -> str:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_xml_from_class, obj
-        )
-
-    @staticmethod
-    async def to_xml_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> str:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_xml_from_dict, data, cls
-        )
-
-    @staticmethod
-    async def to_dict_from_class(
-        obj: OCIType, wrap_in_class_name: bool = True
-    ) -> Dict[str, Any]:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_dict_from_class, obj, wrap_in_class_name
-        )
-
-    @staticmethod
-    async def to_dict_from_xml(xml: str) -> Dict[str, Any]:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_dict_from_xml, xml
-        )
-
-    @staticmethod
-    async def to_class_from_dict(data: Dict[str, Any], cls: Type[OCIType]) -> OCIType:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_class_from_dict, data, cls
-        )
-
-    @staticmethod
-    async def to_class_from_xml(xml: str, cls: Type[OCIType]) -> OCIType:
-        return await AsyncParser._get_loop().run_in_executor(
-            AsyncParser._executor, Parser.to_class_from_xml, xml, cls
-        )
