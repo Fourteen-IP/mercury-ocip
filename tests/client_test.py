@@ -172,7 +172,6 @@ class TestClient:
         # Verify requester was created correctly
         mock_create_requester.assert_called_once_with(
             conn_type="TCP",
-            async_=False,
             host="localhost",
             port=2209,
             timeout=30,
