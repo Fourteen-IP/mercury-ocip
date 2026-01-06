@@ -51,6 +51,10 @@
 
 
 ## JOURNAL
+@malkin0xb8 06.01.26
+Added Nillable types in the generation to allow for voiding a field.
+Introduced OCINil Type (placeholder) and Nillable[T] to denote which fields can be voided.
+
 @malkin0xb8 12.12.25
 - Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.
 - Updated some tests to reflect the changes in the Parser.
