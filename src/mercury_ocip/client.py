@@ -177,6 +177,14 @@ class Client(BaseClient):
 
     _requester: Union[SyncTCPRequester, SyncSOAPRequester]  # type: ignore
 
+    async def __enter__(self):
+        self.authenticate()
+        return self
+
+    async def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect()
+        return False
+
     @property
     def async_mode(self) -> bool:
         return False
@@ -370,10 +378,20 @@ class AsyncClient(BaseClient):
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()  # Call the BaseClient's post-init logic
-        # The requester must be either SyncTCPRequester or SyncSOAPRequester,
-        # not BaseRequester as the interpreter assumes synchronous calls can be
-        # awaitable due to its base class.
-        assert isinstance(self._requester, (AsyncTCPRequester, AsyncSOAPRequester))
+
+        if not isinstance(self._requester, (AsyncTCPRequester, AsyncSOAPRequester)):
+            self.logger.error(
+                "Requester Object is not an instance of AsyncTCPRequester or AsyncSOAPRequester."
+            )
+            raise MError("Requester object is synchronous.")
+
+    async def __aenter__(self):
+        await self.authenticate()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.disconnect()
+        return False
 
     async def command(self, command: CommandInput) -> CommandResult:
         """
@@ -391,7 +409,9 @@ class AsyncClient(BaseClient):
             await self.authenticate()
         self.logger.info(f"Executing command: {command.__class__.__name__}")
         self.logger.debug(f"Command: {await command.to_dict_async()}")
-        response = await self._requester.send_request(await command.to_xml_async())
+        response: RequestResult = await self._requester.send_request(
+            await command.to_xml_async()
+        )
         return await self._receive_response(response)
 
     async def raw_command(self, command: str, **kwargs: str) -> CommandResult:
@@ -436,7 +456,7 @@ class AsyncClient(BaseClient):
 
         # Default to 22V5 login request - recommended
         if not (login_request_class := self._dispatch_table.get("LoginRequest22V5")):
-            raise ValueError("LoginRequest22V5 not found in dispatch table")
+            raise MError("LoginRequest22V5 not found in dispatch table")
         request: BWKSCommand = login_request_class(
             user_id=self.username, password=self.password
         )
@@ -445,13 +465,16 @@ class AsyncClient(BaseClient):
             # Hashing password needed when not over secure connection
 
             if not (auth_request := self._dispatch_table.get("AuthenticationRequest")):
-                raise ValueError("AuthenticationRequest not found in dispatch table")
+                raise MError("AuthenticationRequest not found in dispatch table")
 
             auth_resp: BWKSCommand | None = await self._receive_response(
                 await self._requester.send_request(
                     await auth_request(user_id=self.username).to_xml_async()
                 )
             )
+
+            if isinstance(auth_resp, BWKSErrorResponse):
+                MError("Authentication failed")
 
             assert auth_resp is not None and hasattr(auth_resp, "nonce")
 
