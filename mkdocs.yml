@@ -45,9 +45,7 @@ theme:
 
 nav:
 - Overview: index.md
-- Client:
-  - Client: client/client.md
-  - Async Client: client/async-client.md
+- Client: client/client.md
 - Commands Reference: commands/
 - Agent:
   - Agent: agent/index.md
