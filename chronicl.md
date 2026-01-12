@@ -51,6 +51,10 @@
 
 
 ## JOURNAL
+@Jordan-Prescott 12.01.26
+- Added delete SP/ Group Admins to bulk upload sheet
+- Comes after numerous requests wanting to manage these better from amdinistrators
+
 @malkin0xb8 06.01.26
 Added Nillable types in the generation to allow for voiding a field.
 Introduced OCINil Type (placeholder) and Nillable[T] to denote which fields can be voided.
