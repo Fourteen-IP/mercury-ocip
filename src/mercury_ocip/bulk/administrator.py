@@ -20,7 +20,7 @@ class AdminBulkOperations(BaseBulkOperations):
                 # "defaults": {},
                 # "integer_fields": {},
             },
-             "service.provider.admin.delete": {
+            "service.provider.admin.delete": {
                 "command": "ServiceProviderAdminDeleteRequest",
             },
             "service.provider.admin.modify.policy": {
@@ -54,6 +54,27 @@ class AdminBulkOperations(BaseBulkOperations):
             },
             "group.admin.delete": {
                 "command": "GroupAdminDeleteRequest",
+                "group.admin.modify.policy": {
+                    "command": "GroupAdminModifyPolicyRequest",
+                    "defaults": {
+                        "profile_access": "Read-Only",
+                        "user_access": "Full",
+                        "admin_access": "Read-Only",
+                        "department_access": "Full",
+                        "access_device_access": "Read-Only",
+                        "enhanced_service_instance_access": "Modify-Only",
+                        "feature_access_code_access": "Read-Only",
+                        "phone_number_extension_access": "Read-Only",
+                        "calling_line_id_number_access": "Full",
+                        "service_access": "Read-Only",
+                        "trunk_group_access": "Full",
+                        "session_admission_control_access": "Read-Only",
+                        "office_zone_access": "Read-Only",
+                        "number_activation_access": "None",
+                        "dialable_caller_id_access": "Read-Only",
+                    },
+                },
+            },
             "group.admin.modify.policy": {
                 "command": "GroupAdminModifyPolicyRequest",
                 "defaults": {
