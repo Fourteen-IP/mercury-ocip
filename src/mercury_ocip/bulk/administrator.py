@@ -20,6 +20,9 @@ class AdminBulkOperations(BaseBulkOperations):
                 # "defaults": {},
                 # "integer_fields": {},
             },
+             "service.provider.admin.delete": {
+                "command": "ServiceProviderAdminDeleteRequest",
+            },
             "service.provider.admin.modify.policy": {
                 "command": "ServiceProviderAdminModifyPolicyRequest14",
                 "defaults": {
@@ -49,6 +52,8 @@ class AdminBulkOperations(BaseBulkOperations):
                 # "defaults": {},
                 # "integer_fields": {},
             },
+            "group.admin.delete": {
+                "command": "GroupAdminDeleteRequest",
             "group.admin.modify.policy": {
                 "command": "GroupAdminModifyPolicyRequest",
                 "defaults": {
