@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.12"
 
 [[package]]
@@ -438,7 +438,7 @@ wheels = [
 
 [[package]]
 name = "mercury-ocip"
-version = "1.0.0b0"
+version = "1.0.1b0"
 source = { editable = "." }
 dependencies = [
     { name = "asyncio" },

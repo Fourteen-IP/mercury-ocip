@@ -5,8 +5,6 @@
 [![Downloads](https://static.pepy.tech/badge/mercury-ocip/week)](https://pepy.tech/project/mercury-ocip)
 [![pypi version](https://img.shields.io/pypi/v/mercury-ocip.svg)](https://pypi.python.org/pypi/mercury-ocip)
 
-# Mercury
-
 **Mercury** is an SDK for interfacing with Broadworks OCIP interface either via TCP or SOAP.
 
 - [Documentation](https://mercury-docs.14ip.net/)
