@@ -1,4 +1,5 @@
 from mercury_ocip.commands.base_command import OCIType, ErrorResponse
+from mercury_ocip.commands.commands import ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointAdd22, AccessDevice
 from dataclasses import dataclass, field
 from typing import Optional
 import pytest
@@ -68,3 +69,21 @@ def test_instantiating_from_dict_as_kwargs():
     assert obj.device_level == "Level3"
     assert obj.device_name == "DeviceC"
     assert obj.device_order == 3
+
+def test_as_data_mode_type_bug():
+
+    """Tests for a specific bug in command generation where seperation of AS/XS commands would be prioritised.
+    XS commands are optional by default, but due to a regex pattern mismatch,
+    AS Datamode fields would be incorrectly assigned optional."""
+
+    with pytest.raises(TypeError):
+        ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointAdd22(
+            access_device=AccessDevice(
+                device_level="Group",
+                device_name="testDevice"
+            ),
+            private_identity="string",
+            is_active=True,
+            allow_origination=True,
+            allow_termination=True,
+        )
