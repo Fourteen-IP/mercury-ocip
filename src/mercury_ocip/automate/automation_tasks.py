@@ -11,15 +11,13 @@ from mercury_ocip.automate.user_digest import (
     UserDigest,
 )
 from mercury_ocip.automate.base_automation import AutomationResult
-import logging
-
 
 class AutomationTasks:
     """Main automation tasks handler"""
 
     def __init__(self, client: BaseClient):
         self.client = client
-        self.logger = logging.getLogger(__name__)
+        self.logger = client.logger
         self._alias_finder = AliasFinder(client)
         self._group_auditor = GroupAuditor(client)
         self._user_digest = UserDigest(client)

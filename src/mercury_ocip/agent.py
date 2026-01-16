@@ -2,7 +2,6 @@ from typing import Optional, Type
 import importlib.metadata
 from importlib.metadata import EntryPoint
 import inspect
-import logging
 
 from mercury_ocip.utils.defines import to_snake_case
 

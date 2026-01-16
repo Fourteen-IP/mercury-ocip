@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Generic, Optional, TypeVar, cast
-import logging
 
 from mercury_ocip.client import BaseClient
 from mercury_ocip.utils.shared_operations import SharedOperations
@@ -30,8 +29,8 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
 
     def __init__(self, client: BaseClient) -> None:
         self.client = client
+        self.logger = client.logger
         self.shared_ops = SharedOperations(client)
-        self.logger = logging.getLogger(__name__)
 
     def execute(self, request: RequestT) -> AutomationResult[PayloadT]:
         automation_name = self.__class__.__name__

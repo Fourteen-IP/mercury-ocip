@@ -31,7 +31,7 @@ class BaseBulkOperations(ABC):
 
     def __init__(self, client: BaseClient) -> None:
         self.client = client
-        self.logger = logging.getLogger(__name__)
+        self.logger = client.logger
 
     def execute_from_csv(
         self, csv_path: str, dry_run: bool = False

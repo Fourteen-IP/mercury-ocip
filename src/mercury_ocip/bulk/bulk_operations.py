@@ -1,5 +1,4 @@
 from typing import List, Dict, Any
-import logging
 
 from mercury_ocip.bulk.call_pickup import CallPickupBulkOperations
 from mercury_ocip.bulk.call_center import CallCenterBulkOperations
@@ -23,7 +22,7 @@ class BulkOperations:
 
     def __init__(self, client):
         self.client = client
-        self.logger = logging.getLogger(__name__)
+        self.logger = client.logger
         self.call_center = CallCenterBulkOperations(client)
         self.call_pickup = CallPickupBulkOperations(client)
         self.hunt_group = HuntGroupBulkOperations(client)
