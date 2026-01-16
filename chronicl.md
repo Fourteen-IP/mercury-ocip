@@ -51,8 +51,14 @@
 
 
 ## JOURNAL
+
 @KiPageFault 16.01.25
 - Added More Logging Components & Sanitized Already Present Logging Statements
+
+@Jordan-Prescott 12.01.26
+- Added delete SP/ Group Admins to bulk upload sheet
+- Comes after numerous requests wanting to manage these better from amdinistrators
+
 @malkin0xb8 12.12.25
 - Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.
 - Updated some tests to reflect the changes in the Parser.
