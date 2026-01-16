@@ -1,8 +1,6 @@
 from abc import ABC
 from typing import List, Dict, Any, cast
 import re
-import logging
-
 
 from mercury_ocip.client import BaseClient
 from mercury_ocip.commands.base_command import OCICommand, ErrorResponse
