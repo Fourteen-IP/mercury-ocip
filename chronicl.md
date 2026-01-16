@@ -51,6 +51,8 @@
 
 
 ## JOURNAL
+@KiPageFault 16.01.25
+- Added More Logging Components & Sanitized Already Present Logging Statements
 @malkin0xb8 12.12.25
 - Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.
 - Updated some tests to reflect the changes in the Parser.

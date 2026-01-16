@@ -325,6 +325,7 @@ class Client(BaseClient):
             raise MError(f"Failed To Find Raw Response Type: {type_name}")
 
         # Construct Response Class With Raw Response
+        self.logger.debug(f"Response -> {response_class}")
         return response_class.from_xml(response)  # type: ignore
 
     def disconnect(self):

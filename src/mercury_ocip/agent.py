@@ -35,7 +35,7 @@ class Agent:
         if self.__instance is not None:
             raise Exception("Singleton cannot be instantiated more than once!")
         self.client = client
-        self.logger = logging.getLogger(__name__)
+        self.logger = client.logger
         self.bulk = BulkOperations(client)
         self.automate = AutomationTasks(client)
         self.logger.info("Agent initialized")
