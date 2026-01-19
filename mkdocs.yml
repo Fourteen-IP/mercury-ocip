@@ -48,7 +48,9 @@ nav:
   - Client:
       - Client: client/client.md
       - Async Client: client/async-client.md
-  - Commands Reference: commands/
+  - Commands Reference:
+    - Overview: commands/index.md
+    - Commands: commands/
   - Agent:
       - Agent: agent/index.md
       - Bulk Operations:
