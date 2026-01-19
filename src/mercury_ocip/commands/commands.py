@@ -1,7 +1,7 @@
 # Auto-generated file
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Union
 
 from mercury_ocip.commands.base_command import (
     OCIType,
@@ -12606,6 +12606,23 @@ class VoicePortalMainMenuKeysReadEntry(OCIType):
 
 
 @dataclass(kw_only=True)
+class OCITableRow(OCIType):
+    """The OCITableRow type is used in responses only, never in requests. It occurs
+        inside the OCITable type. The OCITableRow consists columns of strings.
+        Clients should not assume any particular column order as future
+        revisions of the protocol may move or add columns. See the OCITable data type
+        for more information.
+
+    Attributes:
+
+        col (List[str]):
+
+    """
+
+    col: List[str] = field(metadata={"alias": "col"})
+
+
+@dataclass(kw_only=True)
 class ExternalUserIdentity(OCIType):
     """External user identity id identifies pre-authenticated user/admin id performing a session-less OCI request.
         id can be a user/admin’s primary Id/alternate Id/external Id.
@@ -12785,51 +12802,48 @@ class GroupCallQueueMusicOnHoldSourceRead(OCIType):
 
 
 @dataclass(kw_only=True)
-class AccessDeviceMultipleContactEndpointModify(OCIType):
-    """Access device end point used in the context of modify that can have more than one contact defined.
-        Only Static Registration capable devices may have more than one contact defined.
-        Port numbers are only used by devices with static line ordering.
+class AccessDeviceEndpointWithPortNumberRead(OCIType):
+    """Access device end point.
+                Port numbers are only used by devices with static line ordering.
 
     Attributes:
 
-        access_device (Optional[AccessDevice]):
+        access_device (AccessDevice):
 
-        line_port (Optional[str]):
+        line_port (str):
 
-        contact_list (Optional[Nillable[ReplacementContactList]]):
+        contact (Optional[str]):
+
+        static_registration_capable (bool):
+
+        use_domain (bool):
 
         port_number (Optional[int]):
 
     """
 
-    access_device: Optional[AccessDevice] = field(
-        default=None, metadata={"alias": "accessDevice"}
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+    static_registration_capable: bool = field(
+        metadata={"alias": "staticRegistrationCapable"}
     )
 
-    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
-
-    contact_list: Optional[Nillable[ReplacementContactList]] = field(
-        default=None, metadata={"alias": "contactList"}
-    )
+    use_domain: bool = field(metadata={"alias": "useDomain"})
 
     port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
 
-    def __post_init__(self):
-        nillable_fields = ["contact_list"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
 
 @dataclass(kw_only=True)
-class AccessDeviceMultipleIdentityAndContactEndpointAdd(OCIType):
-    """Access device end point used in the context of add that can have more than one contact defined.
-          The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-          Only Static Registration capabable devices may have more than one contact defined.
-          Port numbers are only used by devices with static line ordering.
-          The following elements are only used in XS data mode and ignored in AS data mode:
-            privateIdentity
+class AccessDeviceMultipleIdentityEndpointAdd(OCIType):
+    """Access device end point used in the context of add.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+        Port numbers are only used by devices with static line ordering.
+        The following elements are only used in XS data mode and ignored in AS data mode:
+          privateIdentity
 
     Attributes:
 
@@ -12839,7 +12853,7 @@ class AccessDeviceMultipleIdentityAndContactEndpointAdd(OCIType):
 
         private_identity (Optional[str]):
 
-        contact (Optional[List[str]]):
+        contact (Optional[str]):
 
         port_number (Optional[int]):
 
@@ -12853,7 +12867,7 @@ class AccessDeviceMultipleIdentityAndContactEndpointAdd(OCIType):
         default=None, metadata={"alias": "privateIdentity"}
     )
 
-    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
 
     port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
 
@@ -12900,12 +12914,13 @@ class AccessDeviceMultipleIdentityEndpointWithType(OCIType):
 
 
 @dataclass(kw_only=True)
-class AccessDeviceMultipleIdentityEndpointAdd(OCIType):
-    """Access device end point used in the context of add.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-        Port numbers are only used by devices with static line ordering.
-        The following elements are only used in XS data mode and ignored in AS data mode:
-          privateIdentity
+class AccessDeviceMultipleIdentityAndContactEndpointAdd(OCIType):
+    """Access device end point used in the context of add that can have more than one contact defined.
+          The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+          Only Static Registration capabable devices may have more than one contact defined.
+          Port numbers are only used by devices with static line ordering.
+          The following elements are only used in XS data mode and ignored in AS data mode:
+            privateIdentity
 
     Attributes:
 
@@ -12915,7 +12930,7 @@ class AccessDeviceMultipleIdentityEndpointAdd(OCIType):
 
         private_identity (Optional[str]):
 
-        contact (Optional[str]):
+        contact (Optional[List[str]]):
 
         port_number (Optional[int]):
 
@@ -12929,103 +12944,9 @@ class AccessDeviceMultipleIdentityEndpointAdd(OCIType):
         default=None, metadata={"alias": "privateIdentity"}
     )
 
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
 
     port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-
-@dataclass(kw_only=True)
-class AccessDeviceEndpointModify(OCIType):
-    """Access device end point used in the context of modify.
-        Port numbers are only used by devices with static line ordering.
-        The following element is only used in AS data mode and ignored in XS data mode:
-          pathHeader
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        contact (Optional[Nillable[str]]):
-
-        path_header (Optional[str]):
-
-        port_number (Optional[int]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "contact"}
-    )
-
-    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    def __post_init__(self):
-        nillable_fields = ["contact"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
-class AccessDeviceEndpointAndHotlineAdd(OCIType):
-    """Access device end point used in the context of add.
-        Port numbers are only used by devices with static line ordering.
-        The following element is only used in AS data mode and ignored in XS data mode:
-          pathHeader
-          useHotline, use value false in XS data mode
-          hotlineContact
-
-        The following element is only used in XS data mode and ignored in AS data mode:
-          privateIdentity
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        contact (Optional[str]):
-
-        path_header (Optional[str]):
-
-        port_number (Optional[int]):
-
-        use_hotline (bool):
-
-        hotline_contact (Optional[str]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    use_hotline: bool = field(metadata={"alias": "useHotline"})
-
-    hotline_contact: Optional[str] = field(
-        default=None, metadata={"alias": "hotlineContact"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -13040,35 +12961,6 @@ class ReplacementDeviceList(OCIType):
     """
 
     device: List[AccessDevice] = field(metadata={"alias": "device"})
-
-
-@dataclass(kw_only=True)
-class ProfileAndServiceDeviceEndpointInfo(OCIType):
-    """Represents information about an endpoint device
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        access_device_mac_address (Optional[str]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    access_device_mac_address: Optional[str] = field(
-        default=None, metadata={"alias": "accessDeviceMacAddress"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -13104,9 +12996,8 @@ class AccessDeviceEndpointAdd(OCIType):
 
 
 @dataclass(kw_only=True)
-class AccessDeviceEndpointWithPortNumberRead(OCIType):
-    """Access device end point.
-                Port numbers are only used by devices with static line ordering.
+class AccessDeviceEndpointKey(OCIType):
+    """Access device end point in the context of a modify or delete command.
 
     Attributes:
 
@@ -13114,29 +13005,11 @@ class AccessDeviceEndpointWithPortNumberRead(OCIType):
 
         line_port (str):
 
-        contact (Optional[str]):
-
-        static_registration_capable (bool):
-
-        use_domain (bool):
-
-        port_number (Optional[int]):
-
     """
 
     access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
 
     line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-    static_registration_capable: bool = field(
-        metadata={"alias": "staticRegistrationCapable"}
-    )
-
-    use_domain: bool = field(metadata={"alias": "useDomain"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
 
 
 @dataclass(kw_only=True)
@@ -13196,8 +13069,11 @@ class AccessDeviceEndpointWithPortNumberRead22V2(OCIType):
 
 
 @dataclass(kw_only=True)
-class AccessDeviceEndpointKey(OCIType):
-    """Access device end point in the context of a modify or delete command.
+class AccessDeviceEndpointModify(OCIType):
+    """Access device end point used in the context of modify.
+        Port numbers are only used by devices with static line ordering.
+        The following element is only used in AS data mode and ignored in XS data mode:
+          pathHeader
 
     Attributes:
 
@@ -13205,67 +13081,28 @@ class AccessDeviceEndpointKey(OCIType):
 
         line_port (str):
 
+        contact (Optional[Nillable[str]]):
+
+        path_header (Optional[str]):
+
+        port_number (Optional[int]):
+
     """
 
     access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
 
     line_port: str = field(metadata={"alias": "linePort"})
 
-
-@dataclass(kw_only=True)
-class AccessDeviceMultipleIdentityAndContactEndpointModify22(OCIType):
-    """Access device end point used in the context of modify that can have more than one contact defined.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-        Only Static Registration capable devices may have more than one contact defined.
-        Port numbers are only used by devices with static line ordering.
-        The following elements are only used in XS data mode and ignored in AS data mode:
-          privateIdentity
-        The following elements are only used in AS data mode and ignored in XS data mode:
-          useHotline
-          hotlineContact
-
-    Attributes:
-
-        access_device (Optional[AccessDevice]):
-
-        line_port (Optional[str]):
-
-        private_identity (Optional[Nillable[str]]):
-
-        contact_list (Optional[Nillable[ReplacementContactList22]]):
-
-        port_number (Optional[int]):
-
-        use_hotline (Optional[bool]):
-
-        hotline_contact (Optional[Nillable[str]]):
-
-    """
-
-    access_device: Optional[AccessDevice] = field(
-        default=None, metadata={"alias": "accessDevice"}
+    contact: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "contact"}
     )
 
-    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
-
-    private_identity: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact_list: Optional[Nillable[ReplacementContactList22]] = field(
-        default=None, metadata={"alias": "contactList"}
-    )
+    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
 
     port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
 
-    use_hotline: Optional[bool] = field(default=None, metadata={"alias": "useHotline"})
-
-    hotline_contact: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "hotlineContact"}
-    )
-
     def __post_init__(self):
-        nillable_fields = ["private_identity", "contact_list", "hotline_contact"]
+        nillable_fields = ["contact"]
         for field_name in nillable_fields:
             value = getattr(self, field_name)
             if value == "" or value == "None":
@@ -13320,49 +13157,7 @@ class AccessDeviceMultipleIdentityAndContactEndpointModify(OCIType):
 
 
 @dataclass(kw_only=True)
-class AccessDeviceEndpointWithPortNumberRead22(OCIType):
-    """Access device end point.
-        Port numbers are only used by devices with static line ordering.
-        The following element is only used in AS data mode and ignored in XS data mode:
-          pathHeader
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        contact (Optional[str]):
-
-        path_header (Optional[str]):
-
-        static_registration_capable (bool):
-
-        use_domain (bool):
-
-        port_number (Optional[int]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
-
-    static_registration_capable: bool = field(
-        metadata={"alias": "staticRegistrationCapable"}
-    )
-
-    use_domain: bool = field(metadata={"alias": "useDomain"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-
-@dataclass(kw_only=True)
-class AccessDeviceMultipleContactEndpointModify22(OCIType):
+class AccessDeviceMultipleContactEndpointModify(OCIType):
     """Access device end point used in the context of modify that can have more than one contact defined.
         Only Static Registration capable devices may have more than one contact defined.
         Port numbers are only used by devices with static line ordering.
@@ -13373,7 +13168,7 @@ class AccessDeviceMultipleContactEndpointModify22(OCIType):
 
         line_port (Optional[str]):
 
-        contact_list (Optional[Nillable[ReplacementContactList22]]):
+        contact_list (Optional[Nillable[ReplacementContactList]]):
 
         port_number (Optional[int]):
 
@@ -13385,7 +13180,7 @@ class AccessDeviceMultipleContactEndpointModify22(OCIType):
 
     line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
 
-    contact_list: Optional[Nillable[ReplacementContactList22]] = field(
+    contact_list: Optional[Nillable[ReplacementContactList]] = field(
         default=None, metadata={"alias": "contactList"}
     )
 
@@ -13397,76 +13192,6 @@ class AccessDeviceMultipleContactEndpointModify22(OCIType):
             value = getattr(self, field_name)
             if value == "" or value == "None":
                 object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
-class EnterpriseAccessDevice(OCIType):
-    """Uniquely identifies an access device accessible for an enterprise. It could be a system level device, an enterprise level device or a group level device.
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        group_id (Optional[str]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    group_id: Optional[str] = field(default=None, metadata={"alias": "groupId"})
-
-
-@dataclass(kw_only=True)
-class AccessDeviceMultipleIdentityAndContactEndpointRead(OCIType):
-    """Access device end point that can have multiple contacts.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-              Port numbers are only used by devices with static line ordering.
-        The following elements are only used in XS data mode and not returned in AS data mode:
-          privateIdentity
-        The following elements are only used in AS data mode and a value false is returned in the XS mode:
-          supportVisualDeviceManagement
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        contact (Optional[List[str]]):
-
-        static_registration_capable (bool):
-
-        use_domain (bool):
-
-        port_number (Optional[int]):
-
-        support_visual_device_management (bool):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
-
-    static_registration_capable: bool = field(
-        metadata={"alias": "staticRegistrationCapable"}
-    )
-
-    use_domain: bool = field(metadata={"alias": "useDomain"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    support_visual_device_management: bool = field(
-        metadata={"alias": "supportVisualDeviceManagement"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -13546,6 +13271,298 @@ class AccessDeviceMultipleIdentityEndpointKey(OCIType):
     private_identity: Optional[str] = field(
         default=None, metadata={"alias": "privateIdentity"}
     )
+
+
+@dataclass(kw_only=True)
+class AccessDeviceEndpointWithPortNumberRead22(OCIType):
+    """Access device end point.
+        Port numbers are only used by devices with static line ordering.
+        The following element is only used in AS data mode and ignored in XS data mode:
+          pathHeader
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        contact (Optional[str]):
+
+        path_header (Optional[str]):
+
+        static_registration_capable (bool):
+
+        use_domain (bool):
+
+        port_number (Optional[int]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
+
+    static_registration_capable: bool = field(
+        metadata={"alias": "staticRegistrationCapable"}
+    )
+
+    use_domain: bool = field(metadata={"alias": "useDomain"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+
+@dataclass(kw_only=True)
+class AccessDeviceMultipleIdentityAndContactEndpointRead(OCIType):
+    """Access device end point that can have multiple contacts.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+              Port numbers are only used by devices with static line ordering.
+        The following elements are only used in XS data mode and not returned in AS data mode:
+          privateIdentity
+        The following elements are only used in AS data mode and a value false is returned in the XS mode:
+          supportVisualDeviceManagement
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[List[str]]):
+
+        static_registration_capable (bool):
+
+        use_domain (bool):
+
+        port_number (Optional[int]):
+
+        support_visual_device_management (bool):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
+
+    static_registration_capable: bool = field(
+        metadata={"alias": "staticRegistrationCapable"}
+    )
+
+    use_domain: bool = field(metadata={"alias": "useDomain"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    support_visual_device_management: bool = field(
+        metadata={"alias": "supportVisualDeviceManagement"}
+    )
+
+
+@dataclass(kw_only=True)
+class EnterpriseAccessDevice(OCIType):
+    """Uniquely identifies an access device accessible for an enterprise. It could be a system level device, an enterprise level device or a group level device.
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        group_id (Optional[str]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    group_id: Optional[str] = field(default=None, metadata={"alias": "groupId"})
+
+
+@dataclass(kw_only=True)
+class AccessDeviceMultipleContactEndpointModify22(OCIType):
+    """Access device end point used in the context of modify that can have more than one contact defined.
+        Only Static Registration capable devices may have more than one contact defined.
+        Port numbers are only used by devices with static line ordering.
+
+    Attributes:
+
+        access_device (Optional[AccessDevice]):
+
+        line_port (Optional[str]):
+
+        contact_list (Optional[Nillable[ReplacementContactList22]]):
+
+        port_number (Optional[int]):
+
+    """
+
+    access_device: Optional[AccessDevice] = field(
+        default=None, metadata={"alias": "accessDevice"}
+    )
+
+    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
+
+    contact_list: Optional[Nillable[ReplacementContactList22]] = field(
+        default=None, metadata={"alias": "contactList"}
+    )
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    def __post_init__(self):
+        nillable_fields = ["contact_list"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
+
+
+@dataclass(kw_only=True)
+class ProfileAndServiceDeviceEndpointInfo(OCIType):
+    """Represents information about an endpoint device
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        access_device_mac_address (Optional[str]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    access_device_mac_address: Optional[str] = field(
+        default=None, metadata={"alias": "accessDeviceMacAddress"}
+    )
+
+
+@dataclass(kw_only=True)
+class AccessDeviceEndpointAndHotlineAdd(OCIType):
+    """Access device end point used in the context of add.
+        Port numbers are only used by devices with static line ordering.
+        The following element is only used in AS data mode and ignored in XS data mode:
+          pathHeader
+          useHotline, use value false in XS data mode
+          hotlineContact
+
+        The following element is only used in XS data mode and ignored in AS data mode:
+          privateIdentity
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[str]):
+
+        path_header (Optional[str]):
+
+        port_number (Optional[int]):
+
+        use_hotline (bool):
+
+        hotline_contact (Optional[str]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+    path_header: Optional[str] = field(default=None, metadata={"alias": "pathHeader"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    use_hotline: bool = field(metadata={"alias": "useHotline"})
+
+    hotline_contact: Optional[str] = field(
+        default=None, metadata={"alias": "hotlineContact"}
+    )
+
+
+@dataclass(kw_only=True)
+class AccessDeviceMultipleIdentityAndContactEndpointModify22(OCIType):
+    """Access device end point used in the context of modify that can have more than one contact defined.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+        Only Static Registration capable devices may have more than one contact defined.
+        Port numbers are only used by devices with static line ordering.
+        The following elements are only used in XS data mode and ignored in AS data mode:
+          privateIdentity
+        The following elements are only used in AS data mode and ignored in XS data mode:
+          useHotline
+          hotlineContact
+
+    Attributes:
+
+        access_device (Optional[AccessDevice]):
+
+        line_port (Optional[str]):
+
+        private_identity (Optional[Nillable[str]]):
+
+        contact_list (Optional[Nillable[ReplacementContactList22]]):
+
+        port_number (Optional[int]):
+
+        use_hotline (Optional[bool]):
+
+        hotline_contact (Optional[Nillable[str]]):
+
+    """
+
+    access_device: Optional[AccessDevice] = field(
+        default=None, metadata={"alias": "accessDevice"}
+    )
+
+    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
+
+    private_identity: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact_list: Optional[Nillable[ReplacementContactList22]] = field(
+        default=None, metadata={"alias": "contactList"}
+    )
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    use_hotline: Optional[bool] = field(default=None, metadata={"alias": "useHotline"})
+
+    hotline_contact: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "hotlineContact"}
+    )
+
+    def __post_init__(self):
+        nillable_fields = ["private_identity", "contact_list", "hotline_contact"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
 
 
 @dataclass(kw_only=True)
@@ -13937,402 +13954,6 @@ class ReplacementCommunicationBarringRedirectingRuleList(OCIType):
 
 
 @dataclass(kw_only=True)
-class ServiceInstanceReadProfile17sp4(OCIType):
-    """Service Profile Information for group service.
-
-        Replaced by: ServiceInstanceReadProfile19sp1
-
-    Attributes:
-
-        name (str):
-
-        calling_line_id_last_name (str):
-
-        calling_line_id_first_name (str):
-
-        hiragana_last_name (Optional[str]):
-
-        hiragana_first_name (Optional[str]):
-
-        phone_number (Optional[str]):
-
-        extension (Optional[str]):
-
-        country_code (Optional[str]):
-
-        national_prefix (Optional[str]):
-
-        department (Optional[DepartmentKey]):
-
-        language (Optional[str]):
-
-        time_zone (Optional[str]):
-
-        time_zone_display_name (Optional[str]):
-
-        alias (Optional[List[str]]):
-
-        public_user_identity (Optional[str]):
-
-    """
-
-    name: str = field(metadata={"alias": "name"})
-
-    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
-
-    calling_line_id_first_name: str = field(
-        metadata={"alias": "callingLineIdFirstName"}
-    )
-
-    hiragana_last_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaLastName"}
-    )
-
-    hiragana_first_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaFirstName"}
-    )
-
-    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
-
-    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
-
-    country_code: Optional[str] = field(default=None, metadata={"alias": "countryCode"})
-
-    national_prefix: Optional[str] = field(
-        default=None, metadata={"alias": "nationalPrefix"}
-    )
-
-    department: Optional[DepartmentKey] = field(
-        default=None, metadata={"alias": "department"}
-    )
-
-    language: Optional[str] = field(default=None, metadata={"alias": "language"})
-
-    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
-
-    time_zone_display_name: Optional[str] = field(
-        default=None, metadata={"alias": "timeZoneDisplayName"}
-    )
-
-    alias: Optional[List[str]] = field(default=None, metadata={"alias": "alias"})
-
-    public_user_identity: Optional[str] = field(
-        default=None, metadata={"alias": "publicUserIdentity"}
-    )
-
-
-@dataclass(kw_only=True)
-class GroupDepartmentKey(DepartmentKey):
-    """Uniquely identifies a department defined within a group.
-        To uniquely identify a group department, we must know the department name and which
-        group contains the department.
-
-    Attributes:
-
-        service_provider_id (str):
-
-        group_id (str):
-
-        name (str):
-
-    """
-
-    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
-
-    group_id: str = field(metadata={"alias": "groupId"})
-
-    name: str = field(metadata={"alias": "name"})
-
-
-@dataclass(kw_only=True)
-class TrunkGroupPilotUser(OCIType):
-    """Trunk Group pilot user information used when adding a Trunk Group.
-
-    Attributes:
-
-        user_id (str):
-
-        last_name (str):
-
-        first_name (str):
-
-        calling_line_id_last_name (str):
-
-        calling_line_id_first_name (str):
-
-        hiragana_last_name (Optional[str]):
-
-        hiragana_first_name (Optional[str]):
-
-        password (Optional[str]):
-
-        department (Optional[DepartmentKey]):
-
-        language (Optional[str]):
-
-        time_zone (Optional[str]):
-
-        line_port (str):
-
-        contact (Optional[str]):
-
-    """
-
-    user_id: str = field(metadata={"alias": "userId"})
-
-    last_name: str = field(metadata={"alias": "lastName"})
-
-    first_name: str = field(metadata={"alias": "firstName"})
-
-    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
-
-    calling_line_id_first_name: str = field(
-        metadata={"alias": "callingLineIdFirstName"}
-    )
-
-    hiragana_last_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaLastName"}
-    )
-
-    hiragana_first_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaFirstName"}
-    )
-
-    password: Optional[str] = field(default=None, metadata={"alias": "password"})
-
-    department: Optional[DepartmentKey] = field(
-        default=None, metadata={"alias": "department"}
-    )
-
-    language: Optional[str] = field(default=None, metadata={"alias": "language"})
-
-    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-
-@dataclass(kw_only=True)
-class ServiceInstanceAddProfile(OCIType):
-    """Service Profile Information for group service.
-
-    Attributes:
-
-        name (str):
-
-        calling_line_id_last_name (str):
-
-        calling_line_id_first_name (str):
-
-        hiragana_last_name (Optional[str]):
-
-        hiragana_first_name (Optional[str]):
-
-        phone_number (Optional[str]):
-
-        extension (Optional[str]):
-
-        password (Optional[str]):
-
-        department (Optional[DepartmentKey]):
-
-        language (Optional[str]):
-
-        time_zone (Optional[str]):
-
-        alias (Optional[List[str]]):
-
-        public_user_identity (Optional[str]):
-
-        calling_line_id_phone_number (Optional[str]):
-
-    """
-
-    name: str = field(metadata={"alias": "name"})
-
-    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
-
-    calling_line_id_first_name: str = field(
-        metadata={"alias": "callingLineIdFirstName"}
-    )
-
-    hiragana_last_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaLastName"}
-    )
-
-    hiragana_first_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaFirstName"}
-    )
-
-    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
-
-    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
-
-    password: Optional[str] = field(default=None, metadata={"alias": "password"})
-
-    department: Optional[DepartmentKey] = field(
-        default=None, metadata={"alias": "department"}
-    )
-
-    language: Optional[str] = field(default=None, metadata={"alias": "language"})
-
-    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
-
-    alias: Optional[List[str]] = field(default=None, metadata={"alias": "alias"})
-
-    public_user_identity: Optional[str] = field(
-        default=None, metadata={"alias": "publicUserIdentity"}
-    )
-
-    calling_line_id_phone_number: Optional[str] = field(
-        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
-    )
-
-
-@dataclass(kw_only=True)
-class TrunkGroupMultipleContactPilotUser(OCIType):
-    """Trunk Group pilot user information used when adding a Trunk Group.
-
-    Attributes:
-
-        user_id (str):
-
-        last_name (str):
-
-        first_name (str):
-
-        calling_line_id_last_name (str):
-
-        calling_line_id_first_name (str):
-
-        hiragana_last_name (Optional[str]):
-
-        hiragana_first_name (Optional[str]):
-
-        password (Optional[str]):
-
-        department (Optional[DepartmentKey]):
-
-        language (Optional[str]):
-
-        time_zone (Optional[str]):
-
-        line_port (str):
-
-        contact (Optional[List[str]]):
-
-        calling_line_id_phone_number (Optional[str]):
-
-    """
-
-    user_id: str = field(metadata={"alias": "userId"})
-
-    last_name: str = field(metadata={"alias": "lastName"})
-
-    first_name: str = field(metadata={"alias": "firstName"})
-
-    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
-
-    calling_line_id_first_name: str = field(
-        metadata={"alias": "callingLineIdFirstName"}
-    )
-
-    hiragana_last_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaLastName"}
-    )
-
-    hiragana_first_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaFirstName"}
-    )
-
-    password: Optional[str] = field(default=None, metadata={"alias": "password"})
-
-    department: Optional[DepartmentKey] = field(
-        default=None, metadata={"alias": "department"}
-    )
-
-    language: Optional[str] = field(default=None, metadata={"alias": "language"})
-
-    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
-
-    calling_line_id_phone_number: Optional[str] = field(
-        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
-    )
-
-
-@dataclass(kw_only=True)
-class ServiceInstanceAddProfileFlexibleSeatingHost(OCIType):
-    """Service Profile Information for a flexible seating host.
-
-    Attributes:
-
-        name (str):
-
-        calling_line_id_last_name (str):
-
-        calling_line_id_first_name (str):
-
-        hiragana_last_name (Optional[str]):
-
-        hiragana_first_name (Optional[str]):
-
-        phone_number (Optional[str]):
-
-        extension (Optional[str]):
-
-        password (Optional[str]):
-
-        department (Optional[DepartmentKey]):
-
-        language (Optional[str]):
-
-        time_zone (Optional[str]):
-
-        calling_line_id_phone_number (Optional[str]):
-
-    """
-
-    name: str = field(metadata={"alias": "name"})
-
-    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
-
-    calling_line_id_first_name: str = field(
-        metadata={"alias": "callingLineIdFirstName"}
-    )
-
-    hiragana_last_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaLastName"}
-    )
-
-    hiragana_first_name: Optional[str] = field(
-        default=None, metadata={"alias": "hiraganaFirstName"}
-    )
-
-    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
-
-    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
-
-    password: Optional[str] = field(default=None, metadata={"alias": "password"})
-
-    department: Optional[DepartmentKey] = field(
-        default=None, metadata={"alias": "department"}
-    )
-
-    language: Optional[str] = field(default=None, metadata={"alias": "language"})
-
-    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
-
-    calling_line_id_phone_number: Optional[str] = field(
-        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
-    )
-
-
-@dataclass(kw_only=True)
 class EnterpriseDepartmentKey(DepartmentKey):
     """Uniquely identifies a department defined within an enterprise.
         To uniquely identify an enterprise department, we must know the department name and which
@@ -14439,6 +14060,295 @@ class CombinedServiceInstanceAddProfile(OCIType):
 
 
 @dataclass(kw_only=True)
+class ServiceInstanceReadProfile17(OCIType):
+    """Service Profile Information for group service.
+        It is identical to the ServiceInstanceAddProfile, but without the password.
+
+        Replaced by: ServiceInstanceReadProfile17sp4
+
+    Attributes:
+
+        name (str):
+
+        calling_line_id_last_name (str):
+
+        calling_line_id_first_name (str):
+
+        hiragana_last_name (Optional[str]):
+
+        hiragana_first_name (Optional[str]):
+
+        phone_number (Optional[str]):
+
+        extension (Optional[str]):
+
+        department (Optional[DepartmentKey]):
+
+        language (Optional[str]):
+
+        time_zone (Optional[str]):
+
+        time_zone_display_name (Optional[str]):
+
+        alias (Optional[List[str]]):
+
+        public_user_identity (Optional[str]):
+
+    """
+
+    name: str = field(metadata={"alias": "name"})
+
+    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
+
+    calling_line_id_first_name: str = field(
+        metadata={"alias": "callingLineIdFirstName"}
+    )
+
+    hiragana_last_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaLastName"}
+    )
+
+    hiragana_first_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaFirstName"}
+    )
+
+    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
+
+    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
+
+    department: Optional[DepartmentKey] = field(
+        default=None, metadata={"alias": "department"}
+    )
+
+    language: Optional[str] = field(default=None, metadata={"alias": "language"})
+
+    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
+
+    time_zone_display_name: Optional[str] = field(
+        default=None, metadata={"alias": "timeZoneDisplayName"}
+    )
+
+    alias: Optional[List[str]] = field(default=None, metadata={"alias": "alias"})
+
+    public_user_identity: Optional[str] = field(
+        default=None, metadata={"alias": "publicUserIdentity"}
+    )
+
+
+@dataclass(kw_only=True)
+class ServiceInstanceAddProfile(OCIType):
+    """Service Profile Information for group service.
+
+    Attributes:
+
+        name (str):
+
+        calling_line_id_last_name (str):
+
+        calling_line_id_first_name (str):
+
+        hiragana_last_name (Optional[str]):
+
+        hiragana_first_name (Optional[str]):
+
+        phone_number (Optional[str]):
+
+        extension (Optional[str]):
+
+        password (Optional[str]):
+
+        department (Optional[DepartmentKey]):
+
+        language (Optional[str]):
+
+        time_zone (Optional[str]):
+
+        alias (Optional[List[str]]):
+
+        public_user_identity (Optional[str]):
+
+        calling_line_id_phone_number (Optional[str]):
+
+    """
+
+    name: str = field(metadata={"alias": "name"})
+
+    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
+
+    calling_line_id_first_name: str = field(
+        metadata={"alias": "callingLineIdFirstName"}
+    )
+
+    hiragana_last_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaLastName"}
+    )
+
+    hiragana_first_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaFirstName"}
+    )
+
+    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
+
+    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
+
+    password: Optional[str] = field(default=None, metadata={"alias": "password"})
+
+    department: Optional[DepartmentKey] = field(
+        default=None, metadata={"alias": "department"}
+    )
+
+    language: Optional[str] = field(default=None, metadata={"alias": "language"})
+
+    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
+
+    alias: Optional[List[str]] = field(default=None, metadata={"alias": "alias"})
+
+    public_user_identity: Optional[str] = field(
+        default=None, metadata={"alias": "publicUserIdentity"}
+    )
+
+    calling_line_id_phone_number: Optional[str] = field(
+        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
+    )
+
+
+@dataclass(kw_only=True)
+class TrunkGroupPilotUser(OCIType):
+    """Trunk Group pilot user information used when adding a Trunk Group.
+
+    Attributes:
+
+        user_id (str):
+
+        last_name (str):
+
+        first_name (str):
+
+        calling_line_id_last_name (str):
+
+        calling_line_id_first_name (str):
+
+        hiragana_last_name (Optional[str]):
+
+        hiragana_first_name (Optional[str]):
+
+        password (Optional[str]):
+
+        department (Optional[DepartmentKey]):
+
+        language (Optional[str]):
+
+        time_zone (Optional[str]):
+
+        line_port (str):
+
+        contact (Optional[str]):
+
+    """
+
+    user_id: str = field(metadata={"alias": "userId"})
+
+    last_name: str = field(metadata={"alias": "lastName"})
+
+    first_name: str = field(metadata={"alias": "firstName"})
+
+    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
+
+    calling_line_id_first_name: str = field(
+        metadata={"alias": "callingLineIdFirstName"}
+    )
+
+    hiragana_last_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaLastName"}
+    )
+
+    hiragana_first_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaFirstName"}
+    )
+
+    password: Optional[str] = field(default=None, metadata={"alias": "password"})
+
+    department: Optional[DepartmentKey] = field(
+        default=None, metadata={"alias": "department"}
+    )
+
+    language: Optional[str] = field(default=None, metadata={"alias": "language"})
+
+    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+
+@dataclass(kw_only=True)
+class ServiceInstanceAddProfileFlexibleSeatingHost(OCIType):
+    """Service Profile Information for a flexible seating host.
+
+    Attributes:
+
+        name (str):
+
+        calling_line_id_last_name (str):
+
+        calling_line_id_first_name (str):
+
+        hiragana_last_name (Optional[str]):
+
+        hiragana_first_name (Optional[str]):
+
+        phone_number (Optional[str]):
+
+        extension (Optional[str]):
+
+        password (Optional[str]):
+
+        department (Optional[DepartmentKey]):
+
+        language (Optional[str]):
+
+        time_zone (Optional[str]):
+
+        calling_line_id_phone_number (Optional[str]):
+
+    """
+
+    name: str = field(metadata={"alias": "name"})
+
+    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
+
+    calling_line_id_first_name: str = field(
+        metadata={"alias": "callingLineIdFirstName"}
+    )
+
+    hiragana_last_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaLastName"}
+    )
+
+    hiragana_first_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaFirstName"}
+    )
+
+    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
+
+    extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
+
+    password: Optional[str] = field(default=None, metadata={"alias": "password"})
+
+    department: Optional[DepartmentKey] = field(
+        default=None, metadata={"alias": "department"}
+    )
+
+    language: Optional[str] = field(default=None, metadata={"alias": "language"})
+
+    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
+
+    calling_line_id_phone_number: Optional[str] = field(
+        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
+    )
+
+
+@dataclass(kw_only=True)
 class ServiceInstanceReadProfile19sp1(OCIType):
     """Service Profile Information for group service.
 
@@ -14530,11 +14440,33 @@ class ServiceInstanceReadProfile19sp1(OCIType):
 
 
 @dataclass(kw_only=True)
-class ServiceInstanceReadProfile17(OCIType):
-    """Service Profile Information for group service.
-        It is identical to the ServiceInstanceAddProfile, but without the password.
+class GroupDepartmentKey(DepartmentKey):
+    """Uniquely identifies a department defined within a group.
+        To uniquely identify a group department, we must know the department name and which
+        group contains the department.
 
-        Replaced by: ServiceInstanceReadProfile17sp4
+    Attributes:
+
+        service_provider_id (str):
+
+        group_id (str):
+
+        name (str):
+
+    """
+
+    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+
+    group_id: str = field(metadata={"alias": "groupId"})
+
+    name: str = field(metadata={"alias": "name"})
+
+
+@dataclass(kw_only=True)
+class ServiceInstanceReadProfile17sp4(OCIType):
+    """Service Profile Information for group service.
+
+        Replaced by: ServiceInstanceReadProfile19sp1
 
     Attributes:
 
@@ -14551,6 +14483,10 @@ class ServiceInstanceReadProfile17(OCIType):
         phone_number (Optional[str]):
 
         extension (Optional[str]):
+
+        country_code (Optional[str]):
+
+        national_prefix (Optional[str]):
 
         department (Optional[DepartmentKey]):
 
@@ -14586,6 +14522,12 @@ class ServiceInstanceReadProfile17(OCIType):
 
     extension: Optional[str] = field(default=None, metadata={"alias": "extension"})
 
+    country_code: Optional[str] = field(default=None, metadata={"alias": "countryCode"})
+
+    national_prefix: Optional[str] = field(
+        default=None, metadata={"alias": "nationalPrefix"}
+    )
+
     department: Optional[DepartmentKey] = field(
         default=None, metadata={"alias": "department"}
     )
@@ -14602,6 +14544,81 @@ class ServiceInstanceReadProfile17(OCIType):
 
     public_user_identity: Optional[str] = field(
         default=None, metadata={"alias": "publicUserIdentity"}
+    )
+
+
+@dataclass(kw_only=True)
+class TrunkGroupMultipleContactPilotUser(OCIType):
+    """Trunk Group pilot user information used when adding a Trunk Group.
+
+    Attributes:
+
+        user_id (str):
+
+        last_name (str):
+
+        first_name (str):
+
+        calling_line_id_last_name (str):
+
+        calling_line_id_first_name (str):
+
+        hiragana_last_name (Optional[str]):
+
+        hiragana_first_name (Optional[str]):
+
+        password (Optional[str]):
+
+        department (Optional[DepartmentKey]):
+
+        language (Optional[str]):
+
+        time_zone (Optional[str]):
+
+        line_port (str):
+
+        contact (Optional[List[str]]):
+
+        calling_line_id_phone_number (Optional[str]):
+
+    """
+
+    user_id: str = field(metadata={"alias": "userId"})
+
+    last_name: str = field(metadata={"alias": "lastName"})
+
+    first_name: str = field(metadata={"alias": "firstName"})
+
+    calling_line_id_last_name: str = field(metadata={"alias": "callingLineIdLastName"})
+
+    calling_line_id_first_name: str = field(
+        metadata={"alias": "callingLineIdFirstName"}
+    )
+
+    hiragana_last_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaLastName"}
+    )
+
+    hiragana_first_name: Optional[str] = field(
+        default=None, metadata={"alias": "hiraganaFirstName"}
+    )
+
+    password: Optional[str] = field(default=None, metadata={"alias": "password"})
+
+    department: Optional[DepartmentKey] = field(
+        default=None, metadata={"alias": "department"}
+    )
+
+    language: Optional[str] = field(default=None, metadata={"alias": "language"})
+
+    time_zone: Optional[str] = field(default=None, metadata={"alias": "timeZone"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
+
+    calling_line_id_phone_number: Optional[str] = field(
+        default=None, metadata={"alias": "callingLineIdPhoneNumber"}
     )
 
 
@@ -15123,303 +15140,6 @@ class ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactModify(OCIType):
 
 
 @dataclass(kw_only=True)
-class DeviceManagementDeviceTypeOptions22V5(OCIType):
-    """Device Management System device type options.
-
-        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
-              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
-              When device configuration is set to legacy, those elements apply to all configuration files.
-
-              useHttpDigestAuthentication
-              macBasedFileAuthentication
-              userNamePasswordFileAuthentication
-              macInNonRequestURI
-              macInCert
-              macFormatInNonRequestURI
-
-        The following data elements are only used in AS data mode and ignored in XS data mode:
-              enableDeviceActivation
-              deviceModel
-              supportLinks
-              autoLinkingDeviceType
-              autoCreateDevicesLevel
-
-    Attributes:
-
-        device_access_protocol (str):
-
-        tag_mode (str):
-
-        tag_set (Optional[str]):
-
-        allow_device_profile_custom_tag_set (bool):
-
-        allow_group_custom_tag_set (bool):
-
-        allow_sp_custom_tag_set (bool):
-
-        send_email_upon_reset_failure (bool):
-
-        device_access_net_address (Optional[str]):
-
-        device_access_port (Optional[int]):
-
-        device_access_context (Optional[str]):
-
-        device_access_uri (Optional[str]):
-
-        default_device_language (Optional[str]):
-
-        default_device_encoding (Optional[str]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-        use_http_digest_authentication (bool):
-
-        mac_based_file_authentication (bool):
-
-        user_name_password_file_authentication (bool):
-
-        mac_in_non_request_uri (bool):
-
-        mac_in_cert (bool):
-
-        mac_format_in_non_request_uri (Optional[str]):
-
-        enable_device_activation (bool):
-
-        device_model (Optional[str]):
-
-        support_links (str):
-
-        auto_linking_device_type (Optional[str]):
-
-        auto_create_devices_level (Optional[str]):
-
-    """
-
-    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
-
-    tag_mode: str = field(metadata={"alias": "tagMode"})
-
-    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
-
-    allow_device_profile_custom_tag_set: bool = field(
-        metadata={"alias": "allowDeviceProfileCustomTagSet"}
-    )
-
-    allow_group_custom_tag_set: bool = field(
-        metadata={"alias": "allowGroupCustomTagSet"}
-    )
-
-    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
-
-    send_email_upon_reset_failure: bool = field(
-        metadata={"alias": "sendEmailUponResetFailure"}
-    )
-
-    device_access_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessNetAddress"}
-    )
-
-    device_access_port: Optional[int] = field(
-        default=None, metadata={"alias": "deviceAccessPort"}
-    )
-
-    device_access_context: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessContext"}
-    )
-
-    device_access_uri: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessURI"}
-    )
-
-    default_device_language: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceLanguage"}
-    )
-
-    default_device_encoding: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceEncoding"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
-
-    use_http_digest_authentication: bool = field(
-        metadata={"alias": "useHttpDigestAuthentication"}
-    )
-
-    mac_based_file_authentication: bool = field(
-        metadata={"alias": "macBasedFileAuthentication"}
-    )
-
-    user_name_password_file_authentication: bool = field(
-        metadata={"alias": "userNamePasswordFileAuthentication"}
-    )
-
-    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
-
-    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
-
-    mac_format_in_non_request_uri: Optional[str] = field(
-        default=None, metadata={"alias": "macFormatInNonRequestURI"}
-    )
-
-    enable_device_activation: bool = field(metadata={"alias": "enableDeviceActivation"})
-
-    device_model: Optional[str] = field(default=None, metadata={"alias": "deviceModel"})
-
-    support_links: str = field(metadata={"alias": "supportLinks"})
-
-    auto_linking_device_type: Optional[str] = field(
-        default=None, metadata={"alias": "autoLinkingDeviceType"}
-    )
-
-    auto_create_devices_level: Optional[str] = field(
-        default=None, metadata={"alias": "autoCreateDevicesLevel"}
-    )
-
-
-@dataclass(kw_only=True)
-class ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint(OCIType):
-    """Access device end point for Shared Call Appearance Service used in the context of add.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-        Port numbers are only used by devices with static line ordering.
-
-        In the case an access device referenced by accessDevice does not exist, the device will be added.
-
-        The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
-        stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
-        useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
-        exists.
-
-        The following elements are only used in XS data mode and ignored in AS data mode:
-          privateIdentity
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        contact (Optional[str]):
-
-        port_number (Optional[int]):
-
-        is_active (bool):
-
-        allow_origination (bool):
-
-        allow_termination (bool):
-
-        device_type (Optional[str]):
-
-        protocol (Optional[str]):
-
-        net_address (Optional[str]):
-
-        port (Optional[int]):
-
-        outbound_proxy_server_net_address (Optional[str]):
-
-        stun_server_net_address (Optional[str]):
-
-        mac_address (Optional[str]):
-
-        serial_number (Optional[str]):
-
-        description (Optional[str]):
-
-        physical_location (Optional[str]):
-
-        transport_protocol (Optional[str]):
-
-        use_custom_user_name_password (Optional[bool]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-        use_hotline (Optional[bool]):
-
-        hotline_contact (Optional[Nillable[str]]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    is_active: bool = field(metadata={"alias": "isActive"})
-
-    allow_origination: bool = field(metadata={"alias": "allowOrigination"})
-
-    allow_termination: bool = field(metadata={"alias": "allowTermination"})
-
-    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
-
-    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
-
-    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
-
-    port: Optional[int] = field(default=None, metadata={"alias": "port"})
-
-    outbound_proxy_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
-    )
-
-    stun_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "stunServerNetAddress"}
-    )
-
-    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
-
-    serial_number: Optional[str] = field(
-        default=None, metadata={"alias": "serialNumber"}
-    )
-
-    description: Optional[str] = field(default=None, metadata={"alias": "description"})
-
-    physical_location: Optional[str] = field(
-        default=None, metadata={"alias": "physicalLocation"}
-    )
-
-    transport_protocol: Optional[str] = field(
-        default=None, metadata={"alias": "transportProtocol"}
-    )
-
-    use_custom_user_name_password: Optional[bool] = field(
-        default=None, metadata={"alias": "useCustomUserNamePassword"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
-
-    use_hotline: Optional[bool] = field(default=None, metadata={"alias": "useHotline"})
-
-    hotline_contact: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "hotlineContact"}
-    )
-
-    def __post_init__(self):
-        nillable_fields = ["hotline_contact"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
 class ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointAdd22(
     OCIType
 ):
@@ -15553,274 +15273,6 @@ class ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointAdd22(
 
     hotline_contact: Optional[str] = field(
         default=None, metadata={"alias": "hotlineContact"}
-    )
-
-
-@dataclass(kw_only=True)
-class DeviceManagementDeviceTypeOptions22V3(OCIType):
-    """Device Management System device type options.
-
-        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
-              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
-              When device configuration is set to legacy, those elements apply to all configuration files.
-
-              useHttpDigestAuthentication
-              macBasedFileAuthentication
-              userNamePasswordFileAuthentication
-              macInNonRequestURI
-              macInCert
-              macFormatInNonRequestURI
-
-        The following data elements are only used in AS data mode and ignored in XS data mode:
-              enableDeviceActivation
-              deviceModel
-
-    Attributes:
-
-        device_access_protocol (str):
-
-        tag_mode (str):
-
-        tag_set (Optional[str]):
-
-        allow_device_profile_custom_tag_set (bool):
-
-        allow_group_custom_tag_set (bool):
-
-        allow_sp_custom_tag_set (bool):
-
-        send_email_upon_reset_failure (bool):
-
-        device_access_net_address (Optional[str]):
-
-        device_access_port (Optional[int]):
-
-        device_access_context (Optional[str]):
-
-        device_access_uri (Optional[str]):
-
-        default_device_language (Optional[str]):
-
-        default_device_encoding (Optional[str]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-        use_http_digest_authentication (bool):
-
-        mac_based_file_authentication (bool):
-
-        user_name_password_file_authentication (bool):
-
-        mac_in_non_request_uri (bool):
-
-        mac_in_cert (bool):
-
-        mac_format_in_non_request_uri (Optional[str]):
-
-        enable_device_activation (bool):
-
-        device_model (Optional[str]):
-
-    """
-
-    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
-
-    tag_mode: str = field(metadata={"alias": "tagMode"})
-
-    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
-
-    allow_device_profile_custom_tag_set: bool = field(
-        metadata={"alias": "allowDeviceProfileCustomTagSet"}
-    )
-
-    allow_group_custom_tag_set: bool = field(
-        metadata={"alias": "allowGroupCustomTagSet"}
-    )
-
-    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
-
-    send_email_upon_reset_failure: bool = field(
-        metadata={"alias": "sendEmailUponResetFailure"}
-    )
-
-    device_access_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessNetAddress"}
-    )
-
-    device_access_port: Optional[int] = field(
-        default=None, metadata={"alias": "deviceAccessPort"}
-    )
-
-    device_access_context: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessContext"}
-    )
-
-    device_access_uri: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessURI"}
-    )
-
-    default_device_language: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceLanguage"}
-    )
-
-    default_device_encoding: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceEncoding"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
-
-    use_http_digest_authentication: bool = field(
-        metadata={"alias": "useHttpDigestAuthentication"}
-    )
-
-    mac_based_file_authentication: bool = field(
-        metadata={"alias": "macBasedFileAuthentication"}
-    )
-
-    user_name_password_file_authentication: bool = field(
-        metadata={"alias": "userNamePasswordFileAuthentication"}
-    )
-
-    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
-
-    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
-
-    mac_format_in_non_request_uri: Optional[str] = field(
-        default=None, metadata={"alias": "macFormatInNonRequestURI"}
-    )
-
-    enable_device_activation: bool = field(metadata={"alias": "enableDeviceActivation"})
-
-    device_model: Optional[str] = field(default=None, metadata={"alias": "deviceModel"})
-
-
-@dataclass(kw_only=True)
-class DeviceManagementDeviceTypeOptions22V2(OCIType):
-    """Device Management System device type options.
-
-        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
-              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
-              When device configuration is set to legacy, those elements apply to all configuration files.
-
-              useHttpDigestAuthentication
-              macBasedFileAuthentication
-              userNamePasswordFileAuthentication
-              macInNonRequestURI
-              macInCert
-              macFormatInNonRequestURI
-
-    Attributes:
-
-        device_access_protocol (str):
-
-        tag_mode (str):
-
-        tag_set (Optional[str]):
-
-        allow_device_profile_custom_tag_set (bool):
-
-        allow_group_custom_tag_set (bool):
-
-        allow_sp_custom_tag_set (bool):
-
-        send_email_upon_reset_failure (bool):
-
-        device_access_net_address (Optional[str]):
-
-        device_access_port (Optional[int]):
-
-        device_access_context (Optional[str]):
-
-        device_access_uri (Optional[str]):
-
-        default_device_language (Optional[str]):
-
-        default_device_encoding (Optional[str]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-        use_http_digest_authentication (bool):
-
-        mac_based_file_authentication (bool):
-
-        user_name_password_file_authentication (bool):
-
-        mac_in_non_request_uri (bool):
-
-        mac_in_cert (bool):
-
-        mac_format_in_non_request_uri (Optional[str]):
-
-    """
-
-    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
-
-    tag_mode: str = field(metadata={"alias": "tagMode"})
-
-    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
-
-    allow_device_profile_custom_tag_set: bool = field(
-        metadata={"alias": "allowDeviceProfileCustomTagSet"}
-    )
-
-    allow_group_custom_tag_set: bool = field(
-        metadata={"alias": "allowGroupCustomTagSet"}
-    )
-
-    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
-
-    send_email_upon_reset_failure: bool = field(
-        metadata={"alias": "sendEmailUponResetFailure"}
-    )
-
-    device_access_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessNetAddress"}
-    )
-
-    device_access_port: Optional[int] = field(
-        default=None, metadata={"alias": "deviceAccessPort"}
-    )
-
-    device_access_context: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessContext"}
-    )
-
-    device_access_uri: Optional[str] = field(
-        default=None, metadata={"alias": "deviceAccessURI"}
-    )
-
-    default_device_language: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceLanguage"}
-    )
-
-    default_device_encoding: Optional[str] = field(
-        default=None, metadata={"alias": "defaultDeviceEncoding"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
-
-    use_http_digest_authentication: bool = field(
-        metadata={"alias": "useHttpDigestAuthentication"}
-    )
-
-    mac_based_file_authentication: bool = field(
-        metadata={"alias": "macBasedFileAuthentication"}
-    )
-
-    user_name_password_file_authentication: bool = field(
-        metadata={"alias": "userNamePasswordFileAuthentication"}
-    )
-
-    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
-
-    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
-
-    mac_format_in_non_request_uri: Optional[str] = field(
-        default=None, metadata={"alias": "macFormatInNonRequestURI"}
     )
 
 
@@ -15999,6 +15451,482 @@ class DeviceManagementDeviceTypeOptions22V6(OCIType):
 
 
 @dataclass(kw_only=True)
+class CombinedAccessDeviceMultipleIdentityEndpointModify(OCIType):
+    """Access device end point used in the context of modify.
+      The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+      Only Static Registration capable devices may have more than one contact defined.
+      Port numbers are only used by devices with static line ordering.
+
+      In the case an access device referenced by accessDevice does not exist, the device will be added.
+      When the device needs to be added, if the linePort is not specified, the request will fail
+
+      The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
+      stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
+      useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
+      exists.
+
+    Attributes:
+
+        access_device (Optional[AccessDevice]):
+
+        line_port (Optional[str]):
+
+        private_identity (Optional[Nillable[str]]):
+
+        contact (Optional[Nillable[str]]):
+
+        port_number (Optional[int]):
+
+        device_type (Optional[str]):
+
+        protocol (Optional[str]):
+
+        net_address (Optional[str]):
+
+        port (Optional[int]):
+
+        outbound_proxy_server_net_address (Optional[str]):
+
+        stun_server_net_address (Optional[str]):
+
+        mac_address (Optional[str]):
+
+        serial_number (Optional[str]):
+
+        description (Optional[str]):
+
+        physical_location (Optional[str]):
+
+        transport_protocol (Optional[str]):
+
+        use_custom_user_name_password (Optional[bool]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+    """
+
+    access_device: Optional[AccessDevice] = field(
+        default=None, metadata={"alias": "accessDevice"}
+    )
+
+    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
+
+    private_identity: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "contact"}
+    )
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
+
+    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
+
+    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
+
+    port: Optional[int] = field(default=None, metadata={"alias": "port"})
+
+    outbound_proxy_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
+    )
+
+    stun_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "stunServerNetAddress"}
+    )
+
+    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
+
+    serial_number: Optional[str] = field(
+        default=None, metadata={"alias": "serialNumber"}
+    )
+
+    description: Optional[str] = field(default=None, metadata={"alias": "description"})
+
+    physical_location: Optional[str] = field(
+        default=None, metadata={"alias": "physicalLocation"}
+    )
+
+    transport_protocol: Optional[str] = field(
+        default=None, metadata={"alias": "transportProtocol"}
+    )
+
+    use_custom_user_name_password: Optional[bool] = field(
+        default=None, metadata={"alias": "useCustomUserNamePassword"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+    def __post_init__(self):
+        nillable_fields = ["private_identity", "contact"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
+
+
+@dataclass(kw_only=True)
+class DeviceManagementDeviceTypeOptions22V2(OCIType):
+    """Device Management System device type options.
+
+        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
+              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
+              When device configuration is set to legacy, those elements apply to all configuration files.
+
+              useHttpDigestAuthentication
+              macBasedFileAuthentication
+              userNamePasswordFileAuthentication
+              macInNonRequestURI
+              macInCert
+              macFormatInNonRequestURI
+
+    Attributes:
+
+        device_access_protocol (str):
+
+        tag_mode (str):
+
+        tag_set (Optional[str]):
+
+        allow_device_profile_custom_tag_set (bool):
+
+        allow_group_custom_tag_set (bool):
+
+        allow_sp_custom_tag_set (bool):
+
+        send_email_upon_reset_failure (bool):
+
+        device_access_net_address (Optional[str]):
+
+        device_access_port (Optional[int]):
+
+        device_access_context (Optional[str]):
+
+        device_access_uri (Optional[str]):
+
+        default_device_language (Optional[str]):
+
+        default_device_encoding (Optional[str]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+        use_http_digest_authentication (bool):
+
+        mac_based_file_authentication (bool):
+
+        user_name_password_file_authentication (bool):
+
+        mac_in_non_request_uri (bool):
+
+        mac_in_cert (bool):
+
+        mac_format_in_non_request_uri (Optional[str]):
+
+    """
+
+    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
+
+    tag_mode: str = field(metadata={"alias": "tagMode"})
+
+    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
+
+    allow_device_profile_custom_tag_set: bool = field(
+        metadata={"alias": "allowDeviceProfileCustomTagSet"}
+    )
+
+    allow_group_custom_tag_set: bool = field(
+        metadata={"alias": "allowGroupCustomTagSet"}
+    )
+
+    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
+
+    send_email_upon_reset_failure: bool = field(
+        metadata={"alias": "sendEmailUponResetFailure"}
+    )
+
+    device_access_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessNetAddress"}
+    )
+
+    device_access_port: Optional[int] = field(
+        default=None, metadata={"alias": "deviceAccessPort"}
+    )
+
+    device_access_context: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessContext"}
+    )
+
+    device_access_uri: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessURI"}
+    )
+
+    default_device_language: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceLanguage"}
+    )
+
+    default_device_encoding: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceEncoding"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+    use_http_digest_authentication: bool = field(
+        metadata={"alias": "useHttpDigestAuthentication"}
+    )
+
+    mac_based_file_authentication: bool = field(
+        metadata={"alias": "macBasedFileAuthentication"}
+    )
+
+    user_name_password_file_authentication: bool = field(
+        metadata={"alias": "userNamePasswordFileAuthentication"}
+    )
+
+    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
+
+    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
+
+    mac_format_in_non_request_uri: Optional[str] = field(
+        default=None, metadata={"alias": "macFormatInNonRequestURI"}
+    )
+
+
+@dataclass(kw_only=True)
+class ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactAdd22(OCIType):
+    """Access device end point used in the context of add.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+        In XS data mode, only one contact can be defined.
+        Only Static Registration capable devices may have more than one contact defined.
+        Port numbers are only used by devices with static line ordering.
+
+        In the case an access device referenced by accessDevice does not exist, the device will be added.
+
+        The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
+        stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
+        useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
+        exists.
+
+        The following elements are only used in AS data mode and ignored in XS data mode:
+          useHotline, use value false in XS data mode
+          hotlineContact
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[List[str]]):
+
+        port_number (Optional[int]):
+
+        device_type (Optional[str]):
+
+        protocol (Optional[str]):
+
+        net_address (Optional[str]):
+
+        port (Optional[int]):
+
+        outbound_proxy_server_net_address (Optional[str]):
+
+        stun_server_net_address (Optional[str]):
+
+        mac_address (Optional[str]):
+
+        serial_number (Optional[str]):
+
+        description (Optional[str]):
+
+        physical_location (Optional[str]):
+
+        transport_protocol (Optional[str]):
+
+        use_custom_user_name_password (Optional[bool]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+        use_hotline (bool):
+
+        hotline_contact (Optional[str]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
+
+    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
+
+    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
+
+    port: Optional[int] = field(default=None, metadata={"alias": "port"})
+
+    outbound_proxy_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
+    )
+
+    stun_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "stunServerNetAddress"}
+    )
+
+    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
+
+    serial_number: Optional[str] = field(
+        default=None, metadata={"alias": "serialNumber"}
+    )
+
+    description: Optional[str] = field(default=None, metadata={"alias": "description"})
+
+    physical_location: Optional[str] = field(
+        default=None, metadata={"alias": "physicalLocation"}
+    )
+
+    transport_protocol: Optional[str] = field(
+        default=None, metadata={"alias": "transportProtocol"}
+    )
+
+    use_custom_user_name_password: Optional[bool] = field(
+        default=None, metadata={"alias": "useCustomUserNamePassword"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+    use_hotline: bool = field(metadata={"alias": "useHotline"})
+
+    hotline_contact: Optional[str] = field(
+        default=None, metadata={"alias": "hotlineContact"}
+    )
+
+
+@dataclass(kw_only=True)
+class CombinedAccessDeviceMultipleIdentityEndpointAdd(OCIType):
+    """Access device end point used in the context of add.
+      The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+      Only Static Registration capable devices may have more than one contact defined.
+      Port numbers are only used by devices with static line ordering.
+
+      In the case an access device referenced by accessDevice does not exist, the device will be added.
+
+      The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
+      stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
+      useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
+      exists.
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[str]):
+
+        port_number (Optional[int]):
+
+        device_type (Optional[str]):
+
+        protocol (Optional[str]):
+
+        net_address (Optional[str]):
+
+        port (Optional[int]):
+
+        outbound_proxy_server_net_address (Optional[str]):
+
+        stun_server_net_address (Optional[str]):
+
+        mac_address (Optional[str]):
+
+        serial_number (Optional[str]):
+
+        description (Optional[str]):
+
+        physical_location (Optional[str]):
+
+        transport_protocol (Optional[str]):
+
+        use_custom_user_name_password (Optional[bool]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
+
+    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
+
+    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
+
+    port: Optional[int] = field(default=None, metadata={"alias": "port"})
+
+    outbound_proxy_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
+    )
+
+    stun_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "stunServerNetAddress"}
+    )
+
+    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
+
+    serial_number: Optional[str] = field(
+        default=None, metadata={"alias": "serialNumber"}
+    )
+
+    description: Optional[str] = field(default=None, metadata={"alias": "description"})
+
+    physical_location: Optional[str] = field(
+        default=None, metadata={"alias": "physicalLocation"}
+    )
+
+    transport_protocol: Optional[str] = field(
+        default=None, metadata={"alias": "transportProtocol"}
+    )
+
+    use_custom_user_name_password: Optional[bool] = field(
+        default=None, metadata={"alias": "useCustomUserNamePassword"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+
+@dataclass(kw_only=True)
 class ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactAdd(OCIType):
     """Access device end point used in the context of add.
         The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
@@ -16103,6 +16031,303 @@ class ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactAdd(OCIType):
 
     access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
         default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+
+@dataclass(kw_only=True)
+class ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint(OCIType):
+    """Access device end point for Shared Call Appearance Service used in the context of add.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+        Port numbers are only used by devices with static line ordering.
+
+        In the case an access device referenced by accessDevice does not exist, the device will be added.
+
+        The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
+        stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
+        useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
+        exists.
+
+        The following elements are only used in XS data mode and ignored in AS data mode:
+          privateIdentity
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[str]):
+
+        port_number (Optional[int]):
+
+        is_active (bool):
+
+        allow_origination (bool):
+
+        allow_termination (bool):
+
+        device_type (Optional[str]):
+
+        protocol (Optional[str]):
+
+        net_address (Optional[str]):
+
+        port (Optional[int]):
+
+        outbound_proxy_server_net_address (Optional[str]):
+
+        stun_server_net_address (Optional[str]):
+
+        mac_address (Optional[str]):
+
+        serial_number (Optional[str]):
+
+        description (Optional[str]):
+
+        physical_location (Optional[str]):
+
+        transport_protocol (Optional[str]):
+
+        use_custom_user_name_password (Optional[bool]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+        use_hotline (Optional[bool]):
+
+        hotline_contact (Optional[Nillable[str]]):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    is_active: bool = field(metadata={"alias": "isActive"})
+
+    allow_origination: bool = field(metadata={"alias": "allowOrigination"})
+
+    allow_termination: bool = field(metadata={"alias": "allowTermination"})
+
+    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
+
+    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
+
+    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
+
+    port: Optional[int] = field(default=None, metadata={"alias": "port"})
+
+    outbound_proxy_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
+    )
+
+    stun_server_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "stunServerNetAddress"}
+    )
+
+    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
+
+    serial_number: Optional[str] = field(
+        default=None, metadata={"alias": "serialNumber"}
+    )
+
+    description: Optional[str] = field(default=None, metadata={"alias": "description"})
+
+    physical_location: Optional[str] = field(
+        default=None, metadata={"alias": "physicalLocation"}
+    )
+
+    transport_protocol: Optional[str] = field(
+        default=None, metadata={"alias": "transportProtocol"}
+    )
+
+    use_custom_user_name_password: Optional[bool] = field(
+        default=None, metadata={"alias": "useCustomUserNamePassword"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+    use_hotline: Optional[bool] = field(default=None, metadata={"alias": "useHotline"})
+
+    hotline_contact: Optional[Nillable[str]] = field(
+        default=None, metadata={"alias": "hotlineContact"}
+    )
+
+    def __post_init__(self):
+        nillable_fields = ["hotline_contact"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
+
+
+@dataclass(kw_only=True)
+class DeviceManagementDeviceTypeOptions22V5(OCIType):
+    """Device Management System device type options.
+
+        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
+              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
+              When device configuration is set to legacy, those elements apply to all configuration files.
+
+              useHttpDigestAuthentication
+              macBasedFileAuthentication
+              userNamePasswordFileAuthentication
+              macInNonRequestURI
+              macInCert
+              macFormatInNonRequestURI
+
+        The following data elements are only used in AS data mode and ignored in XS data mode:
+              enableDeviceActivation
+              deviceModel
+              supportLinks
+              autoLinkingDeviceType
+              autoCreateDevicesLevel
+
+    Attributes:
+
+        device_access_protocol (str):
+
+        tag_mode (str):
+
+        tag_set (Optional[str]):
+
+        allow_device_profile_custom_tag_set (bool):
+
+        allow_group_custom_tag_set (bool):
+
+        allow_sp_custom_tag_set (bool):
+
+        send_email_upon_reset_failure (bool):
+
+        device_access_net_address (Optional[str]):
+
+        device_access_port (Optional[int]):
+
+        device_access_context (Optional[str]):
+
+        device_access_uri (Optional[str]):
+
+        default_device_language (Optional[str]):
+
+        default_device_encoding (Optional[str]):
+
+        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
+
+        use_http_digest_authentication (bool):
+
+        mac_based_file_authentication (bool):
+
+        user_name_password_file_authentication (bool):
+
+        mac_in_non_request_uri (bool):
+
+        mac_in_cert (bool):
+
+        mac_format_in_non_request_uri (Optional[str]):
+
+        enable_device_activation (bool):
+
+        device_model (Optional[str]):
+
+        support_links (str):
+
+        auto_linking_device_type (Optional[str]):
+
+        auto_create_devices_level (Optional[str]):
+
+    """
+
+    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
+
+    tag_mode: str = field(metadata={"alias": "tagMode"})
+
+    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
+
+    allow_device_profile_custom_tag_set: bool = field(
+        metadata={"alias": "allowDeviceProfileCustomTagSet"}
+    )
+
+    allow_group_custom_tag_set: bool = field(
+        metadata={"alias": "allowGroupCustomTagSet"}
+    )
+
+    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
+
+    send_email_upon_reset_failure: bool = field(
+        metadata={"alias": "sendEmailUponResetFailure"}
+    )
+
+    device_access_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessNetAddress"}
+    )
+
+    device_access_port: Optional[int] = field(
+        default=None, metadata={"alias": "deviceAccessPort"}
+    )
+
+    device_access_context: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessContext"}
+    )
+
+    device_access_uri: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessURI"}
+    )
+
+    default_device_language: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceLanguage"}
+    )
+
+    default_device_encoding: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceEncoding"}
+    )
+
+    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
+        default=None, metadata={"alias": "accessDeviceCredentials"}
+    )
+
+    use_http_digest_authentication: bool = field(
+        metadata={"alias": "useHttpDigestAuthentication"}
+    )
+
+    mac_based_file_authentication: bool = field(
+        metadata={"alias": "macBasedFileAuthentication"}
+    )
+
+    user_name_password_file_authentication: bool = field(
+        metadata={"alias": "userNamePasswordFileAuthentication"}
+    )
+
+    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
+
+    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
+
+    mac_format_in_non_request_uri: Optional[str] = field(
+        default=None, metadata={"alias": "macFormatInNonRequestURI"}
+    )
+
+    enable_device_activation: bool = field(metadata={"alias": "enableDeviceActivation"})
+
+    device_model: Optional[str] = field(default=None, metadata={"alias": "deviceModel"})
+
+    support_links: str = field(metadata={"alias": "supportLinks"})
+
+    auto_linking_device_type: Optional[str] = field(
+        default=None, metadata={"alias": "autoLinkingDeviceType"}
+    )
+
+    auto_create_devices_level: Optional[str] = field(
+        default=None, metadata={"alias": "autoCreateDevicesLevel"}
     )
 
 
@@ -16252,351 +16477,143 @@ class DeviceManagementDeviceTypeOptions22V4(OCIType):
 
 
 @dataclass(kw_only=True)
-class ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactAdd22(OCIType):
-    """Access device end point used in the context of add.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-        In XS data mode, only one contact can be defined.
-        Only Static Registration capable devices may have more than one contact defined.
-        Port numbers are only used by devices with static line ordering.
+class DeviceManagementDeviceTypeOptions22V3(OCIType):
+    """Device Management System device type options.
 
-        In the case an access device referenced by accessDevice does not exist, the device will be added.
+        Note: For the elements listed below, when device configuration is set to deviceManagement, those elements apply to the creation of the Polycom Phone Services directory file only.
+              For all other files, they are not used. Those elements are instead configured on a per-file basis at the Device Type File level.
+              When device configuration is set to legacy, those elements apply to all configuration files.
 
-        The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
-        stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
-        useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
-        exists.
+              useHttpDigestAuthentication
+              macBasedFileAuthentication
+              userNamePasswordFileAuthentication
+              macInNonRequestURI
+              macInCert
+              macFormatInNonRequestURI
 
-        The following elements are only used in AS data mode and ignored in XS data mode:
-          useHotline, use value false in XS data mode
-          hotlineContact
+        The following data elements are only used in AS data mode and ignored in XS data mode:
+              enableDeviceActivation
+              deviceModel
 
     Attributes:
 
-        access_device (AccessDevice):
+        device_access_protocol (str):
 
-        line_port (str):
+        tag_mode (str):
 
-        private_identity (Optional[str]):
+        tag_set (Optional[str]):
 
-        contact (Optional[List[str]]):
+        allow_device_profile_custom_tag_set (bool):
 
-        port_number (Optional[int]):
+        allow_group_custom_tag_set (bool):
 
-        device_type (Optional[str]):
+        allow_sp_custom_tag_set (bool):
 
-        protocol (Optional[str]):
+        send_email_upon_reset_failure (bool):
 
-        net_address (Optional[str]):
+        device_access_net_address (Optional[str]):
 
-        port (Optional[int]):
+        device_access_port (Optional[int]):
 
-        outbound_proxy_server_net_address (Optional[str]):
+        device_access_context (Optional[str]):
 
-        stun_server_net_address (Optional[str]):
+        device_access_uri (Optional[str]):
 
-        mac_address (Optional[str]):
+        default_device_language (Optional[str]):
 
-        serial_number (Optional[str]):
-
-        description (Optional[str]):
-
-        physical_location (Optional[str]):
-
-        transport_protocol (Optional[str]):
-
-        use_custom_user_name_password (Optional[bool]):
+        default_device_encoding (Optional[str]):
 
         access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
 
-        use_hotline (bool):
+        use_http_digest_authentication (bool):
 
-        hotline_contact (Optional[str]):
+        mac_based_file_authentication (bool):
+
+        user_name_password_file_authentication (bool):
+
+        mac_in_non_request_uri (bool):
+
+        mac_in_cert (bool):
+
+        mac_format_in_non_request_uri (Optional[str]):
+
+        enable_device_activation (bool):
+
+        device_model (Optional[str]):
 
     """
 
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+    device_access_protocol: str = field(metadata={"alias": "deviceAccessProtocol"})
 
-    line_port: str = field(metadata={"alias": "linePort"})
+    tag_mode: str = field(metadata={"alias": "tagMode"})
 
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
+    tag_set: Optional[str] = field(default=None, metadata={"alias": "tagSet"})
+
+    allow_device_profile_custom_tag_set: bool = field(
+        metadata={"alias": "allowDeviceProfileCustomTagSet"}
     )
 
-    contact: Optional[List[str]] = field(default=None, metadata={"alias": "contact"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
-
-    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
-
-    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
-
-    port: Optional[int] = field(default=None, metadata={"alias": "port"})
-
-    outbound_proxy_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
+    allow_group_custom_tag_set: bool = field(
+        metadata={"alias": "allowGroupCustomTagSet"}
     )
 
-    stun_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "stunServerNetAddress"}
+    allow_sp_custom_tag_set: bool = field(metadata={"alias": "allowSpCustomTagSet"})
+
+    send_email_upon_reset_failure: bool = field(
+        metadata={"alias": "sendEmailUponResetFailure"}
     )
 
-    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
-
-    serial_number: Optional[str] = field(
-        default=None, metadata={"alias": "serialNumber"}
+    device_access_net_address: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessNetAddress"}
     )
 
-    description: Optional[str] = field(default=None, metadata={"alias": "description"})
-
-    physical_location: Optional[str] = field(
-        default=None, metadata={"alias": "physicalLocation"}
+    device_access_port: Optional[int] = field(
+        default=None, metadata={"alias": "deviceAccessPort"}
     )
 
-    transport_protocol: Optional[str] = field(
-        default=None, metadata={"alias": "transportProtocol"}
+    device_access_context: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessContext"}
     )
 
-    use_custom_user_name_password: Optional[bool] = field(
-        default=None, metadata={"alias": "useCustomUserNamePassword"}
+    device_access_uri: Optional[str] = field(
+        default=None, metadata={"alias": "deviceAccessURI"}
+    )
+
+    default_device_language: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceLanguage"}
+    )
+
+    default_device_encoding: Optional[str] = field(
+        default=None, metadata={"alias": "defaultDeviceEncoding"}
     )
 
     access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
         default=None, metadata={"alias": "accessDeviceCredentials"}
     )
 
-    use_hotline: bool = field(metadata={"alias": "useHotline"})
-
-    hotline_contact: Optional[str] = field(
-        default=None, metadata={"alias": "hotlineContact"}
+    use_http_digest_authentication: bool = field(
+        metadata={"alias": "useHttpDigestAuthentication"}
     )
 
-
-@dataclass(kw_only=True)
-class CombinedAccessDeviceMultipleIdentityEndpointModify(OCIType):
-    """Access device end point used in the context of modify.
-      The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-      Only Static Registration capable devices may have more than one contact defined.
-      Port numbers are only used by devices with static line ordering.
-
-      In the case an access device referenced by accessDevice does not exist, the device will be added.
-      When the device needs to be added, if the linePort is not specified, the request will fail
-
-      The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
-      stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
-      useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
-      exists.
-
-    Attributes:
-
-        access_device (Optional[AccessDevice]):
-
-        line_port (Optional[str]):
-
-        private_identity (Optional[Nillable[str]]):
-
-        contact (Optional[Nillable[str]]):
-
-        port_number (Optional[int]):
-
-        device_type (Optional[str]):
-
-        protocol (Optional[str]):
-
-        net_address (Optional[str]):
-
-        port (Optional[int]):
-
-        outbound_proxy_server_net_address (Optional[str]):
-
-        stun_server_net_address (Optional[str]):
-
-        mac_address (Optional[str]):
-
-        serial_number (Optional[str]):
-
-        description (Optional[str]):
-
-        physical_location (Optional[str]):
-
-        transport_protocol (Optional[str]):
-
-        use_custom_user_name_password (Optional[bool]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-    """
-
-    access_device: Optional[AccessDevice] = field(
-        default=None, metadata={"alias": "accessDevice"}
+    mac_based_file_authentication: bool = field(
+        metadata={"alias": "macBasedFileAuthentication"}
     )
 
-    line_port: Optional[str] = field(default=None, metadata={"alias": "linePort"})
-
-    private_identity: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "privateIdentity"}
+    user_name_password_file_authentication: bool = field(
+        metadata={"alias": "userNamePasswordFileAuthentication"}
     )
 
-    contact: Optional[Nillable[str]] = field(
-        default=None, metadata={"alias": "contact"}
+    mac_in_non_request_uri: bool = field(metadata={"alias": "macInNonRequestURI"})
+
+    mac_in_cert: bool = field(metadata={"alias": "macInCert"})
+
+    mac_format_in_non_request_uri: Optional[str] = field(
+        default=None, metadata={"alias": "macFormatInNonRequestURI"}
     )
 
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+    enable_device_activation: bool = field(metadata={"alias": "enableDeviceActivation"})
 
-    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
-
-    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
-
-    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
-
-    port: Optional[int] = field(default=None, metadata={"alias": "port"})
-
-    outbound_proxy_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
-    )
-
-    stun_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "stunServerNetAddress"}
-    )
-
-    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
-
-    serial_number: Optional[str] = field(
-        default=None, metadata={"alias": "serialNumber"}
-    )
-
-    description: Optional[str] = field(default=None, metadata={"alias": "description"})
-
-    physical_location: Optional[str] = field(
-        default=None, metadata={"alias": "physicalLocation"}
-    )
-
-    transport_protocol: Optional[str] = field(
-        default=None, metadata={"alias": "transportProtocol"}
-    )
-
-    use_custom_user_name_password: Optional[bool] = field(
-        default=None, metadata={"alias": "useCustomUserNamePassword"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
-
-    def __post_init__(self):
-        nillable_fields = ["private_identity", "contact"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
-class CombinedAccessDeviceMultipleIdentityEndpointAdd(OCIType):
-    """Access device end point used in the context of add.
-      The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-      Only Static Registration capable devices may have more than one contact defined.
-      Port numbers are only used by devices with static line ordering.
-
-      In the case an access device referenced by accessDevice does not exist, the device will be added.
-
-      The device attributes deviceType, protocol, netAddress, port, outboundProxyServerNetAddress,
-      stunServerNetAddress, macAddress, serialNumber, description, physicalLocation, transportProtocol,
-      useCustomUserNamePassword and accessDeviceCredentials will be ignored if the access device already
-      exists.
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        contact (Optional[str]):
-
-        port_number (Optional[int]):
-
-        device_type (Optional[str]):
-
-        protocol (Optional[str]):
-
-        net_address (Optional[str]):
-
-        port (Optional[int]):
-
-        outbound_proxy_server_net_address (Optional[str]):
-
-        stun_server_net_address (Optional[str]):
-
-        mac_address (Optional[str]):
-
-        serial_number (Optional[str]):
-
-        description (Optional[str]):
-
-        physical_location (Optional[str]):
-
-        transport_protocol (Optional[str]):
-
-        use_custom_user_name_password (Optional[bool]):
-
-        access_device_credentials (Optional[DeviceManagementUserNamePassword16]):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact: Optional[str] = field(default=None, metadata={"alias": "contact"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    device_type: Optional[str] = field(default=None, metadata={"alias": "deviceType"})
-
-    protocol: Optional[str] = field(default=None, metadata={"alias": "protocol"})
-
-    net_address: Optional[str] = field(default=None, metadata={"alias": "netAddress"})
-
-    port: Optional[int] = field(default=None, metadata={"alias": "port"})
-
-    outbound_proxy_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "outboundProxyServerNetAddress"}
-    )
-
-    stun_server_net_address: Optional[str] = field(
-        default=None, metadata={"alias": "stunServerNetAddress"}
-    )
-
-    mac_address: Optional[str] = field(default=None, metadata={"alias": "macAddress"})
-
-    serial_number: Optional[str] = field(
-        default=None, metadata={"alias": "serialNumber"}
-    )
-
-    description: Optional[str] = field(default=None, metadata={"alias": "description"})
-
-    physical_location: Optional[str] = field(
-        default=None, metadata={"alias": "physicalLocation"}
-    )
-
-    transport_protocol: Optional[str] = field(
-        default=None, metadata={"alias": "transportProtocol"}
-    )
-
-    use_custom_user_name_password: Optional[bool] = field(
-        default=None, metadata={"alias": "useCustomUserNamePassword"}
-    )
-
-    access_device_credentials: Optional[DeviceManagementUserNamePassword16] = field(
-        default=None, metadata={"alias": "accessDeviceCredentials"}
-    )
+    device_model: Optional[str] = field(default=None, metadata={"alias": "deviceModel"})
 
 
 @dataclass(kw_only=True)
@@ -16679,6 +16696,27 @@ class VirtualOnNetUserRange(OCIType):
 
 
 @dataclass(kw_only=True)
+class CallCenterReportScheduleTime(OCIType):
+    """A scheduled time for call center enhanced reporting scheduled report.
+
+    Attributes:
+
+        time_zone (str):
+
+        schedule_date (int):
+
+        schedule_time (HourMinute):
+
+    """
+
+    time_zone: str = field(metadata={"alias": "timeZone"})
+
+    schedule_date: int = field(metadata={"alias": "scheduleDate"})
+
+    schedule_time: HourMinute = field(metadata={"alias": "scheduleTime"})
+
+
+@dataclass(kw_only=True)
 class CallCenterReportIntervalDates(OCIType):
     """The call center enhanced reporting report interval, using dates.
 
@@ -16701,27 +16739,6 @@ class CallCenterReportIntervalDates(OCIType):
     end_date: int = field(metadata={"alias": "endDate"})
 
     end_time: HourMinute = field(metadata={"alias": "endTime"})
-
-
-@dataclass(kw_only=True)
-class CallCenterReportScheduleTime(OCIType):
-    """A scheduled time for call center enhanced reporting scheduled report.
-
-    Attributes:
-
-        time_zone (str):
-
-        schedule_date (int):
-
-        schedule_time (HourMinute):
-
-    """
-
-    time_zone: str = field(metadata={"alias": "timeZone"})
-
-    schedule_date: int = field(metadata={"alias": "scheduleDate"})
-
-    schedule_time: HourMinute = field(metadata={"alias": "scheduleTime"})
 
 
 @dataclass(kw_only=True)
@@ -16791,74 +16808,6 @@ class ExtendedFileResource(OCIType):
             value = getattr(self, field_name)
             if value == "" or value == "None":
                 object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
-class ExtendedMediaFileResource(OCIType):
-    """Represents either an existing file for the application server to use, or
-          the contents of a file to transfer and an URL.
-
-    Attributes:
-
-        file (Optional[LabeledMediaFileResource]):
-
-        url (Optional[Nillable[str]]):
-
-    """
-
-    file: Optional[LabeledMediaFileResource] = field(
-        default=None, metadata={"alias": "file"}
-    )
-
-    url: Optional[Nillable[str]] = field(default=None, metadata={"alias": "url"})
-
-    def __post_init__(self):
-        nillable_fields = ["url"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
-class AutoAttendantKeyConfigurationEntry19(OCIType):
-    """The configuration entry of a key for Auto
-        Attendant.
-        The following data elements are only valid for Standard Auto
-        Attendants:
-        submenuId
-
-    Attributes:
-
-        description (Optional[str]):
-
-        action (str):
-
-        phone_number (Optional[str]):
-
-        audio_file (Optional[LabeledMediaFileResource]):
-
-        video_file (Optional[LabeledMediaFileResource]):
-
-        submenu_id (Optional[str]):
-
-    """
-
-    description: Optional[str] = field(default=None, metadata={"alias": "description"})
-
-    action: str = field(metadata={"alias": "action"})
-
-    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
-
-    audio_file: Optional[LabeledMediaFileResource] = field(
-        default=None, metadata={"alias": "audioFile"}
-    )
-
-    video_file: Optional[LabeledMediaFileResource] = field(
-        default=None, metadata={"alias": "videoFile"}
-    )
-
-    submenu_id: Optional[str] = field(default=None, metadata={"alias": "submenuId"})
 
 
 @dataclass(kw_only=True)
@@ -16942,6 +16891,74 @@ class VoiceMessagingAlternateNoAnswerGreetingModify16(OCIType):
 
 
 @dataclass(kw_only=True)
+class AutoAttendantKeyConfigurationEntry19(OCIType):
+    """The configuration entry of a key for Auto
+        Attendant.
+        The following data elements are only valid for Standard Auto
+        Attendants:
+        submenuId
+
+    Attributes:
+
+        description (Optional[str]):
+
+        action (str):
+
+        phone_number (Optional[str]):
+
+        audio_file (Optional[LabeledMediaFileResource]):
+
+        video_file (Optional[LabeledMediaFileResource]):
+
+        submenu_id (Optional[str]):
+
+    """
+
+    description: Optional[str] = field(default=None, metadata={"alias": "description"})
+
+    action: str = field(metadata={"alias": "action"})
+
+    phone_number: Optional[str] = field(default=None, metadata={"alias": "phoneNumber"})
+
+    audio_file: Optional[LabeledMediaFileResource] = field(
+        default=None, metadata={"alias": "audioFile"}
+    )
+
+    video_file: Optional[LabeledMediaFileResource] = field(
+        default=None, metadata={"alias": "videoFile"}
+    )
+
+    submenu_id: Optional[str] = field(default=None, metadata={"alias": "submenuId"})
+
+
+@dataclass(kw_only=True)
+class ExtendedMediaFileResource(OCIType):
+    """Represents either an existing file for the application server to use, or
+          the contents of a file to transfer and an URL.
+
+    Attributes:
+
+        file (Optional[LabeledMediaFileResource]):
+
+        url (Optional[Nillable[str]]):
+
+    """
+
+    file: Optional[LabeledMediaFileResource] = field(
+        default=None, metadata={"alias": "file"}
+    )
+
+    url: Optional[Nillable[str]] = field(default=None, metadata={"alias": "url"})
+
+    def __post_init__(self):
+        nillable_fields = ["url"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
+
+
+@dataclass(kw_only=True)
 class ProfileAndServiceMusicOnHoldInfo(OCIType):
     """This is the configuration parameters for Music On Hold service
 
@@ -16986,73 +17003,7 @@ class MWIDeliveryToMobileEndpointTemplateBody(OCIType):
 
 
 @dataclass(kw_only=True)
-class ShInterfaceUserIdDataEntry21sp1(OCIType):
-    """ShInterface User Id Data Entry.
-
-    Attributes:
-
-        user_type (str):
-
-        public_user_identity (PublicUserIdentity):
-
-        endpoint_type (str):
-
-        scscf_name (Optional[str]):
-
-        ims_user_state (str):
-
-    """
-
-    user_type: str = field(metadata={"alias": "userType"})
-
-    public_user_identity: PublicUserIdentity = field(
-        metadata={"alias": "publicUserIdentity"}
-    )
-
-    endpoint_type: str = field(metadata={"alias": "endpointType"})
-
-    scscf_name: Optional[str] = field(default=None, metadata={"alias": "SCSCFName"})
-
-    ims_user_state: str = field(metadata={"alias": "IMSUserState"})
-
-
-@dataclass(kw_only=True)
 class ShInterfaceUserListEntry21sp1(OCIType):
-    """ShInterface User List Entry.
-
-    Attributes:
-
-        user_id (str):
-
-        user_type (str):
-
-        public_user_identity (PublicUserIdentity):
-
-        endpoint_type (str):
-
-        scscf_name (Optional[str]):
-
-        ims_user_state (str):
-
-    """
-
-    user_id: str = field(metadata={"alias": "userId"})
-
-    user_type: str = field(metadata={"alias": "userType"})
-
-    public_user_identity: PublicUserIdentity = field(
-        metadata={"alias": "publicUserIdentity"}
-    )
-
-    endpoint_type: str = field(metadata={"alias": "endpointType"})
-
-    scscf_name: Optional[str] = field(default=None, metadata={"alias": "SCSCFName"})
-
-    ims_user_state: str = field(metadata={"alias": "IMSUserState"})
-
-
-@dataclass(kw_only=True)
-class ShInterfaceUserListEntry(OCIType):
     """ShInterface User List Entry.
 
     Attributes:
@@ -17118,6 +17069,72 @@ class ShInterfaceUserIdDataEntry(OCIType):
 
 
 @dataclass(kw_only=True)
+class ShInterfaceUserIdDataEntry21sp1(OCIType):
+    """ShInterface User Id Data Entry.
+
+    Attributes:
+
+        user_type (str):
+
+        public_user_identity (PublicUserIdentity):
+
+        endpoint_type (str):
+
+        scscf_name (Optional[str]):
+
+        ims_user_state (str):
+
+    """
+
+    user_type: str = field(metadata={"alias": "userType"})
+
+    public_user_identity: PublicUserIdentity = field(
+        metadata={"alias": "publicUserIdentity"}
+    )
+
+    endpoint_type: str = field(metadata={"alias": "endpointType"})
+
+    scscf_name: Optional[str] = field(default=None, metadata={"alias": "SCSCFName"})
+
+    ims_user_state: str = field(metadata={"alias": "IMSUserState"})
+
+
+@dataclass(kw_only=True)
+class ShInterfaceUserListEntry(OCIType):
+    """ShInterface User List Entry.
+
+    Attributes:
+
+        user_id (str):
+
+        user_type (str):
+
+        public_user_identity (PublicUserIdentity):
+
+        endpoint_type (str):
+
+        scscf_name (Optional[str]):
+
+        ims_user_state (str):
+
+    """
+
+    user_id: str = field(metadata={"alias": "userId"})
+
+    user_type: str = field(metadata={"alias": "userType"})
+
+    public_user_identity: PublicUserIdentity = field(
+        metadata={"alias": "publicUserIdentity"}
+    )
+
+    endpoint_type: str = field(metadata={"alias": "endpointType"})
+
+    scscf_name: Optional[str] = field(default=None, metadata={"alias": "SCSCFName"})
+
+    ims_user_state: str = field(metadata={"alias": "IMSUserState"})
+
+
+@dataclass(kw_only=True)
 class PushNotificationTokenData23(OCIType):
     """The common push notification token elements.
 
@@ -17138,6 +17155,31 @@ class PushNotificationTokenData23(OCIType):
     push_notification_event_data: Optional[List[PushNotificationEventData23]] = field(
         default=None, metadata={"alias": "pushNotificationEventData"}
     )
+
+
+@dataclass(kw_only=True)
+class CallCenterReportScheduleRecurrence(OCIType):
+    """A recurring schedule for call center enhanced reporting scheduled report.
+
+    Attributes:
+
+        time_zone (str):
+
+        start_date (int):
+
+        schedule_time (HourMinute):
+
+        recurrence (Recurrence):
+
+    """
+
+    time_zone: str = field(metadata={"alias": "timeZone"})
+
+    start_date: int = field(metadata={"alias": "startDate"})
+
+    schedule_time: HourMinute = field(metadata={"alias": "scheduleTime"})
+
+    recurrence: Recurrence = field(metadata={"alias": "recurrence"})
 
 
 @dataclass(kw_only=True)
@@ -17181,31 +17223,6 @@ class ScheduleEvents(OCIType):
     recurrence: Optional[Recurrence] = field(
         default=None, metadata={"alias": "recurrence"}
     )
-
-
-@dataclass(kw_only=True)
-class CallCenterReportScheduleRecurrence(OCIType):
-    """A recurring schedule for call center enhanced reporting scheduled report.
-
-    Attributes:
-
-        time_zone (str):
-
-        start_date (int):
-
-        schedule_time (HourMinute):
-
-        recurrence (Recurrence):
-
-    """
-
-    time_zone: str = field(metadata={"alias": "timeZone"})
-
-    start_date: int = field(metadata={"alias": "startDate"})
-
-    schedule_time: HourMinute = field(metadata={"alias": "scheduleTime"})
-
-    recurrence: Recurrence = field(metadata={"alias": "recurrence"})
 
 
 @dataclass(kw_only=True)
@@ -17296,6 +17313,105 @@ class SimultaneousRingReplacementNumberList(OCIType):
 
 
 @dataclass(kw_only=True)
+class AccessDeviceMultipleIdentityAndContactEndpointRead22(OCIType):
+    """Access device end point that can have multiple contacts.
+        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
+              Port numbers are only used by devices with static line ordering.
+        The following elements are only used in XS data mode and not returned in AS data mode:
+          privateIdentity
+        The following elements are only used in AS data mode and a value false is returned in the XS mode:
+          supportVisualDeviceManagement
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        private_identity (Optional[str]):
+
+        contact (Optional[List[SIPContactInfo]]):
+
+        static_registration_capable (bool):
+
+        use_domain (bool):
+
+        port_number (Optional[int]):
+
+        support_visual_device_management (bool):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    private_identity: Optional[str] = field(
+        default=None, metadata={"alias": "privateIdentity"}
+    )
+
+    contact: Optional[List[SIPContactInfo]] = field(
+        default=None, metadata={"alias": "contact"}
+    )
+
+    static_registration_capable: bool = field(
+        metadata={"alias": "staticRegistrationCapable"}
+    )
+
+    use_domain: bool = field(metadata={"alias": "useDomain"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    support_visual_device_management: bool = field(
+        metadata={"alias": "supportVisualDeviceManagement"}
+    )
+
+
+@dataclass(kw_only=True)
+class AccessDeviceMultipleContactEndpointRead22(OCIType):
+    """Access device end point that can have multiple contacts.
+        Port numbers are only used by devices with static line ordering.
+
+    Attributes:
+
+        access_device (AccessDevice):
+
+        line_port (str):
+
+        contact (Optional[List[SIPContactInfo]]):
+
+        static_registration_capable (bool):
+
+        use_domain (bool):
+
+        port_number (Optional[int]):
+
+        support_visual_device_management (bool):
+
+    """
+
+    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[List[SIPContactInfo]] = field(
+        default=None, metadata={"alias": "contact"}
+    )
+
+    static_registration_capable: bool = field(
+        metadata={"alias": "staticRegistrationCapable"}
+    )
+
+    use_domain: bool = field(metadata={"alias": "useDomain"})
+
+    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
+
+    support_visual_device_management: bool = field(
+        metadata={"alias": "supportVisualDeviceManagement"}
+    )
+
+
+@dataclass(kw_only=True)
 class AccessDeviceMultipleIdentityAndContactEndpointRead22V2(OCIType):
     """Access device end point that can have multiple contacts.
         The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
@@ -17364,6 +17480,29 @@ class AccessDeviceMultipleIdentityAndContactEndpointRead22V2(OCIType):
 
 
 @dataclass(kw_only=True)
+class TrunkGroupDeviceMultipleContactEndpointAdd22(OCIType):
+    """Trunk group device endpoint used in the context of modify that can have multiple contacts.
+
+    Attributes:
+
+        name (str):
+
+        line_port (str):
+
+        contact (Optional[List[SIPContactInfo]]):
+
+    """
+
+    name: str = field(metadata={"alias": "name"})
+
+    line_port: str = field(metadata={"alias": "linePort"})
+
+    contact: Optional[List[SIPContactInfo]] = field(
+        default=None, metadata={"alias": "contact"}
+    )
+
+
+@dataclass(kw_only=True)
 class TrunkGroupDeviceMultipleContactEndpointRead22(OCIType):
     """Trunk group device endpoint that can have multiple contacts.
 
@@ -17398,61 +17537,6 @@ class TrunkGroupDeviceMultipleContactEndpointRead22(OCIType):
     use_domain: bool = field(metadata={"alias": "useDomain"})
 
     is_pilot_user: bool = field(metadata={"alias": "isPilotUser"})
-
-
-@dataclass(kw_only=True)
-class AccessDeviceMultipleIdentityAndContactEndpointRead22(OCIType):
-    """Access device end point that can have multiple contacts.
-        The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
-              Port numbers are only used by devices with static line ordering.
-        The following elements are only used in XS data mode and not returned in AS data mode:
-          privateIdentity
-        The following elements are only used in AS data mode and a value false is returned in the XS mode:
-          supportVisualDeviceManagement
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        private_identity (Optional[str]):
-
-        contact (Optional[List[SIPContactInfo]]):
-
-        static_registration_capable (bool):
-
-        use_domain (bool):
-
-        port_number (Optional[int]):
-
-        support_visual_device_management (bool):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    private_identity: Optional[str] = field(
-        default=None, metadata={"alias": "privateIdentity"}
-    )
-
-    contact: Optional[List[SIPContactInfo]] = field(
-        default=None, metadata={"alias": "contact"}
-    )
-
-    static_registration_capable: bool = field(
-        metadata={"alias": "staticRegistrationCapable"}
-    )
-
-    use_domain: bool = field(metadata={"alias": "useDomain"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    support_visual_device_management: bool = field(
-        metadata={"alias": "supportVisualDeviceManagement"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -17571,87 +17655,6 @@ class AccessDeviceMultipleIdentityAndContactEndpointAdd22(OCIType):
 
 
 @dataclass(kw_only=True)
-class ReplacementContactList22(OCIType):
-    """A list of SIP contacts that replaces a previously configured list.
-        By convention, an element of this type may be set nill to clear the list.
-
-    Attributes:
-
-        contact (List[SIPContactInfo]):
-
-    """
-
-    contact: List[SIPContactInfo] = field(metadata={"alias": "contact"})
-
-
-@dataclass(kw_only=True)
-class TrunkGroupDeviceMultipleContactEndpointAdd22(OCIType):
-    """Trunk group device endpoint used in the context of modify that can have multiple contacts.
-
-    Attributes:
-
-        name (str):
-
-        line_port (str):
-
-        contact (Optional[List[SIPContactInfo]]):
-
-    """
-
-    name: str = field(metadata={"alias": "name"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[List[SIPContactInfo]] = field(
-        default=None, metadata={"alias": "contact"}
-    )
-
-
-@dataclass(kw_only=True)
-class AccessDeviceMultipleContactEndpointRead22(OCIType):
-    """Access device end point that can have multiple contacts.
-        Port numbers are only used by devices with static line ordering.
-
-    Attributes:
-
-        access_device (AccessDevice):
-
-        line_port (str):
-
-        contact (Optional[List[SIPContactInfo]]):
-
-        static_registration_capable (bool):
-
-        use_domain (bool):
-
-        port_number (Optional[int]):
-
-        support_visual_device_management (bool):
-
-    """
-
-    access_device: AccessDevice = field(metadata={"alias": "accessDevice"})
-
-    line_port: str = field(metadata={"alias": "linePort"})
-
-    contact: Optional[List[SIPContactInfo]] = field(
-        default=None, metadata={"alias": "contact"}
-    )
-
-    static_registration_capable: bool = field(
-        metadata={"alias": "staticRegistrationCapable"}
-    )
-
-    use_domain: bool = field(metadata={"alias": "useDomain"})
-
-    port_number: Optional[int] = field(default=None, metadata={"alias": "portNumber"})
-
-    support_visual_device_management: bool = field(
-        metadata={"alias": "supportVisualDeviceManagement"}
-    )
-
-
-@dataclass(kw_only=True)
 class AccessDeviceMultipleIdentityAndContactEndpointAdd22V2(OCIType):
     """Access device end point used in the context of add that can have more than one contact defined.
         The endpoint is identified by its linePort (public Identity) and possibly a private Identity.
@@ -17701,6 +17704,20 @@ class AccessDeviceMultipleIdentityAndContactEndpointAdd22V2(OCIType):
     hotline_contact: Optional[str] = field(
         default=None, metadata={"alias": "hotlineContact"}
     )
+
+
+@dataclass(kw_only=True)
+class ReplacementContactList22(OCIType):
+    """A list of SIP contacts that replaces a previously configured list.
+        By convention, an element of this type may be set nill to clear the list.
+
+    Attributes:
+
+        contact (List[SIPContactInfo]):
+
+    """
+
+    contact: List[SIPContactInfo] = field(metadata={"alias": "contact"})
 
 
 @dataclass(kw_only=True)
@@ -17864,42 +17881,6 @@ class TrunkAddressingMultipleContactAdd(OCIType):
 
 
 @dataclass(kw_only=True)
-class TrunkAddressingMultipleContactRead21(OCIType):
-    """Trunk group endpoint that can have multiple contacts.
-        alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
-        The following elements are only used in AS data mode and ignored in XS data mode:
-          alternateTrunkIdentityDomain
-
-    Attributes:
-
-        trunk_group_device_endpoint (Optional[TrunkGroupDeviceMultipleContactEndpointRead]):
-
-        enterprise_trunk_name (Optional[str]):
-
-        alternate_trunk_identity (Optional[str]):
-
-        alternate_trunk_identity_domain (Optional[str]):
-
-    """
-
-    trunk_group_device_endpoint: Optional[
-        TrunkGroupDeviceMultipleContactEndpointRead
-    ] = field(default=None, metadata={"alias": "trunkGroupDeviceEndpoint"})
-
-    enterprise_trunk_name: Optional[str] = field(
-        default=None, metadata={"alias": "enterpriseTrunkName"}
-    )
-
-    alternate_trunk_identity: Optional[str] = field(
-        default=None, metadata={"alias": "alternateTrunkIdentity"}
-    )
-
-    alternate_trunk_identity_domain: Optional[str] = field(
-        default=None, metadata={"alias": "alternateTrunkIdentityDomain"}
-    )
-
-
-@dataclass(kw_only=True)
 class TrunkAddressingMultipleContactRead21sp1(OCIType):
     """Trunk group endpoint that can have multiple contacts.
         alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
@@ -17942,6 +17923,146 @@ class TrunkAddressingMultipleContactRead21sp1(OCIType):
 
 
 @dataclass(kw_only=True)
+class TrunkAddressingMultipleContactRead21(OCIType):
+    """Trunk group endpoint that can have multiple contacts.
+        alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
+        The following elements are only used in AS data mode and ignored in XS data mode:
+          alternateTrunkIdentityDomain
+
+    Attributes:
+
+        trunk_group_device_endpoint (Optional[TrunkGroupDeviceMultipleContactEndpointRead]):
+
+        enterprise_trunk_name (Optional[str]):
+
+        alternate_trunk_identity (Optional[str]):
+
+        alternate_trunk_identity_domain (Optional[str]):
+
+    """
+
+    trunk_group_device_endpoint: Optional[
+        TrunkGroupDeviceMultipleContactEndpointRead
+    ] = field(default=None, metadata={"alias": "trunkGroupDeviceEndpoint"})
+
+    enterprise_trunk_name: Optional[str] = field(
+        default=None, metadata={"alias": "enterpriseTrunkName"}
+    )
+
+    alternate_trunk_identity: Optional[str] = field(
+        default=None, metadata={"alias": "alternateTrunkIdentity"}
+    )
+
+    alternate_trunk_identity_domain: Optional[str] = field(
+        default=None, metadata={"alias": "alternateTrunkIdentityDomain"}
+    )
+
+
+@dataclass(kw_only=True)
+class UserServiceAuthorization(OCIType):
+    """Authorize (with quantity) or unauthorize a user service.
+
+    Attributes:
+
+        service_name (str):
+
+        authorized_quantity (Optional[UnboundedPositiveInt]):
+
+        unauthorized (Optional[bool]):
+
+    """
+
+    service_name: str = field(metadata={"alias": "serviceName"})
+
+    authorized_quantity: Optional[UnboundedPositiveInt] = field(
+        default=None, metadata={"alias": "authorizedQuantity"}
+    )
+
+    unauthorized: Optional[bool] = field(
+        default=None, metadata={"alias": "unauthorized"}
+    )
+
+
+@dataclass(kw_only=True)
+class ServicePack(OCIType):
+    """The common Service Pack elements.
+
+    Attributes:
+
+        service_pack_name (str):
+
+        service_pack_description (Optional[str]):
+
+        is_available_for_use (bool):
+
+        service_pack_quantity (UnboundedPositiveInt):
+
+        service_name (Optional[List[str]]):
+
+    """
+
+    service_pack_name: str = field(metadata={"alias": "servicePackName"})
+
+    service_pack_description: Optional[str] = field(
+        default=None, metadata={"alias": "servicePackDescription"}
+    )
+
+    is_available_for_use: bool = field(metadata={"alias": "isAvailableForUse"})
+
+    service_pack_quantity: UnboundedPositiveInt = field(
+        metadata={"alias": "servicePackQuantity"}
+    )
+
+    service_name: Optional[List[str]] = field(
+        default=None, metadata={"alias": "serviceName"}
+    )
+
+
+@dataclass(kw_only=True)
+class GroupServiceAuthorization(OCIType):
+    """Authorize (with quantity) or unauthorize a group service.
+
+    Attributes:
+
+        service_name (str):
+
+        authorized_quantity (Optional[UnboundedPositiveInt]):
+
+        unauthorized (Optional[bool]):
+
+    """
+
+    service_name: str = field(metadata={"alias": "serviceName"})
+
+    authorized_quantity: Optional[UnboundedPositiveInt] = field(
+        default=None, metadata={"alias": "authorizedQuantity"}
+    )
+
+    unauthorized: Optional[bool] = field(
+        default=None, metadata={"alias": "unauthorized"}
+    )
+
+
+@dataclass(kw_only=True)
+class CombinedGroupServiceAuthorization(OCIType):
+    """Authorize a group service.
+
+    Attributes:
+
+        service_name (str):
+
+        authorized_quantity (Optional[UnboundedPositiveInt]):
+
+    """
+
+    service_name: str = field(metadata={"alias": "serviceName"})
+
+    authorized_quantity: Optional[UnboundedPositiveInt] = field(
+        default=None, metadata={"alias": "authorizedQuantity"}
+    )
+
+
+@dataclass(kw_only=True)
 class CombinedUserServiceAssignment(OCIType):
     """Assign a service user. If the service has not been authorized to service provider or group, it will
       be authorized.
@@ -17967,37 +18088,20 @@ class CombinedUserServiceAssignment(OCIType):
 
 
 @dataclass(kw_only=True)
-class CombinedGroupServiceAuthorization(OCIType):
-    """Authorize a group service.
+class ConsolidatedUserServiceAssignment(OCIType):
+    """Assign a user service. If the service has not been authorized to the group, it will be authorized.
+        The authorizedQuantity will be used at the group level if provided; otherwise, the service quantity will be set to unlimited.
+        The command will fail if the authorized quantity set at the service provider level is insufficient.
 
     Attributes:
 
-        service_name (str):
+        user_service_name (str):
 
         authorized_quantity (Optional[UnboundedPositiveInt]):
 
     """
 
-    service_name: str = field(metadata={"alias": "serviceName"})
-
-    authorized_quantity: Optional[UnboundedPositiveInt] = field(
-        default=None, metadata={"alias": "authorizedQuantity"}
-    )
-
-
-@dataclass(kw_only=True)
-class CombinedServicePackAuthorization(OCIType):
-    """Authorize a service pack.
-
-    Attributes:
-
-        service_pack_name (str):
-
-        authorized_quantity (Optional[UnboundedPositiveInt]):
-
-    """
-
-    service_pack_name: str = field(metadata={"alias": "servicePackName"})
+    user_service_name: str = field(metadata={"alias": "userServiceName"})
 
     authorized_quantity: Optional[UnboundedPositiveInt] = field(
         default=None, metadata={"alias": "authorizedQuantity"}
@@ -18029,60 +18133,8 @@ class GroupServiceAuthorizationAndAssignment(OCIType):
 
 
 @dataclass(kw_only=True)
-class UserServiceAuthorization(OCIType):
-    """Authorize (with quantity) or unauthorize a user service.
-
-    Attributes:
-
-        service_name (str):
-
-        authorized_quantity (Optional[UnboundedPositiveInt]):
-
-        unauthorized (Optional[bool]):
-
-    """
-
-    service_name: str = field(metadata={"alias": "serviceName"})
-
-    authorized_quantity: Optional[UnboundedPositiveInt] = field(
-        default=None, metadata={"alias": "authorizedQuantity"}
-    )
-
-    unauthorized: Optional[bool] = field(
-        default=None, metadata={"alias": "unauthorized"}
-    )
-
-
-@dataclass(kw_only=True)
-class ConsolidatedUserServiceAssignment(OCIType):
-    """Assign a user service. If the service has not been authorized to the group, it will be authorized.
-        The authorizedQuantity will be used at the group level if provided; otherwise, the service quantity will be set to unlimited.
-        The command will fail if the authorized quantity set at the service provider level is insufficient.
-
-    Attributes:
-
-        user_service_name (str):
-
-        authorized_quantity (Optional[UnboundedPositiveInt]):
-
-    """
-
-    user_service_name: str = field(metadata={"alias": "userServiceName"})
-
-    authorized_quantity: Optional[UnboundedPositiveInt] = field(
-        default=None, metadata={"alias": "authorizedQuantity"}
-    )
-
-
-@dataclass(kw_only=True)
-class CombinedServicePackAssignment(OCIType):
-    """Assign a service pack to user. If the service pack has not been authorized to service provider or
-      group, it will be authorized.
-
-      If the service pack needs to be authorized at group/service provider levels, the authorizedQuantity
-      will be used. Otherwise, it will be ignored. If the authorizedQuantity is not included, the
-      quantity will come from the group template for the service pack. If a template does
-      not exist, the service quantity will be set to unlimited.
+class ServicePackAuthorization(OCIType):
+    """Authorize (with quantity) or unauthorize a service pack.
 
     Attributes:
 
@@ -18090,30 +18142,11 @@ class CombinedServicePackAssignment(OCIType):
 
         authorized_quantity (Optional[UnboundedPositiveInt]):
 
-    """
-
-    service_pack_name: str = field(metadata={"alias": "servicePackName"})
-
-    authorized_quantity: Optional[UnboundedPositiveInt] = field(
-        default=None, metadata={"alias": "authorizedQuantity"}
-    )
-
-
-@dataclass(kw_only=True)
-class GroupServiceAuthorization(OCIType):
-    """Authorize (with quantity) or unauthorize a group service.
-
-    Attributes:
-
-        service_name (str):
-
-        authorized_quantity (Optional[UnboundedPositiveInt]):
-
         unauthorized (Optional[bool]):
 
     """
 
-    service_name: str = field(metadata={"alias": "serviceName"})
+    service_pack_name: str = field(metadata={"alias": "servicePackName"})
 
     authorized_quantity: Optional[UnboundedPositiveInt] = field(
         default=None, metadata={"alias": "authorizedQuantity"}
@@ -18188,51 +18221,20 @@ class ConsolidatedServicePackAssignment(OCIType):
 
 
 @dataclass(kw_only=True)
-class ServicePack(OCIType):
-    """The common Service Pack elements.
+class CombinedServicePackAssignment(OCIType):
+    """Assign a service pack to user. If the service pack has not been authorized to service provider or
+      group, it will be authorized.
 
-    Attributes:
-
-        service_pack_name (str):
-
-        service_pack_description (Optional[str]):
-
-        is_available_for_use (bool):
-
-        service_pack_quantity (UnboundedPositiveInt):
-
-        service_name (Optional[List[str]]):
-
-    """
-
-    service_pack_name: str = field(metadata={"alias": "servicePackName"})
-
-    service_pack_description: Optional[str] = field(
-        default=None, metadata={"alias": "servicePackDescription"}
-    )
-
-    is_available_for_use: bool = field(metadata={"alias": "isAvailableForUse"})
-
-    service_pack_quantity: UnboundedPositiveInt = field(
-        metadata={"alias": "servicePackQuantity"}
-    )
-
-    service_name: Optional[List[str]] = field(
-        default=None, metadata={"alias": "serviceName"}
-    )
-
-
-@dataclass(kw_only=True)
-class ServicePackAuthorization(OCIType):
-    """Authorize (with quantity) or unauthorize a service pack.
+      If the service pack needs to be authorized at group/service provider levels, the authorizedQuantity
+      will be used. Otherwise, it will be ignored. If the authorizedQuantity is not included, the
+      quantity will come from the group template for the service pack. If a template does
+      not exist, the service quantity will be set to unlimited.
 
     Attributes:
 
         service_pack_name (str):
 
         authorized_quantity (Optional[UnboundedPositiveInt]):
-
-        unauthorized (Optional[bool]):
 
     """
 
@@ -18242,8 +18244,23 @@ class ServicePackAuthorization(OCIType):
         default=None, metadata={"alias": "authorizedQuantity"}
     )
 
-    unauthorized: Optional[bool] = field(
-        default=None, metadata={"alias": "unauthorized"}
+
+@dataclass(kw_only=True)
+class CombinedServicePackAuthorization(OCIType):
+    """Authorize a service pack.
+
+    Attributes:
+
+        service_pack_name (str):
+
+        authorized_quantity (Optional[UnboundedPositiveInt]):
+
+    """
+
+    service_pack_name: str = field(metadata={"alias": "servicePackName"})
+
+    authorized_quantity: Optional[UnboundedPositiveInt] = field(
+        default=None, metadata={"alias": "authorizedQuantity"}
     )
 
 
@@ -18332,29 +18349,8 @@ class ReceptionistContactUserAndNote(OCIType):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaOutgoingDNorSIPURI(SearchCriteria):
-    """Criteria for searching for a phone number or SIPURI.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(metadata={"alias": "isCaseInsensitive"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaUserPersonalPhoneListNumber(SearchCriteria):
-    """Criteria for searching for a phone number in a user personal phone list.
+class SearchCriteriaDeviceNetAddress(SearchCriteria):
+    """Criteria for searching for device network address.
 
     Attributes:
 
@@ -18376,240 +18372,8 @@ class SearchCriteriaUserPersonalPhoneListNumber(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactDeviceManagementEventLevel(SearchCriteria):
-    """Criteria for searching for a particular fully specified DeviceManagement event level.
-
-    Attributes:
-
-        dm_event_level (str):
-
-    """
-
-    dm_event_level: str = field(metadata={"alias": "dmEventLevel"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactHuntPolicy(SearchCriteria):
-    """Criteria for searching for a particular fully specified hunt policy.
-
-    Attributes:
-
-        hunt_policy (str):
-
-    """
-
-    hunt_policy: str = field(metadata={"alias": "huntPolicy"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaResellerId(SearchCriteria):
-    """Criteria for searching for a reseller ID.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaMobileSubscriberDirectoryNumber(SearchCriteria):
-    """Criteria for searching for a BroadWorks Mobility Mobile Subscriber Directory Number.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactCallCenterScheduledReportServiceProvider(SearchCriteria):
-    """Criteria for searching for a particular call center scheduled report's service provider.
-
-    Attributes:
-
-        service_provider_id (str):
-
-    """
-
-    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactMediaFileType(SearchCriteria):
-    """Criteria for searching for a particular media file type.
-
-    Attributes:
-
-        type (str):
-
-    """
-
-    type: str = field(metadata={"alias": "type"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaGroupCommonPhoneListNumber(SearchCriteria):
-    """Criteria for searching for a phone number in a group common phone list.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactAnnouncementFileType(SearchCriteria):
-    """Criteria for searching for a particular announcement file type.
-
-    Attributes:
-
-        type (str):
-
-    """
-
-    type: str = field(metadata={"alias": "type"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceLevel(SearchCriteria):
-    """Criteria for searching for a particular device level.
-
-    Attributes:
-
-        device_level (str):
-
-    """
-
-    device_level: str = field(metadata={"alias": "deviceLevel"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactSkillLevel(SearchCriteria):
-    """Criteria for searching for a skill Level.
-
-    Attributes:
-
-        skill_level (int):
-
-    """
-
-    skill_level: int = field(metadata={"alias": "skillLevel"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAnnouncementFileName(SearchCriteria):
-    """Criteria for searching for an Announcement File Name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserInTrunkGroup(SearchCriteria):
-    """Criteria for searching for user in/not in a trunk group.
-
-    Attributes:
-
-        user_in_trunk_group (bool):
-
-    """
-
-    user_in_trunk_group: bool = field(metadata={"alias": "userInTrunkGroup"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaImpId(SearchCriteria):
-    """Criteria for searching for a user's IMP Id.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserPersonId(SearchCriteria):
-    """Criteria for searching for a particular user's personId.
-
-    Attributes:
-
-        user_person_id (str):
-
-    """
-
-    user_person_id: str = field(metadata={"alias": "userPersonId"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceType(SearchCriteria):
-    """Criteria for searching for device type.
+class SearchCriteriaAlternateUserId(SearchCriteria):
+    """Criteria for searching for a user's alternate userId.
 
     Attributes:
 
@@ -18644,21 +18408,8 @@ class SearchCriteriaExactDnDepartment(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactLocationEnabled(SearchCriteria):
-    """Criteria for searching for a particular Location enabled state.
-
-    Attributes:
-
-        enabled (bool):
-
-    """
-
-    enabled: bool = field(metadata={"alias": "enabled"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceNetAddress(SearchCriteria):
-    """Criteria for searching for device network address.
+class SearchCriteriaDeviceType(SearchCriteria):
+    """Criteria for searching for device type.
 
     Attributes:
 
@@ -18680,22 +18431,8 @@ class SearchCriteriaDeviceNetAddress(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactCallCenterScheduledReportCreatedBySupervisor(SearchCriteria):
-    """Criteria for searching for call center scheduled report created by a
-        supervisor or administrator.
-
-    Attributes:
-
-        created_by_supervisor (bool):
-
-    """
-
-    created_by_supervisor: bool = field(metadata={"alias": "createdBySupervisor"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaRoutePointName(SearchCriteria):
-    """Criteria for searching for a route point
+class SearchCriteriaPersonalAssistantExclusionNumberDescription(SearchCriteria):
+    """Criteria for searching Personal Assistant Exclusion Number's Description.
 
     Attributes:
 
@@ -18717,8 +18454,8 @@ class SearchCriteriaRoutePointName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaUserFirstName(SearchCriteria):
-    """Criteria for searching for a user's first name.
+class SearchCriteriaNetworkClassOfServiceName(SearchCriteria):
+    """Criteria for searching for a Network Class of Service name.
 
     Attributes:
 
@@ -18740,644 +18477,21 @@ class SearchCriteriaUserFirstName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactUserType(SearchCriteria):
-    """Criteria for searching for a particular User Type.
+class SearchCriteriaExactServiceType(SearchCriteria):
+    """Criteria for searching for a particular fully specified service type.
 
     Attributes:
 
-        user_type (str):
+        service_type (str):
 
     """
 
-    user_type: str = field(metadata={"alias": "userType"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaUserHotlineContact(SearchCriteria):
-    """Criteria for searching for a user's hotline contact.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAlternateTrunkIdentityDomain(SearchCriteria):
-    """Criteria for searching for alternate trunk identity domain part.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaServiceProviderNumberPortabilityQueryDigitPattern(SearchCriteria):
-    """Criteria for searching for digit pattern.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCallCenterScheduledReportName(SearchCriteria):
-    """Criteria for searching for a call center enhanced reporting scheduled report name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAdminLastName(SearchCriteria):
-    """Criteria for searching for an administrator's last name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaIMRN(SearchCriteria):
-    """Criteria for searching for an IMRN Number.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaMobilePhoneNumber(SearchCriteria):
-    """Criteria for searching for a user's mobile phone number.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaLinePortDomain(SearchCriteria):
-    """Criteria for searching for device line/port, or SIPURI domain part.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAccessDeviceVersion(SearchCriteria):
-    """Criteria for searching for an Access Device Version.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactMobileNetwork(SearchCriteria):
-    """Criteria for searching for a particular BroadWorks Mobility Mobile Network.
-
-    Attributes:
-
-        mobile_network_name (str):
-
-    """
-
-    mobile_network_name: str = field(metadata={"alias": "mobileNetworkName"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceTypeConfigurationOptionType(SearchCriteria):
-    """Criteria for searching for a particular fully specified DeviceTypeConfigurationOptionType.
-
-    Attributes:
-
-        device_config_options (str):
-
-    """
-
-    device_config_options: str = field(metadata={"alias": "deviceConfigOptions"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaResellerName(SearchCriteria):
-    """Criteria for searching for a reseller name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaZoneIPAddress(SearchCriteria):
-    """Criteria for searching for a system zone's IP Address.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceServiceProvider(SearchCriteria):
-    """Criteria for searching for a particular fully specified service provider associated with a device.
-
-    Attributes:
-
-        service_provider_id (str):
-
-    """
-
-    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAlternateUserId(SearchCriteria):
-    """Criteria for searching for a user's alternate userId.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAdminId(SearchCriteria):
-    """Criteria for searching for an administrator's adminId.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactMobileDnAvailability(SearchCriteria):
-    """Criteria for searching for a particular mobile dn availability.
-
-    Attributes:
-
-        available (bool):
-
-    """
-
-    available: bool = field(metadata={"alias": "available"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCallCenterReportTemplateName(SearchCriteria):
-    """Criteria for searching for a particular call center enhanced reporting report template.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDomainName(SearchCriteria):
-    """Criteria for searching for Domain Names.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
+    service_type: str = field(metadata={"alias": "serviceType"})
 
 
 @dataclass(kw_only=True)
 class SearchCriteriaPhysicalLocation(SearchCriteria):
     """Criteria for searching for a Physical Location.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserRouteListAssignment(SearchCriteria):
-    """Criteria for searching for users with Route List feature assignment.
-
-    Attributes:
-
-        assigned (bool):
-
-    """
-
-    assigned: bool = field(metadata={"alias": "assigned"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaGroupCommonPhoneListName(SearchCriteria):
-    """Criteria for searching for a name in a group common phone list.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDn(SearchCriteria):
-    """Criteria for searching for a DN.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDnAvailability(SearchCriteria):
-    """Criteria for searching for a particular dn availability.
-
-    Attributes:
-
-        available (bool):
-
-    """
-
-    available: bool = field(metadata={"alias": "available"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceManagementEventStatusCompleted(SearchCriteria):
-    """Criteria for searching for a particular fully specified Device Management completed event status.
-
-    Attributes:
-
-        dm_event_status_completed (str):
-
-    """
-
-    dm_event_status_completed: str = field(metadata={"alias": "dmEventStatusCompleted"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactSubscriberType(SearchCriteria):
-    """Criteria for searching for a particular Subscriber Type.
-
-    Attributes:
-
-        subscriber_type (str):
-
-    """
-
-    subscriber_type: str = field(metadata={"alias": "subscriberType"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaYahooId(SearchCriteria):
-    """Criteria for searching for a user's yahoo id.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaSIPContact(SearchCriteria):
-    """Criteria for searching for a SIP Contact.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaSystemServiceDn(SearchCriteria):
-    """Criteria for searching for a system service DN.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaEnterpriseCommonPhoneListName(SearchCriteria):
-    """Criteria for searching for a name in an enterprise common phone list.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDnActivation(SearchCriteria):
-    """Criteria for searching for a particular Dn activation state.
-
-    Attributes:
-
-        activated (bool):
-
-    """
-
-    activated: bool = field(metadata={"alias": "activated"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaRegistrationURI(SearchCriteria):
-    """Criteria for searching for a RegistrationURI.
 
     Attributes:
 
@@ -19445,351 +18559,6 @@ class SearchCriteriaReceptionistNote(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaServiceCode(SearchCriteria):
-    """Criteria for searching for a Service Code.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactCallCenterType(SearchCriteria):
-    """Criteria for searching for a particular fully specified call center type.
-
-    Attributes:
-
-        call_center_type (str):
-
-    """
-
-    call_center_type: str = field(metadata={"alias": "callCenterType"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactSignalingAddressType(SearchCriteria):
-    """Criteria for searching for a particular fully specified SignalingAddressType.
-
-    Attributes:
-
-        profile (str):
-
-    """
-
-    profile: str = field(metadata={"alias": "profile"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserNetworkClassOfService(SearchCriteria):
-    """Criteria for searching for users with a specified network class of service.
-
-    Attributes:
-
-        network_class_of_service (str):
-
-    """
-
-    network_class_of_service: str = field(metadata={"alias": "networkClassOfService"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserDepartment(SearchCriteria):
-    """Criteria for searching for a particular fully specified user's department.
-
-    Attributes:
-
-        department_key (DepartmentKey):
-
-    """
-
-    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaEnterpriseCommonPhoneListNumber(SearchCriteria):
-    """Criteria for searching for a phone number in an enterprise common phone list.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaTitle(SearchCriteria):
-    """Criteria for searching for a user's title.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaGroupCommonMultiPartPhoneListName(SearchCriteria):
-    """Criteria for searching for a multi-value name in a group common phone list.
-        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
-
-    Attributes:
-
-        value (List[str]):
-
-        is_case_insensitive (bool):
-
-    """
-
-    value: List[str] = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAccessDeviceEndpointPrivateIdentity(SearchCriteria):
-    """Criteria for searching for a private identity.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceMACAddress(SearchCriteria):
-    """Criteria for searching for device MAC address.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAdminFirstName(SearchCriteria):
-    """Criteria for searching for an administrator's first name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaEnterpriseCommonMultiPartPhoneListName(SearchCriteria):
-    """Criteria for searching for a multi-part name in an enterprise common phone list.\
-        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
-
-    Attributes:
-
-        value (List[str]):
-
-        is_case_insensitive (bool):
-
-    """
-
-    value: List[str] = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceManagementEventAction(SearchCriteria):
-    """Criteria for searching for a particular fully specified DeviceManagement event action.
-
-    Attributes:
-
-        dm_event_action (str):
-
-    """
-
-    dm_event_action: str = field(metadata={"alias": "dmEventAction"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaUserLastName(SearchCriteria):
-    """Criteria for searching for a user's last name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceManagementEventStatusInProgressOrPending(SearchCriteria):
-    """Criteria for searching for a particular fully specified Device Management event in progress or pending status.
-
-    Attributes:
-
-        dm_event_status_in_progress_or_pending (str):
-
-    """
-
-    dm_event_status_in_progress_or_pending: str = field(
-        metadata={"alias": "dmEventStatusInProgressOrPending"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaMultiPartUserName(SearchCriteria):
-    """Criteria for searching for a user's full name.
-        This search criterion will be compared against multiple combinations of first name and last name:
-
-        First Name + ‘ ‘ + Last Name
-        Last Name + ‘ ‘ + First Name
-        Last Name + ‘, ‘ + First Name
-        Hiragana Last Name + Hiragana First Name
-
-        Note that when specific conditions are met, VON users will be included in the search results.
-        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
-
-    Attributes:
-
-        value (List[str]):
-
-        is_case_insensitive (bool):
-
-    """
-
-    value: List[str] = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDigitPattern(SearchCriteria):
-    """Criteria for searching for digit pattern.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactOrganizationType(SearchCriteria):
-    """Criteria for searching for an organization type.
-
-    Attributes:
-
-        organization_type (str):
-
-    """
-
-    organization_type: str = field(metadata={"alias": "organizationType"})
-
-
-@dataclass(kw_only=True)
 class SearchCriteriaGroupLocationCode(SearchCriteria):
     """Criteria for searching for a group location dialing code.
 
@@ -19813,204 +18582,8 @@ class SearchCriteriaGroupLocationCode(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactUserGroup(SearchCriteria):
-    """Criteria for searching for a particular fully specified user's group.
-
-    Attributes:
-
-        service_provider_id (str):
-
-        group_id (str):
-
-    """
-
-    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
-
-    group_id: str = field(metadata={"alias": "groupId"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceManagementEventRequestTrackingId(SearchCriteria):
-    """Criteria for searching for a particular OCI tracking id.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCallParkName(SearchCriteria):
-    """Criteria for searching for a call park by name
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceSerialNumber(SearchCriteria):
-    """Criteria for searching for device serial number.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactPortNumber(SearchCriteria):
-    """Criteria for searching for a port number.
-
-    Attributes:
-
-        port (int):
-
-    """
-
-    port: int = field(metadata={"alias": "port"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactVirtualOnNetCallTypeName(SearchCriteria):
-    """Criteria for searching for a particular fully specified Virtual On-Net Call Type Name.
-
-    Attributes:
-
-        virtual_on_net_call_type_name (str):
-
-    """
-
-    virtual_on_net_call_type_name: str = field(
-        metadata={"alias": "virtualOnNetCallTypeName"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactPolicySelection(SearchCriteria):
-    """Criteria for searching for a particular Voice VPN policy selection.
-
-    Attributes:
-
-        policy_selection (str):
-
-    """
-
-    policy_selection: str = field(metadata={"alias": "policySelection"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCommunicationBarringAuthorizationCode(SearchCriteria):
-    """Criteria for searching for a Communication Barring Authorization Code.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCallPickupName(SearchCriteria):
-    """Criteria for searching for a call pickup by name
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaAgentThresholdProfile(SearchCriteria):
-    """Criteria for searching a Call Center Agent Threshold Profile.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaHomeMscAddress(SearchCriteria):
-    """Criteria for searching for a system Home Network Msc Address.
+class SearchCriteriaLinePortDomain(SearchCriteria):
+    """Criteria for searching for device line/port, or SIPURI domain part.
 
     Attributes:
 
@@ -20055,391 +18628,8 @@ class SearchCriteriaLanguage(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaDeviceManagementEventLoginId(SearchCriteria):
-    """Criteria for searching for a particular login id.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaPersonalAssistantExclusionNumberDescription(SearchCriteria):
-    """Criteria for searching Personal Assistant Exclusion Number's Description.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDepartmentName(SearchCriteria):
-    """Criteria for searching for a user's department.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaGroupName(SearchCriteria):
-    """Criteria for searching for a group name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDomainLevel(SearchCriteria):
-    """Criteria for searching for a particular domain level.
-
-    Attributes:
-
-        domain_level (str):
-
-    """
-
-    domain_level: str = field(metadata={"alias": "domainLevel"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaNetworkClassOfServiceName(SearchCriteria):
-    """Criteria for searching for a Network Class of Service name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaGroupExternalId(SearchCriteria):
-    """Criteria for searching by a group's externalId.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaNumberPortabilityStatus(SearchCriteria):
-    """Criteria for searching for number portability status.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactScheduleType(SearchCriteria):
-    """Criteria for searching for a particular schedule type.
-
-    Attributes:
-
-        type (str):
-
-    """
-
-    type: str = field(metadata={"alias": "type"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaLocation(SearchCriteria):
-    """Criteria for searching for a Location.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExtension(SearchCriteria):
-    """Criteria for searching for an extension.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactCallCenterReportTemplateKey(SearchCriteria):
-    """Criteria for searching for a particular call center enhanced reporting report template.
-
-    Attributes:
-
-        report_template (CallCenterReportTemplateKey):
-
-    """
-
-    report_template: CallCenterReportTemplateKey = field(
-        metadata={"alias": "reportTemplate"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaEnterpriseTrunkName(SearchCriteria):
-    """Criteria for searching for an Enterprise Trunk name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaEmailAddress(SearchCriteria):
-    """Criteria for searching for a email address.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceName(SearchCriteria):
-    """Criteria for searching for device name.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaPersonalAssistantExclusionNumber(SearchCriteria):
-    """Criteria for searching for Personal Assistant Exclusion Number.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaDeviceManagementEventAdditionalInfo(SearchCriteria):
-    """Criteria for searching for a particular additional info of a DeviceManagement event.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaUserPlaceType(SearchCriteria):
-    """Criteria for searching based on a user type – \"User\" or \"Place\".
-
-    Attributes:
-
-        value (str):
-
-    """
-
-    value: str = field(metadata={"alias": "value"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactDeviceType(SearchCriteria):
-    """Criteria for searching for a particular fully specified device type.
-
-    Attributes:
-
-        device_type (str):
-
-    """
-
-    device_type: str = field(metadata={"alias": "deviceType"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaServiceCodeDescription(SearchCriteria):
-    """Criteria for searching for a Service Code description.
+class SearchCriteriaUserPersonalPhoneListNumber(SearchCriteria):
+    """Criteria for searching for a phone number in a user personal phone list.
 
     Attributes:
 
@@ -20484,21 +18674,34 @@ class SearchCriteriaDeviceManagementEventRequest(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactEndpointType21sp1(SearchCriteria):
-    """Criteria for searching for a particular endpoint type.
+class SearchCriteriaExactGroupAdminType(SearchCriteria):
+    """Criteria for searching for a particular group administrator type.
 
     Attributes:
 
-        endpoint_type (str):
+        type (str):
 
     """
 
-    endpoint_type: str = field(metadata={"alias": "endpointType"})
+    type: str = field(metadata={"alias": "type"})
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaNumberPortabilityQueryDigitPattern(SearchCriteria):
-    """Criteria for searching for digit pattern.
+class SearchCriteriaExactDeviceManagementEventType(SearchCriteria):
+    """Criteria for searching for a particular fully specified DeviceManagement event type.
+
+    Attributes:
+
+        dm_event_type (str):
+
+    """
+
+    dm_event_type: str = field(metadata={"alias": "dmEventType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaEnterpriseCommonPhoneListName(SearchCriteria):
+    """Criteria for searching for a name in an enterprise common phone list.
 
     Attributes:
 
@@ -20520,9 +18723,8 @@ class SearchCriteriaNumberPortabilityQueryDigitPattern(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaAlternateTrunkIdentity(SearchCriteria):
-    """Criteria for searching for a particular fully specified alternate trunk identity.
-        In IMS mode, it only applies to the user part of alternate trunk identity.
+class SearchCriteriaGroupId(SearchCriteria):
+    """Criteria for searching for a group ID.
 
     Attributes:
 
@@ -20544,16 +18746,200 @@ class SearchCriteriaAlternateTrunkIdentity(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactServiceProvider(SearchCriteria):
-    """Criteria for searching for a particular fully specified service provider.
+class SearchCriteriaServiceProviderId(SearchCriteria):
+    """Criteria for searching for a service provider ID.
 
     Attributes:
 
-        service_provider_id (str):
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
 
     """
 
-    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactHuntPolicy(SearchCriteria):
+    """Criteria for searching for a particular fully specified hunt policy.
+
+    Attributes:
+
+        hunt_policy (str):
+
+    """
+
+    hunt_policy: str = field(metadata={"alias": "huntPolicy"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactCallCenterType(SearchCriteria):
+    """Criteria for searching for a particular fully specified call center type.
+
+    Attributes:
+
+        call_center_type (str):
+
+    """
+
+    call_center_type: str = field(metadata={"alias": "callCenterType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDeviceManagementEventLoginId(SearchCriteria):
+    """Criteria for searching for a particular login id.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDepartmentName(SearchCriteria):
+    """Criteria for searching for a user's department.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactMobileNetwork(SearchCriteria):
+    """Criteria for searching for a particular BroadWorks Mobility Mobile Network.
+
+    Attributes:
+
+        mobile_network_name (str):
+
+    """
+
+    mobile_network_name: str = field(metadata={"alias": "mobileNetworkName"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaSystemServiceDn(SearchCriteria):
+    """Criteria for searching for a system service DN.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserPersonalMultiPartPhoneListName(SearchCriteria):
+    """Criteria for searching for a name in a user personal phone list.
+        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
+
+    Attributes:
+
+        value (List[str]):
+
+        is_case_insensitive (bool):
+
+    """
+
+    value: List[str] = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaGroupCommonPhoneListName(SearchCriteria):
+    """Criteria for searching for a name in a group common phone list.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDn(SearchCriteria):
+    """Criteria for searching for a DN.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
 
 
 @dataclass(kw_only=True)
@@ -20588,8 +18974,8 @@ class SearchCriteriaUserName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaServiceProviderName(SearchCriteria):
-    """Criteria for searching for a service provider name.
+class SearchCriteriaDeviceManagementEventAdditionalInfo(SearchCriteria):
+    """Criteria for searching for a particular additional info of a DeviceManagement event.
 
     Attributes:
 
@@ -20611,8 +18997,8 @@ class SearchCriteriaServiceProviderName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaScheduleName(SearchCriteria):
-    """Criteria for searching for a schedule name.
+class SearchCriteriaCommunicationBarringAuthorizationCode(SearchCriteria):
+    """Criteria for searching for a Communication Barring Authorization Code.
 
     Attributes:
 
@@ -20634,46 +19020,8 @@ class SearchCriteriaScheduleName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaUserId(SearchCriteria):
-    """Criteria for searching for a user's userId.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactCustomContactDirectory(SearchCriteria):
-    """Criteria for searching for a particular fully specified custom contact directory.
-
-    Attributes:
-
-        custom_contact_directory_name (str):
-
-    """
-
-    custom_contact_directory_name: str = field(
-        metadata={"alias": "customContactDirectoryName"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactGroupAdminType(SearchCriteria):
-    """Criteria for searching for a particular group administrator type.
+class SearchCriteriaExactScheduleType(SearchCriteria):
+    """Criteria for searching for a particular schedule type.
 
     Attributes:
 
@@ -20685,16 +19033,39 @@ class SearchCriteriaExactGroupAdminType(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactDeviceManagementEventType(SearchCriteria):
-    """Criteria for searching for a particular fully specified DeviceManagement event type.
+class SearchCriteriaExactPortNumber(SearchCriteria):
+    """Criteria for searching for a port number.
 
     Attributes:
 
-        dm_event_type (str):
+        port (int):
 
     """
 
-    dm_event_type: str = field(metadata={"alias": "dmEventType"})
+    port: int = field(metadata={"alias": "port"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaZoneIPAddress(SearchCriteria):
+    """Criteria for searching for a system zone's IP Address.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
 
 
 @dataclass(kw_only=True)
@@ -20716,25 +19087,63 @@ class SearchCriteriaExactCallCenterScheduledReportGroup(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaServiceStatus(SearchCriteria):
-    """Criteria for searching for services that are active or not.
-        This search criteria data type is only intended to be used by the commands
-        introduced by BW-2301.
-        The commands are EnterpriseUserCallWaitingSettingsGetListRequest
-        and GroupUserCallWaitingSettingsGetListRequest.
+class SearchCriteriaExtension(SearchCriteria):
+    """Criteria for searching for an extension.
 
     Attributes:
 
-        is_active (bool):
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
 
     """
 
-    is_active: bool = field(metadata={"alias": "isActive"})
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaServiceProviderId(SearchCriteria):
-    """Criteria for searching for a service provider ID.
+class SearchCriteriaExactVirtualOnNetCallTypeName(SearchCriteria):
+    """Criteria for searching for a particular fully specified Virtual On-Net Call Type Name.
+
+    Attributes:
+
+        virtual_on_net_call_type_name (str):
+
+    """
+
+    virtual_on_net_call_type_name: str = field(
+        metadata={"alias": "virtualOnNetCallTypeName"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserGroup(SearchCriteria):
+    """Criteria for searching for a particular fully specified user's group.
+
+    Attributes:
+
+        service_provider_id (str):
+
+        group_id (str):
+
+    """
+
+    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+
+    group_id: str = field(metadata={"alias": "groupId"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserHotlineContact(SearchCriteria):
+    """Criteria for searching for a user's hotline contact.
 
     Attributes:
 
@@ -20786,25 +19195,8 @@ class SearchCriteriaForwardedToNumber(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaUserExternalId(SearchCriteria):
-    """Criteria for searching for a user's externalId.
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaCommunicationBarringAuthorizationCodeDescription(SearchCriteria):
-    """Criteria for searching for a Communication Barring Authorization Code description.
+class SearchCriteriaAccessDeviceVersion(SearchCriteria):
+    """Criteria for searching for an Access Device Version.
 
     Attributes:
 
@@ -20826,8 +19218,23 @@ class SearchCriteriaCommunicationBarringAuthorizationCodeDescription(SearchCrite
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaLoginId(SearchCriteria):
-    """Criteria for searching for a Login Id.
+class SearchCriteriaExactCustomContactDirectory(SearchCriteria):
+    """Criteria for searching for a particular fully specified custom contact directory.
+
+    Attributes:
+
+        custom_contact_directory_name (str):
+
+    """
+
+    custom_contact_directory_name: str = field(
+        metadata={"alias": "customContactDirectoryName"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserId(SearchCriteria):
+    """Criteria for searching for a user's userId.
 
     Attributes:
 
@@ -20849,64 +19256,34 @@ class SearchCriteriaLoginId(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaUserPersonalMultiPartPhoneListName(SearchCriteria):
-    """Criteria for searching for a name in a user personal phone list.
-        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
+class SearchCriteriaExactSkillLevel(SearchCriteria):
+    """Criteria for searching for a skill Level.
 
     Attributes:
 
-        value (List[str]):
-
-        is_case_insensitive (bool):
+        skill_level (int):
 
     """
 
-    value: List[str] = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
+    skill_level: int = field(metadata={"alias": "skillLevel"})
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaCallCenterName(SearchCriteria):
-    """Criteria for searching for a call center
+class SearchCriteriaExactDeviceManagementEventStatusCompleted(SearchCriteria):
+    """Criteria for searching for a particular fully specified Device Management completed event status.
 
     Attributes:
 
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
+        dm_event_status_completed (str):
 
     """
 
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
+    dm_event_status_completed: str = field(metadata={"alias": "dmEventStatusCompleted"})
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactAutoAttendantType(SearchCriteria):
-    """Criteria for searching for a particular auto-attendant type.
-
-    Attributes:
-
-        type (str):
-
-    """
-
-    type: str = field(metadata={"alias": "type"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaRoamingMscAddress(SearchCriteria):
-    """Criteria for searching for a system Roaming Network Msc Address.
+class SearchCriteriaHomeMscAddress(SearchCriteria):
+    """Criteria for searching for a system Home Network Msc Address.
 
     Attributes:
 
@@ -20928,57 +19305,22 @@ class SearchCriteriaRoamingMscAddress(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactServiceType(SearchCriteria):
-    """Criteria for searching for a particular fully specified service type.
+class SearchCriteriaExactCallCenterScheduledReportCreatedBySupervisor(SearchCriteria):
+    """Criteria for searching for call center scheduled report created by a
+        supervisor or administrator.
 
     Attributes:
 
-        service_type (str):
+        created_by_supervisor (bool):
 
     """
 
-    service_type: str = field(metadata={"alias": "serviceType"})
+    created_by_supervisor: bool = field(metadata={"alias": "createdBySupervisor"})
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaTrunkGroupName(SearchCriteria):
-    """Criteria for searching for a trunk group
-
-    Attributes:
-
-        mode (str):
-
-        value (str):
-
-        is_case_insensitive (bool):
-
-    """
-
-    mode: str = field(metadata={"alias": "mode"})
-
-    value: str = field(metadata={"alias": "value"})
-
-    is_case_insensitive: bool = field(
-        default=True, metadata={"alias": "isCaseInsensitive"}
-    )
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaExactUserRouteListAssigned(SearchCriteria):
-    """Criteria for searching for users with/without Route List feature assigned.
-
-    Attributes:
-
-        route_list_assigned (bool):
-
-    """
-
-    route_list_assigned: bool = field(metadata={"alias": "routeListAssigned"})
-
-
-@dataclass(kw_only=True)
-class SearchCriteriaUserPersonalPhoneListName(SearchCriteria):
-    """Criteria for searching for a name in a user personal phone list.
+class SearchCriteriaScheduleName(SearchCriteria):
+    """Criteria for searching for a schedule name.
 
     Attributes:
 
@@ -21023,8 +19365,449 @@ class SearchCriteriaServiceInstanceName(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaExactServiceProviderAdminType(SearchCriteria):
-    """Criteria for searching for a particular service provider administrator type.
+class SearchCriteriaExactDeviceTypeConfigurationOptionType(SearchCriteria):
+    """Criteria for searching for a particular fully specified DeviceTypeConfigurationOptionType.
+
+    Attributes:
+
+        device_config_options (str):
+
+    """
+
+    device_config_options: str = field(metadata={"alias": "deviceConfigOptions"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserType(SearchCriteria):
+    """Criteria for searching for a particular User Type.
+
+    Attributes:
+
+        user_type (str):
+
+    """
+
+    user_type: str = field(metadata={"alias": "userType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCallCenterReportTemplateName(SearchCriteria):
+    """Criteria for searching for a particular call center enhanced reporting report template.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaServiceCodeDescription(SearchCriteria):
+    """Criteria for searching for a Service Code description.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserPersonId(SearchCriteria):
+    """Criteria for searching for a particular user's personId.
+
+    Attributes:
+
+        user_person_id (str):
+
+    """
+
+    user_person_id: str = field(metadata={"alias": "userPersonId"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaGroupName(SearchCriteria):
+    """Criteria for searching for a group name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaNumberPortabilityQueryDigitPattern(SearchCriteria):
+    """Criteria for searching for digit pattern.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDeviceManagementEventRequestTrackingId(SearchCriteria):
+    """Criteria for searching for a particular OCI tracking id.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaEmailAddress(SearchCriteria):
+    """Criteria for searching for a email address.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactLocationEnabled(SearchCriteria):
+    """Criteria for searching for a particular Location enabled state.
+
+    Attributes:
+
+        enabled (bool):
+
+    """
+
+    enabled: bool = field(metadata={"alias": "enabled"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceManagementEventStatusInProgressOrPending(SearchCriteria):
+    """Criteria for searching for a particular fully specified Device Management event in progress or pending status.
+
+    Attributes:
+
+        dm_event_status_in_progress_or_pending (str):
+
+    """
+
+    dm_event_status_in_progress_or_pending: str = field(
+        metadata={"alias": "dmEventStatusInProgressOrPending"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceType(SearchCriteria):
+    """Criteria for searching for a particular fully specified device type.
+
+    Attributes:
+
+        device_type (str):
+
+    """
+
+    device_type: str = field(metadata={"alias": "deviceType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactOrganizationType(SearchCriteria):
+    """Criteria for searching for an organization type.
+
+    Attributes:
+
+        organization_type (str):
+
+    """
+
+    organization_type: str = field(metadata={"alias": "organizationType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaPersonalAssistantExclusionNumber(SearchCriteria):
+    """Criteria for searching for Personal Assistant Exclusion Number.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceManagementEventLevel(SearchCriteria):
+    """Criteria for searching for a particular fully specified DeviceManagement event level.
+
+    Attributes:
+
+        dm_event_level (str):
+
+    """
+
+    dm_event_level: str = field(metadata={"alias": "dmEventLevel"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDnAvailability(SearchCriteria):
+    """Criteria for searching for a particular dn availability.
+
+    Attributes:
+
+        available (bool):
+
+    """
+
+    available: bool = field(metadata={"alias": "available"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserRouteListAssigned(SearchCriteria):
+    """Criteria for searching for users with/without Route List feature assigned.
+
+    Attributes:
+
+        route_list_assigned (bool):
+
+    """
+
+    route_list_assigned: bool = field(metadata={"alias": "routeListAssigned"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaServiceProviderName(SearchCriteria):
+    """Criteria for searching for a service provider name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserRouteListAssignment(SearchCriteria):
+    """Criteria for searching for users with Route List feature assignment.
+
+    Attributes:
+
+        assigned (bool):
+
+    """
+
+    assigned: bool = field(metadata={"alias": "assigned"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaServiceCode(SearchCriteria):
+    """Criteria for searching for a Service Code.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactServiceProvider(SearchCriteria):
+    """Criteria for searching for a particular fully specified service provider.
+
+    Attributes:
+
+        service_provider_id (str):
+
+    """
+
+    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaSIPContact(SearchCriteria):
+    """Criteria for searching for a SIP Contact.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserInTrunkGroup(SearchCriteria):
+    """Criteria for searching for user in/not in a trunk group.
+
+    Attributes:
+
+        user_in_trunk_group (bool):
+
+    """
+
+    user_in_trunk_group: bool = field(metadata={"alias": "userInTrunkGroup"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserFirstName(SearchCriteria):
+    """Criteria for searching for a user's first name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserExternalId(SearchCriteria):
+    """Criteria for searching for a user's externalId.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactMediaFileType(SearchCriteria):
+    """Criteria for searching for a particular media file type.
 
     Attributes:
 
@@ -21036,8 +19819,538 @@ class SearchCriteriaExactServiceProviderAdminType(SearchCriteria):
 
 
 @dataclass(kw_only=True)
-class SearchCriteriaGroupId(SearchCriteria):
-    """Criteria for searching for a group ID.
+class SearchCriteriaYahooId(SearchCriteria):
+    """Criteria for searching for a user's yahoo id.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCommunicationBarringAuthorizationCodeDescription(SearchCriteria):
+    """Criteria for searching for a Communication Barring Authorization Code description.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaServiceProviderNumberPortabilityQueryDigitPattern(SearchCriteria):
+    """Criteria for searching for digit pattern.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCallPickupName(SearchCriteria):
+    """Criteria for searching for a call pickup by name
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactMobileDnAvailability(SearchCriteria):
+    """Criteria for searching for a particular mobile dn availability.
+
+    Attributes:
+
+        available (bool):
+
+    """
+
+    available: bool = field(metadata={"alias": "available"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactAutoAttendantType(SearchCriteria):
+    """Criteria for searching for a particular auto-attendant type.
+
+    Attributes:
+
+        type (str):
+
+    """
+
+    type: str = field(metadata={"alias": "type"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaMobileSubscriberDirectoryNumber(SearchCriteria):
+    """Criteria for searching for a BroadWorks Mobility Mobile Subscriber Directory Number.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaEnterpriseCommonMultiPartPhoneListName(SearchCriteria):
+    """Criteria for searching for a multi-part name in an enterprise common phone list.\
+        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
+
+    Attributes:
+
+        value (List[str]):
+
+        is_case_insensitive (bool):
+
+    """
+
+    value: List[str] = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAdminFirstName(SearchCriteria):
+    """Criteria for searching for an administrator's first name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaGroupExternalId(SearchCriteria):
+    """Criteria for searching by a group's externalId.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaLocation(SearchCriteria):
+    """Criteria for searching for a Location.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserLastName(SearchCriteria):
+    """Criteria for searching for a user's last name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaEnterpriseCommonPhoneListNumber(SearchCriteria):
+    """Criteria for searching for a phone number in an enterprise common phone list.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCallCenterScheduledReportName(SearchCriteria):
+    """Criteria for searching for a call center enhanced reporting scheduled report name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserNetworkClassOfService(SearchCriteria):
+    """Criteria for searching for users with a specified network class of service.
+
+    Attributes:
+
+        network_class_of_service (str):
+
+    """
+
+    network_class_of_service: str = field(metadata={"alias": "networkClassOfService"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserPlaceType(SearchCriteria):
+    """Criteria for searching based on a user type – \"User\" or \"Place\".
+
+    Attributes:
+
+        value (str):
+
+    """
+
+    value: str = field(metadata={"alias": "value"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDigitPattern(SearchCriteria):
+    """Criteria for searching for digit pattern.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDeviceMACAddress(SearchCriteria):
+    """Criteria for searching for device MAC address.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCallCenterName(SearchCriteria):
+    """Criteria for searching for a call center
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaLoginId(SearchCriteria):
+    """Criteria for searching for a Login Id.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaGroupCommonMultiPartPhoneListName(SearchCriteria):
+    """Criteria for searching for a multi-value name in a group common phone list.
+        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
+
+    Attributes:
+
+        value (List[str]):
+
+        is_case_insensitive (bool):
+
+    """
+
+    value: List[str] = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaRoamingMscAddress(SearchCriteria):
+    """Criteria for searching for a system Roaming Network Msc Address.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaServiceStatus(SearchCriteria):
+    """Criteria for searching for services that are active or not.
+        This search criteria data type is only intended to be used by the commands
+        introduced by BW-2301.
+        The commands are EnterpriseUserCallWaitingSettingsGetListRequest
+        and GroupUserCallWaitingSettingsGetListRequest.
+
+    Attributes:
+
+        is_active (bool):
+
+    """
+
+    is_active: bool = field(metadata={"alias": "isActive"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaResellerName(SearchCriteria):
+    """Criteria for searching for a reseller name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactPolicySelection(SearchCriteria):
+    """Criteria for searching for a particular Voice VPN policy selection.
+
+    Attributes:
+
+        policy_selection (str):
+
+    """
+
+    policy_selection: str = field(metadata={"alias": "policySelection"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaGroupCommonPhoneListNumber(SearchCriteria):
+    """Criteria for searching for a phone number in a group common phone list.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaImpId(SearchCriteria):
+    """Criteria for searching for a user's IMP Id.
 
     Attributes:
 
@@ -21069,6 +20382,710 @@ class SearchCriteriaExactScheduleLevel(SearchCriteria):
     """
 
     level: str = field(metadata={"alias": "level"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDnActivation(SearchCriteria):
+    """Criteria for searching for a particular Dn activation state.
+
+    Attributes:
+
+        activated (bool):
+
+    """
+
+    activated: bool = field(metadata={"alias": "activated"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaTrunkGroupName(SearchCriteria):
+    """Criteria for searching for a trunk group
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaNumberPortabilityStatus(SearchCriteria):
+    """Criteria for searching for number portability status.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceServiceProvider(SearchCriteria):
+    """Criteria for searching for a particular fully specified service provider associated with a device.
+
+    Attributes:
+
+        service_provider_id (str):
+
+    """
+
+    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAlternateTrunkIdentityDomain(SearchCriteria):
+    """Criteria for searching for alternate trunk identity domain part.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAdminLastName(SearchCriteria):
+    """Criteria for searching for an administrator's last name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAlternateTrunkIdentity(SearchCriteria):
+    """Criteria for searching for a particular fully specified alternate trunk identity.
+        In IMS mode, it only applies to the user part of alternate trunk identity.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactCallCenterReportTemplateKey(SearchCriteria):
+    """Criteria for searching for a particular call center enhanced reporting report template.
+
+    Attributes:
+
+        report_template (CallCenterReportTemplateKey):
+
+    """
+
+    report_template: CallCenterReportTemplateKey = field(
+        metadata={"alias": "reportTemplate"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaUserPersonalPhoneListName(SearchCriteria):
+    """Criteria for searching for a name in a user personal phone list.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceLevel(SearchCriteria):
+    """Criteria for searching for a particular device level.
+
+    Attributes:
+
+        device_level (str):
+
+    """
+
+    device_level: str = field(metadata={"alias": "deviceLevel"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactSubscriberType(SearchCriteria):
+    """Criteria for searching for a particular Subscriber Type.
+
+    Attributes:
+
+        subscriber_type (str):
+
+    """
+
+    subscriber_type: str = field(metadata={"alias": "subscriberType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDeviceName(SearchCriteria):
+    """Criteria for searching for device name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactEndpointType21sp1(SearchCriteria):
+    """Criteria for searching for a particular endpoint type.
+
+    Attributes:
+
+        endpoint_type (str):
+
+    """
+
+    endpoint_type: str = field(metadata={"alias": "endpointType"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactSignalingAddressType(SearchCriteria):
+    """Criteria for searching for a particular fully specified SignalingAddressType.
+
+    Attributes:
+
+        profile (str):
+
+    """
+
+    profile: str = field(metadata={"alias": "profile"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaEnterpriseTrunkName(SearchCriteria):
+    """Criteria for searching for an Enterprise Trunk name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDomainName(SearchCriteria):
+    """Criteria for searching for Domain Names.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaMobilePhoneNumber(SearchCriteria):
+    """Criteria for searching for a user's mobile phone number.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaTitle(SearchCriteria):
+    """Criteria for searching for a user's title.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAnnouncementFileName(SearchCriteria):
+    """Criteria for searching for an Announcement File Name.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactUserDepartment(SearchCriteria):
+    """Criteria for searching for a particular fully specified user's department.
+
+    Attributes:
+
+        department_key (DepartmentKey):
+
+    """
+
+    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaResellerId(SearchCriteria):
+    """Criteria for searching for a reseller ID.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaRoutePointName(SearchCriteria):
+    """Criteria for searching for a route point
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaMultiPartUserName(SearchCriteria):
+    """Criteria for searching for a user's full name.
+        This search criterion will be compared against multiple combinations of first name and last name:
+
+        First Name + ‘ ‘ + Last Name
+        Last Name + ‘ ‘ + First Name
+        Last Name + ‘, ‘ + First Name
+        Hiragana Last Name + Hiragana First Name
+
+        Note that when specific conditions are met, VON users will be included in the search results.
+        Note: For this search criterion, the searchMode is always ‘Contains’ and the multi-part search criteria are always AND’ed.
+
+    Attributes:
+
+        value (List[str]):
+
+        is_case_insensitive (bool):
+
+    """
+
+    value: List[str] = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactServiceProviderAdminType(SearchCriteria):
+    """Criteria for searching for a particular service provider administrator type.
+
+    Attributes:
+
+        type (str):
+
+    """
+
+    type: str = field(metadata={"alias": "type"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactCallCenterScheduledReportServiceProvider(SearchCriteria):
+    """Criteria for searching for a particular call center scheduled report's service provider.
+
+    Attributes:
+
+        service_provider_id (str):
+
+    """
+
+    service_provider_id: str = field(metadata={"alias": "serviceProviderId"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaOutgoingDNorSIPURI(SearchCriteria):
+    """Criteria for searching for a phone number or SIPURI.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(metadata={"alias": "isCaseInsensitive"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactAnnouncementFileType(SearchCriteria):
+    """Criteria for searching for a particular announcement file type.
+
+    Attributes:
+
+        type (str):
+
+    """
+
+    type: str = field(metadata={"alias": "type"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaIMRN(SearchCriteria):
+    """Criteria for searching for an IMRN Number.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAccessDeviceEndpointPrivateIdentity(SearchCriteria):
+    """Criteria for searching for a private identity.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaDeviceSerialNumber(SearchCriteria):
+    """Criteria for searching for device serial number.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaCallParkName(SearchCriteria):
+    """Criteria for searching for a call park by name
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDomainLevel(SearchCriteria):
+    """Criteria for searching for a particular domain level.
+
+    Attributes:
+
+        domain_level (str):
+
+    """
+
+    domain_level: str = field(metadata={"alias": "domainLevel"})
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaRegistrationURI(SearchCriteria):
+    """Criteria for searching for a RegistrationURI.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAdminId(SearchCriteria):
+    """Criteria for searching for an administrator's adminId.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaAgentThresholdProfile(SearchCriteria):
+    """Criteria for searching a Call Center Agent Threshold Profile.
+
+    Attributes:
+
+        mode (str):
+
+        value (str):
+
+        is_case_insensitive (bool):
+
+    """
+
+    mode: str = field(metadata={"alias": "mode"})
+
+    value: str = field(metadata={"alias": "value"})
+
+    is_case_insensitive: bool = field(
+        default=True, metadata={"alias": "isCaseInsensitive"}
+    )
+
+
+@dataclass(kw_only=True)
+class SearchCriteriaExactDeviceManagementEventAction(SearchCriteria):
+    """Criteria for searching for a particular fully specified DeviceManagement event action.
+
+    Attributes:
+
+        dm_event_action (str):
+
+    """
+
+    dm_event_action: str = field(metadata={"alias": "dmEventAction"})
 
 
 @dataclass(kw_only=True)
@@ -21112,32 +21129,6 @@ class SearchCriteriaComposedOrUserName(SearchCriteriaComposedOr):
 
 
 @dataclass(kw_only=True)
-class EnterpriseVoiceVPNDigitManipulationOptionalValue(
-    EnterpriseVoiceVPNDigitManipulation
-):
-    """Enterprise Voice VPN Digit Manipulation Entry that optionally has a value.
-
-    Attributes:
-
-        operation (str):
-
-        value (Optional[Nillable[str]]):
-
-    """
-
-    operation: str = field(metadata={"alias": "operation"})
-
-    value: Optional[Nillable[str]] = field(default=None, metadata={"alias": "value"})
-
-    def __post_init__(self):
-        nillable_fields = ["value"]
-        for field_name in nillable_fields:
-            value = getattr(self, field_name)
-            if value == "" or value == "None":
-                object.__setattr__(self, field_name, OCINil)
-
-
-@dataclass(kw_only=True)
 class EnterpriseVoiceVPNDigitManipulationNoValue(EnterpriseVoiceVPNDigitManipulation):
     """Enterprise Voice VPN Digit Manipulation Entry that has no value.
 
@@ -21170,58 +21161,29 @@ class EnterpriseVoiceVPNDigitManipulationRequiredValue(
 
 
 @dataclass(kw_only=True)
-class SortByUserDepartment(SortCriteria):
-    """The sort criteria specifies the user department name as the column for the sort, whether the
-                                sort is ascending or descending, and whether the sort is case sensitive.
+class EnterpriseVoiceVPNDigitManipulationOptionalValue(
+    EnterpriseVoiceVPNDigitManipulation
+):
+    """Enterprise Voice VPN Digit Manipulation Entry that optionally has a value.
 
     Attributes:
 
-        is_ascending (bool):
+        operation (str):
 
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByGroupId(SortCriteria):
-    """The sort criteria specifies the group id as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
+        value (Optional[Nillable[str]]):
 
     """
 
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+    operation: str = field(metadata={"alias": "operation"})
 
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+    value: Optional[Nillable[str]] = field(default=None, metadata={"alias": "value"})
 
-
-@dataclass(kw_only=True)
-class SortByUserId(SortCriteria):
-    """The sort criteria specifies the user id as the column for the sort,
-        whether the sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+    def __post_init__(self):
+        nillable_fields = ["value"]
+        for field_name in nillable_fields:
+            value = getattr(self, field_name)
+            if value == "" or value == "None":
+                object.__setattr__(self, field_name, OCINil)
 
 
 @dataclass(kw_only=True)
@@ -21244,8 +21206,235 @@ class SortByEnterpriseCommonPhoneListNumber(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByImpId(SortCriteria):
-    """The sort criteria specifies the imp id as the column for
+class SortByUserPersonalPhoneListNumber(SortCriteria):
+    """The sort criteria specifies the user personal phone list number as the column for
+                                the sort, whether the sort is ascending or descending, and whether the
+                                sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByAnnouncementFileName(SortCriteria):
+    """The sort criteria specifies the file name as the column for the sort,
+        whether the sort is ascending or descending, and whether the sort is
+        case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByEmailAddress(SortCriteria):
+    """The sort criteria specifies the email as the column for the sort, whether
+        the sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByEnabled(SortCriteria):
+    """The sort criteria specifies the Broadworks Enabled Flag as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDnActivated(SortCriteria):
+    """The sort criteria specifies the dn activation status as the column for the sort,
+        whether the sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByAdminFirstName(SortCriteria):
+    """The sort criteria specifies the administrator first name
+        as the column for the
+        sort, whether the
+        sort is ascending or
+        descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDeviceMACAddress(SortCriteria):
+    """The sort criteria specifies the device MAC address as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByUserPersonalPhoneListName(SortCriteria):
+    """The sort criteria specifies the user personal phone list name as the column for the sort, whether
+        sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByMobilePhoneNumber(SortCriteria):
+    """The sort criteria specifies the mobile phone number as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDepartmentName(SortCriteria):
+    """The sort criteria specifies the department name as the column for the sort, whether the
+        sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByGroupCommonPhoneListNumber(SortCriteria):
+    """The sort criteria specifies the group common phone list number as the column for the sort, whether
+                                sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByAdminId(SortCriteria):
+    """The sort criteria specifies the administrator id as the
+        column for the sort,
+        whether the
+        sort is ascending or descending,
+        and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByServiceProviderName(SortCriteria):
+    """The sort criteria specifies the service provider name as the column for
         the sort, whether the sort is ascending or descending, and whether the
         sort is case sensitive.
 
@@ -21269,6 +21458,48 @@ class SortByAdminLastName(SortCriteria):
         sort, whether the
         sort is ascending or
         descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByExtension(SortCriteria):
+    """The sort criteria specifies the extension as the column for
+                the sort, whether the sort is ascending or descending, and whether the
+                sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByServiceStatus(SortCriteria):
+    """The sort criteria specifies the service status as the column for
+            the sort, whether the sort is ascending or descending, and whether the
+            sort is case sensitive.
+            This sort criteria data type is only intended to be used by the commands
+            introduced by BW-2301.
+            The commands are EnterpriseUserCallWaitingSettingsGetListRequest, GroupUserCallWaitingSettingsGetListRequest,
+            EnterpriseUserHotelingGuestSettingsGetListRequest, and GroupUserHotelingGuestSettingsGetListRequest.
 
     Attributes:
 
@@ -21310,10 +21541,234 @@ class SortByForwardedToNumber(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByEnterpriseCommonPhoneListName(SortCriteria):
-    """The sort criteria specifies the enterprise common phone list name as the
-        column for the sort, whether sort is ascending or descending, and
-        whether the sort is case sensitive.
+class SortByUserDepartment(SortCriteria):
+    """The sort criteria specifies the user department name as the column for the sort, whether the
+                                sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByUserFirstName(SortCriteria):
+    """The sort criteria specifies the user first name as the column for the sort, whether the
+                                sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByHuntPolicy(SortCriteria):
+    """The sort criteria specifies the call center hunt policy as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByGroupName(SortCriteria):
+    """The sort criteria specifies the group name as the column for
+          the sort, whether the sort is ascending or descending, and whether the
+          sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByGroupId(SortCriteria):
+    """The sort criteria specifies the group id as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDn(SortCriteria):
+    """The sort criteria specifies the DN as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByYahooId(SortCriteria):
+    """The sort criteria specifies the yahoo id as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByServiceProviderId(SortCriteria):
+    """The sort criteria specifies the service provider id as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDeviceNetAddress(SortCriteria):
+    """The sort criteria specifies the device net address as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDeviceName(SortCriteria):
+    """The sort criteria specifies the device name as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByTrunkGroupName(SortCriteria):
+    """The sort criteria specifies the trunk group name as the column for the sort, whether the
+        sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByUserLastName(SortCriteria):
+    """The sort criteria specifies the user last name as the column for the sort, whether the
+                                sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByDeviceType(SortCriteria):
+    """The sort criteria specifies the device type as the column for
+        the sort, whether the sort is ascending or descending, and whether the
+        sort is case sensitive.
 
     Attributes:
 
@@ -21366,197 +21821,9 @@ class SortByGroupCommonPhoneListName(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByMobilePhoneNumber(SortCriteria):
-    """The sort criteria specifies the mobile phone number as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDeviceName(SortCriteria):
-    """The sort criteria specifies the device name as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByAdminId(SortCriteria):
-    """The sort criteria specifies the administrator id as the
-        column for the sort,
-        whether the
-        sort is ascending or descending,
-        and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDnActivated(SortCriteria):
-    """The sort criteria specifies the dn activation status as the column for the sort,
-        whether the sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByReceptionistNote(SortCriteria):
-    """The sort criteria specifies the Receptionist Notes as the column for the sort, whether
-        the sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByServiceProviderName(SortCriteria):
-    """The sort criteria specifies the service provider name as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByCallPickupName(SortCriteria):
-    """The sort criteria specifies the call pickup name as the column for the sort, whether the
+class SortByDnAvailable(SortCriteria):
+    """The sort criteria specifies the dn availability as the column for the sort, whether the
         sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByGroupCommonPhoneListNumber(SortCriteria):
-    """The sort criteria specifies the group common phone list number as the column for the sort, whether
-                                sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByEmailAddress(SortCriteria):
-    """The sort criteria specifies the email as the column for the sort, whether
-        the sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByAnnouncementFileName(SortCriteria):
-    """The sort criteria specifies the file name as the column for the sort,
-        whether the sort is ascending or descending, and whether the sort is
-        case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByExtension(SortCriteria):
-    """The sort criteria specifies the extension as the column for
-                the sort, whether the sort is ascending or descending, and whether the
-                sort is case sensitive.
 
     Attributes:
 
@@ -21591,10 +21858,9 @@ class SortByGroupLocationCode(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByGroupName(SortCriteria):
-    """The sort criteria specifies the group name as the column for
-          the sort, whether the sort is ascending or descending, and whether the
-          sort is case sensitive.
+class SortByUserId(SortCriteria):
+    """The sort criteria specifies the user id as the column for the sort,
+        whether the sort is ascending or descending, and whether the sort is case sensitive.
 
     Attributes:
 
@@ -21610,8 +21876,100 @@ class SortByGroupName(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByLocation(SortCriteria):
-    """The sort criteria specifies the Broadworks Location as the column for
+class SortByCallCenterName(SortCriteria):
+    """The sort criteria specifies the call center name as the column for the sort, whether the
+        sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByCallParkName(SortCriteria):
+    """The sort criteria specifies the call park name as the column for the sort, whether the
+        sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByEnterpriseCommonPhoneListName(SortCriteria):
+    """The sort criteria specifies the enterprise common phone list name as the
+        column for the sort, whether sort is ascending or descending, and
+        whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByMobileDirectoryNumber(SortCriteria):
+    """The sort criteria specifies the Mobile dn availability as the column for the
+          sort, whether the sort is ascending or descending, and whether the sort
+          is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByReceptionistNote(SortCriteria):
+    """The sort criteria specifies the Receptionist Notes as the column for the sort, whether
+        the sort is ascending or descending, and whether the sort is case sensitive.
+
+    Attributes:
+
+        is_ascending (bool):
+
+        is_case_sensitive (bool):
+
+    """
+
+    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
+
+    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
+
+
+@dataclass(kw_only=True)
+class SortByImpId(SortCriteria):
+    """The sort criteria specifies the imp id as the column for
         the sort, whether the sort is ascending or descending, and whether the
         sort is case sensitive.
 
@@ -21629,31 +21987,8 @@ class SortByLocation(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByServiceStatus(SortCriteria):
-    """The sort criteria specifies the service status as the column for
-            the sort, whether the sort is ascending or descending, and whether the
-            sort is case sensitive.
-            This sort criteria data type is only intended to be used by the commands
-            introduced by BW-2301.
-            The commands are EnterpriseUserCallWaitingSettingsGetListRequest, GroupUserCallWaitingSettingsGetListRequest,
-            EnterpriseUserHotelingGuestSettingsGetListRequest, and GroupUserHotelingGuestSettingsGetListRequest.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByServiceProviderId(SortCriteria):
-    """The sort criteria specifies the service provider id as the column for
+class SortByLocation(SortCriteria):
+    """The sort criteria specifies the Broadworks Location as the column for
         the sort, whether the sort is ascending or descending, and whether the
         sort is case sensitive.
 
@@ -21709,327 +22044,9 @@ class SortByCallCenterType(SortCriteria):
 
 
 @dataclass(kw_only=True)
-class SortByHuntPolicy(SortCriteria):
-    """The sort criteria specifies the call center hunt policy as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDepartmentName(SortCriteria):
-    """The sort criteria specifies the department name as the column for the sort, whether the
+class SortByCallPickupName(SortCriteria):
+    """The sort criteria specifies the call pickup name as the column for the sort, whether the
         sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDeviceNetAddress(SortCriteria):
-    """The sort criteria specifies the device net address as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDeviceMACAddress(SortCriteria):
-    """The sort criteria specifies the device MAC address as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByCallParkName(SortCriteria):
-    """The sort criteria specifies the call park name as the column for the sort, whether the
-        sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByEnabled(SortCriteria):
-    """The sort criteria specifies the Broadworks Enabled Flag as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByAdminFirstName(SortCriteria):
-    """The sort criteria specifies the administrator first name
-        as the column for the
-        sort, whether the
-        sort is ascending or
-        descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDn(SortCriteria):
-    """The sort criteria specifies the DN as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByUserPersonalPhoneListName(SortCriteria):
-    """The sort criteria specifies the user personal phone list name as the column for the sort, whether
-        sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDeviceType(SortCriteria):
-    """The sort criteria specifies the device type as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByUserLastName(SortCriteria):
-    """The sort criteria specifies the user last name as the column for the sort, whether the
-                                sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByCallCenterName(SortCriteria):
-    """The sort criteria specifies the call center name as the column for the sort, whether the
-        sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByUserPersonalPhoneListNumber(SortCriteria):
-    """The sort criteria specifies the user personal phone list number as the column for
-                                the sort, whether the sort is ascending or descending, and whether the
-                                sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByYahooId(SortCriteria):
-    """The sort criteria specifies the yahoo id as the column for
-        the sort, whether the sort is ascending or descending, and whether the
-        sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByTrunkGroupName(SortCriteria):
-    """The sort criteria specifies the trunk group name as the column for the sort, whether the
-        sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByDnAvailable(SortCriteria):
-    """The sort criteria specifies the dn availability as the column for the sort, whether the
-        sort is ascending or descending, and whether the sort is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByMobileDirectoryNumber(SortCriteria):
-    """The sort criteria specifies the Mobile dn availability as the column for the
-          sort, whether the sort is ascending or descending, and whether the sort
-          is case sensitive.
-
-    Attributes:
-
-        is_ascending (bool):
-
-        is_case_sensitive (bool):
-
-    """
-
-    is_ascending: bool = field(default=True, metadata={"alias": "isAscending"})
-
-    is_case_sensitive: bool = field(default=True, metadata={"alias": "isCaseSensitive"})
-
-
-@dataclass(kw_only=True)
-class SortByUserFirstName(SortCriteria):
-    """The sort criteria specifies the user first name as the column for the sort, whether the
-                                sort is ascending or descending, and whether the sort is case sensitive.
 
     Attributes:
 
@@ -22101,6 +22118,27 @@ class CallCenterAgentStatistics14sp9(OCIType):
 
 
 @dataclass(kw_only=True)
+class CommPilotExpressAvailableOutOfOffice(OCIType):
+    """CommPilot Express Available Out Of Office Configuration used in the context of a get.
+
+    Attributes:
+
+        incoming_calls (CommPilotExpressRedirection):
+
+        incoming_call_notify (CommPilotExpressEmailNotify):
+
+    """
+
+    incoming_calls: CommPilotExpressRedirection = field(
+        metadata={"alias": "incomingCalls"}
+    )
+
+    incoming_call_notify: CommPilotExpressEmailNotify = field(
+        metadata={"alias": "incomingCallNotify"}
+    )
+
+
+@dataclass(kw_only=True)
 class CommPilotExpressAvailableInOffice(OCIType):
     """CommPilot Express Available In Office Settings.
 
@@ -22126,23 +22164,23 @@ class CommPilotExpressAvailableInOffice(OCIType):
 
 
 @dataclass(kw_only=True)
-class CommPilotExpressAvailableOutOfOffice(OCIType):
-    """CommPilot Express Available Out Of Office Configuration used in the context of a get.
+class CommPilotExpressAvailableOutOfOfficeModify(OCIType):
+    """CommPilot Express Available Out Of Office Configuration used in the context of a modify.
 
     Attributes:
 
-        incoming_calls (CommPilotExpressRedirection):
+        incoming_calls (Optional[CommPilotExpressRedirectionModify]):
 
-        incoming_call_notify (CommPilotExpressEmailNotify):
+        incoming_call_notify (Optional[CommPilotExpressEmailNotifyModify]):
 
     """
 
-    incoming_calls: CommPilotExpressRedirection = field(
-        metadata={"alias": "incomingCalls"}
+    incoming_calls: Optional[CommPilotExpressRedirectionModify] = field(
+        default=None, metadata={"alias": "incomingCalls"}
     )
 
-    incoming_call_notify: CommPilotExpressEmailNotify = field(
-        metadata={"alias": "incomingCallNotify"}
+    incoming_call_notify: Optional[CommPilotExpressEmailNotifyModify] = field(
+        default=None, metadata={"alias": "incomingCallNotify"}
     )
 
 
@@ -22181,23 +22219,23 @@ class CommPilotExpressAvailableInOfficeModify(OCIType):
 
 
 @dataclass(kw_only=True)
-class CommPilotExpressAvailableOutOfOfficeModify(OCIType):
-    """CommPilot Express Available Out Of Office Configuration used in the context of a modify.
+class CommPilotExpressBusy(OCIType):
+    """CommPilot Express Available In Office Configuration used in the context of a get.
 
     Attributes:
 
-        incoming_calls (Optional[CommPilotExpressRedirectionModify]):
+        incoming_calls (CommPilotExpressRedirectionWithException):
 
-        incoming_call_notify (Optional[CommPilotExpressEmailNotifyModify]):
+        voice_mail_notify (CommPilotExpressEmailNotify):
 
     """
 
-    incoming_calls: Optional[CommPilotExpressRedirectionModify] = field(
-        default=None, metadata={"alias": "incomingCalls"}
+    incoming_calls: CommPilotExpressRedirectionWithException = field(
+        metadata={"alias": "incomingCalls"}
     )
 
-    incoming_call_notify: Optional[CommPilotExpressEmailNotifyModify] = field(
-        default=None, metadata={"alias": "incomingCallNotify"}
+    voice_mail_notify: CommPilotExpressEmailNotify = field(
+        metadata={"alias": "voiceMailNotify"}
     )
 
 
@@ -22221,23 +22259,23 @@ class CommPilotExpressUnavailable(OCIType):
 
 
 @dataclass(kw_only=True)
-class CommPilotExpressBusy(OCIType):
-    """CommPilot Express Available In Office Configuration used in the context of a get.
+class CommPilotExpressUnavailableModify(OCIType):
+    """CommPilot Express Unavailable Configuration used in the context of a modify.
 
     Attributes:
 
-        incoming_calls (CommPilotExpressRedirectionWithException):
+        incoming_calls (Optional[CommPilotExpressRedirectionWithExceptionModify]):
 
-        voice_mail_notify (CommPilotExpressEmailNotify):
+        voice_mail_greeting (Optional[str]):
 
     """
 
-    incoming_calls: CommPilotExpressRedirectionWithException = field(
-        metadata={"alias": "incomingCalls"}
+    incoming_calls: Optional[CommPilotExpressRedirectionWithExceptionModify] = field(
+        default=None, metadata={"alias": "incomingCalls"}
     )
 
-    voice_mail_notify: CommPilotExpressEmailNotify = field(
-        metadata={"alias": "voiceMailNotify"}
+    voice_mail_greeting: Optional[str] = field(
+        default=None, metadata={"alias": "voiceMailGreeting"}
     )
 
 
@@ -22263,32 +22301,13 @@ class CommPilotExpressBusyModify(OCIType):
 
 
 @dataclass(kw_only=True)
-class CommPilotExpressUnavailableModify(OCIType):
-    """CommPilot Express Unavailable Configuration used in the context of a modify.
-
-    Attributes:
-
-        incoming_calls (Optional[CommPilotExpressRedirectionWithExceptionModify]):
-
-        voice_mail_greeting (Optional[str]):
-
-    """
-
-    incoming_calls: Optional[CommPilotExpressRedirectionWithExceptionModify] = field(
-        default=None, metadata={"alias": "incomingCalls"}
-    )
-
-    voice_mail_greeting: Optional[str] = field(
-        default=None, metadata={"alias": "voiceMailGreeting"}
-    )
-
-
-@dataclass(kw_only=True)
-class IncomingCallingPlanPermissionsModify(OCIType):
-    """Allows or disallows various types of incoming calls for a user or group -- not any particular department.
+class IncomingCallingPlanDepartmentPermissionsModify(OCIType):
+    """Allows or disallows various types of incoming calls for a specified department.
         For use when modifing settings.
 
     Attributes:
+
+        department_key (DepartmentKey):
 
         allow_from_within_group (Optional[bool]):
 
@@ -22299,6 +22318,8 @@ class IncomingCallingPlanPermissionsModify(OCIType):
         digit_pattern_permission (Optional[List[IncomingCallingPlanDigitPatternPermission]]):
 
     """
+
+    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
 
     allow_from_within_group: Optional[bool] = field(
         default=None, metadata={"alias": "allowFromWithinGroup"}
@@ -22353,13 +22374,11 @@ class IncomingCallingPlanDepartmentPermissions(OCIType):
 
 
 @dataclass(kw_only=True)
-class IncomingCallingPlanDepartmentPermissionsModify(OCIType):
-    """Allows or disallows various types of incoming calls for a specified department.
+class IncomingCallingPlanPermissionsModify(OCIType):
+    """Allows or disallows various types of incoming calls for a user or group -- not any particular department.
         For use when modifing settings.
 
     Attributes:
-
-        department_key (DepartmentKey):
 
         allow_from_within_group (Optional[bool]):
 
@@ -22370,8 +22389,6 @@ class IncomingCallingPlanDepartmentPermissionsModify(OCIType):
         digit_pattern_permission (Optional[List[IncomingCallingPlanDigitPatternPermission]]):
 
     """
-
-    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
 
     allow_from_within_group: Optional[bool] = field(
         default=None, metadata={"alias": "allowFromWithinGroup"}
@@ -22433,6 +22450,21 @@ class MWIDeliveryToMobileEndpointTemplateBody23(OCIType):
 
 
 @dataclass(kw_only=True)
+class OutgoingCallingPlanGroupAuthorizationCodes(OCIType):
+    """Outgoing Calling Plan Authorization Code for the group default.
+
+    Attributes:
+
+        code_entry (Optional[List[OutgoingCallingPlanAuthorizationCodeEntry]]):
+
+    """
+
+    code_entry: Optional[List[OutgoingCallingPlanAuthorizationCodeEntry]] = field(
+        default=None, metadata={"alias": "codeEntry"}
+    )
+
+
+@dataclass(kw_only=True)
 class OutgoingCallingPlanDepartmentAuthorizationCodes(OCIType):
     """Outgoing Calling Plan Authorization Code for a department.
 
@@ -22449,21 +22481,6 @@ class OutgoingCallingPlanDepartmentAuthorizationCodes(OCIType):
     department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
 
     department_name: str = field(metadata={"alias": "departmentName"})
-
-    code_entry: Optional[List[OutgoingCallingPlanAuthorizationCodeEntry]] = field(
-        default=None, metadata={"alias": "codeEntry"}
-    )
-
-
-@dataclass(kw_only=True)
-class OutgoingCallingPlanGroupAuthorizationCodes(OCIType):
-    """Outgoing Calling Plan Authorization Code for the group default.
-
-    Attributes:
-
-        code_entry (Optional[List[OutgoingCallingPlanAuthorizationCodeEntry]]):
-
-    """
 
     code_entry: Optional[List[OutgoingCallingPlanAuthorizationCodeEntry]] = field(
         default=None, metadata={"alias": "codeEntry"}
@@ -22771,6 +22788,22 @@ class OutgoingPinholeDigitPlanDigitPatternRedirectingPermissions(OCIType):
 
 
 @dataclass(kw_only=True)
+class ReplacementEnterpriseEnterpriseTrunkTrunkGroupKeyList(OCIType):
+    """A list of Enterprise Trunk Krunk Group Keys that replaces a previously configured list.
+        By convention, an element of this type may be set nill to clear the list.
+
+    Attributes:
+
+        trunk_group (List[EnterpriseTrunkTrunkGroupKey]):
+
+    """
+
+    trunk_group: List[EnterpriseTrunkTrunkGroupKey] = field(
+        metadata={"alias": "trunkGroup"}
+    )
+
+
+@dataclass(kw_only=True)
 class ReplacementEnterpriseTrunkTrunkGroupKeyList(OCIType):
     """A list of Enterprise Trunk Krunk Group Keys that replaces a previously configured list.
         By convention, an element of this type may be set nill to clear the list.
@@ -22805,22 +22838,6 @@ class EnterpriseEnterpriseTrunkPriorityWeightedTrunkGroup(OCIType):
     priority: int = field(metadata={"alias": "priority"})
 
     weight: int = field(metadata={"alias": "weight"})
-
-
-@dataclass(kw_only=True)
-class ReplacementEnterpriseEnterpriseTrunkTrunkGroupKeyList(OCIType):
-    """A list of Enterprise Trunk Krunk Group Keys that replaces a previously configured list.
-        By convention, an element of this type may be set nill to clear the list.
-
-    Attributes:
-
-        trunk_group (List[EnterpriseTrunkTrunkGroupKey]):
-
-    """
-
-    trunk_group: List[EnterpriseTrunkTrunkGroupKey] = field(
-        metadata={"alias": "trunkGroup"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -23232,67 +23249,6 @@ class ReplacementCombinedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoin
 
 
 @dataclass(kw_only=True)
-class CPEDeviceOptions22V5(OCIType):
-    """CPE device's options.
-
-    The field configType is optional to allow the use of field enableMonitoring for all device types being managed or not
-    ie. device configuration option equals to DeviceManagement, or Legacy, or Not Supported).
-
-    If the device configuration option is set to \"Not Supported\", the value of configType is forced set to \"None\" regardless
-    of its current value.
-
-    It is not allowed to add a device type with device configuration option set to Device Management or Legacy when the configType
-    is not set.
-
-    Attributes:
-
-        enable_monitoring (bool):
-
-        config_type (Optional[str]):
-
-        system_file_name (Optional[str]):
-
-        device_file_format (Optional[str]):
-
-        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V5]):
-
-    """
-
-    enable_monitoring: bool = field(metadata={"alias": "enableMonitoring"})
-
-    config_type: Optional[str] = field(default=None, metadata={"alias": "configType"})
-
-    system_file_name: Optional[str] = field(
-        default=None, metadata={"alias": "systemFileName"}
-    )
-
-    device_file_format: Optional[str] = field(
-        default=None, metadata={"alias": "deviceFileFormat"}
-    )
-
-    device_management_device_type_options: Optional[
-        DeviceManagementDeviceTypeOptions22V5
-    ] = field(default=None, metadata={"alias": "deviceManagementDeviceTypeOptions"})
-
-
-@dataclass(kw_only=True)
-class ReplacementConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointList(
-    OCIType
-):
-    """A list of shared call appearance endpoints that replaces existing endpoints.
-
-    Attributes:
-
-        shared_call_appearance_access_device_endpoint (List[ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint]):
-
-    """
-
-    shared_call_appearance_access_device_endpoint: List[
-        ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint
-    ] = field(metadata={"alias": "sharedCallAppearanceAccessDeviceEndpoint"})
-
-
-@dataclass(kw_only=True)
 class ReplacementConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointList22(
     OCIType
 ):
@@ -23310,7 +23266,7 @@ class ReplacementConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEnd
 
 
 @dataclass(kw_only=True)
-class CPEDeviceOptions22V3(OCIType):
+class CPEDeviceOptions22V6(OCIType):
     """CPE device's options.
 
     The field configType is optional to allow the use of field enableMonitoring for all device types being managed or not
@@ -23332,7 +23288,7 @@ class CPEDeviceOptions22V3(OCIType):
 
         device_file_format (Optional[str]):
 
-        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V3]):
+        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V6]):
 
     """
 
@@ -23349,7 +23305,7 @@ class CPEDeviceOptions22V3(OCIType):
     )
 
     device_management_device_type_options: Optional[
-        DeviceManagementDeviceTypeOptions22V3
+        DeviceManagementDeviceTypeOptions22V6
     ] = field(default=None, metadata={"alias": "deviceManagementDeviceTypeOptions"})
 
 
@@ -23398,7 +23354,24 @@ class CPEDeviceOptions22V2(OCIType):
 
 
 @dataclass(kw_only=True)
-class CPEDeviceOptions22V6(OCIType):
+class ReplacementConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointList(
+    OCIType
+):
+    """A list of shared call appearance endpoints that replaces existing endpoints.
+
+    Attributes:
+
+        shared_call_appearance_access_device_endpoint (List[ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint]):
+
+    """
+
+    shared_call_appearance_access_device_endpoint: List[
+        ConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpoint
+    ] = field(metadata={"alias": "sharedCallAppearanceAccessDeviceEndpoint"})
+
+
+@dataclass(kw_only=True)
+class CPEDeviceOptions22V5(OCIType):
     """CPE device's options.
 
     The field configType is optional to allow the use of field enableMonitoring for all device types being managed or not
@@ -23420,7 +23393,7 @@ class CPEDeviceOptions22V6(OCIType):
 
         device_file_format (Optional[str]):
 
-        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V6]):
+        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V5]):
 
     """
 
@@ -23437,7 +23410,7 @@ class CPEDeviceOptions22V6(OCIType):
     )
 
     device_management_device_type_options: Optional[
-        DeviceManagementDeviceTypeOptions22V6
+        DeviceManagementDeviceTypeOptions22V5
     ] = field(default=None, metadata={"alias": "deviceManagementDeviceTypeOptions"})
 
 
@@ -23482,6 +23455,50 @@ class CPEDeviceOptions22V4(OCIType):
 
     device_management_device_type_options: Optional[
         DeviceManagementDeviceTypeOptions22V4
+    ] = field(default=None, metadata={"alias": "deviceManagementDeviceTypeOptions"})
+
+
+@dataclass(kw_only=True)
+class CPEDeviceOptions22V3(OCIType):
+    """CPE device's options.
+
+    The field configType is optional to allow the use of field enableMonitoring for all device types being managed or not
+    ie. device configuration option equals to DeviceManagement, or Legacy, or Not Supported).
+
+    If the device configuration option is set to \"Not Supported\", the value of configType is forced set to \"None\" regardless
+    of its current value.
+
+    It is not allowed to add a device type with device configuration option set to Device Management or Legacy when the configType
+    is not set.
+
+    Attributes:
+
+        enable_monitoring (bool):
+
+        config_type (Optional[str]):
+
+        system_file_name (Optional[str]):
+
+        device_file_format (Optional[str]):
+
+        device_management_device_type_options (Optional[DeviceManagementDeviceTypeOptions22V3]):
+
+    """
+
+    enable_monitoring: bool = field(metadata={"alias": "enableMonitoring"})
+
+    config_type: Optional[str] = field(default=None, metadata={"alias": "configType"})
+
+    system_file_name: Optional[str] = field(
+        default=None, metadata={"alias": "systemFileName"}
+    )
+
+    device_file_format: Optional[str] = field(
+        default=None, metadata={"alias": "deviceFileFormat"}
+    )
+
+    device_management_device_type_options: Optional[
+        DeviceManagementDeviceTypeOptions22V3
     ] = field(default=None, metadata={"alias": "deviceManagementDeviceTypeOptions"})
 
 
@@ -23615,48 +23632,6 @@ class CallCenterReportSchedule(OCIType):
 
 
 @dataclass(kw_only=True)
-class TrunkAddressingMultipleContactRead22(OCIType):
-    """Trunk group endpoint that can have multiple contacts.
-        alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
-        The following elements are only used in AS data mode and are ignored in XS data mode:
-          physicalLocation
-
-    Attributes:
-
-        trunk_group_device_endpoint (Optional[TrunkGroupDeviceMultipleContactEndpointRead22]):
-
-        enterprise_trunk_name (Optional[str]):
-
-        alternate_trunk_identity (Optional[str]):
-
-        alternate_trunk_identity_domain (Optional[str]):
-
-        physical_location (Optional[str]):
-
-    """
-
-    trunk_group_device_endpoint: Optional[
-        TrunkGroupDeviceMultipleContactEndpointRead22
-    ] = field(default=None, metadata={"alias": "trunkGroupDeviceEndpoint"})
-
-    enterprise_trunk_name: Optional[str] = field(
-        default=None, metadata={"alias": "enterpriseTrunkName"}
-    )
-
-    alternate_trunk_identity: Optional[str] = field(
-        default=None, metadata={"alias": "alternateTrunkIdentity"}
-    )
-
-    alternate_trunk_identity_domain: Optional[str] = field(
-        default=None, metadata={"alias": "alternateTrunkIdentityDomain"}
-    )
-
-    physical_location: Optional[str] = field(
-        default=None, metadata={"alias": "physicalLocation"}
-    )
-
-
-@dataclass(kw_only=True)
 class TrunkAddressingMultipleContactAdd22(OCIType):
     """Trunk group endpoint that can have multiple contacts.
         alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
@@ -23700,19 +23675,44 @@ class TrunkAddressingMultipleContactAdd22(OCIType):
 
 
 @dataclass(kw_only=True)
-class ReplacementCombinedUserServiceAssignmentList(OCIType):
-    """A list of user services that replaces existing user services assgined to the user.
-
-      If a service is already assigned to the user, the service quantitiy will be updated if included.
+class TrunkAddressingMultipleContactRead22(OCIType):
+    """Trunk group endpoint that can have multiple contacts.
+        alternateTrunkIdentityDomain is only used in XS mode and the AS when deployed in IMS mode.
+        The following elements are only used in AS data mode and are ignored in XS data mode:
+          physicalLocation
 
     Attributes:
 
-        service_name (List[CombinedUserServiceAssignment]):
+        trunk_group_device_endpoint (Optional[TrunkGroupDeviceMultipleContactEndpointRead22]):
+
+        enterprise_trunk_name (Optional[str]):
+
+        alternate_trunk_identity (Optional[str]):
+
+        alternate_trunk_identity_domain (Optional[str]):
+
+        physical_location (Optional[str]):
 
     """
 
-    service_name: List[CombinedUserServiceAssignment] = field(
-        metadata={"alias": "serviceName"}
+    trunk_group_device_endpoint: Optional[
+        TrunkGroupDeviceMultipleContactEndpointRead22
+    ] = field(default=None, metadata={"alias": "trunkGroupDeviceEndpoint"})
+
+    enterprise_trunk_name: Optional[str] = field(
+        default=None, metadata={"alias": "enterpriseTrunkName"}
+    )
+
+    alternate_trunk_identity: Optional[str] = field(
+        default=None, metadata={"alias": "alternateTrunkIdentity"}
+    )
+
+    alternate_trunk_identity_domain: Optional[str] = field(
+        default=None, metadata={"alias": "alternateTrunkIdentityDomain"}
+    )
+
+    physical_location: Optional[str] = field(
+        default=None, metadata={"alias": "physicalLocation"}
     )
 
 
@@ -23732,17 +23732,19 @@ class ReplacementCombinedGroupServiceAuthorizationList(OCIType):
 
 
 @dataclass(kw_only=True)
-class ReplacementCombinedServicePackAuthorizationList(OCIType):
-    """A list of service packs that replaces previously authorized service packs.
+class ReplacementCombinedUserServiceAssignmentList(OCIType):
+    """A list of user services that replaces existing user services assgined to the user.
+
+      If a service is already assigned to the user, the service quantitiy will be updated if included.
 
     Attributes:
 
-        service_pack_authorization (List[CombinedServicePackAuthorization]):
+        service_name (List[CombinedUserServiceAssignment]):
 
     """
 
-    service_pack_authorization: List[CombinedServicePackAuthorization] = field(
-        metadata={"alias": "servicePackAuthorization"}
+    service_name: List[CombinedUserServiceAssignment] = field(
+        metadata={"alias": "serviceName"}
     )
 
 
@@ -23760,23 +23762,6 @@ class ReplacementConsolidatedUserServiceAssignmentList(OCIType):
 
     user_service_service_name: List[ConsolidatedUserServiceAssignment] = field(
         metadata={"alias": "userServiceServiceName"}
-    )
-
-
-@dataclass(kw_only=True)
-class ReplacementCombinedServicePackAssignmentList(OCIType):
-    """A list of service packs that replaces existing service packs assgined to the user.
-
-      If a service pack is already assigned to the user, the service quantitiy will be updated if included.
-
-    Attributes:
-
-        service_pack (List[CombinedServicePackAssignment]):
-
-    """
-
-    service_pack: List[CombinedServicePackAssignment] = field(
-        metadata={"alias": "servicePack"}
     )
 
 
@@ -23880,6 +23865,38 @@ class ReplacementConsolidatedServicePackAssignmentList(OCIType):
 
     service_pack: List[ConsolidatedServicePackAssignment] = field(
         metadata={"alias": "servicePack"}
+    )
+
+
+@dataclass(kw_only=True)
+class ReplacementCombinedServicePackAssignmentList(OCIType):
+    """A list of service packs that replaces existing service packs assgined to the user.
+
+      If a service pack is already assigned to the user, the service quantitiy will be updated if included.
+
+    Attributes:
+
+        service_pack (List[CombinedServicePackAssignment]):
+
+    """
+
+    service_pack: List[CombinedServicePackAssignment] = field(
+        metadata={"alias": "servicePack"}
+    )
+
+
+@dataclass(kw_only=True)
+class ReplacementCombinedServicePackAuthorizationList(OCIType):
+    """A list of service packs that replaces previously authorized service packs.
+
+    Attributes:
+
+        service_pack_authorization (List[CombinedServicePackAuthorization]):
+
+    """
+
+    service_pack_authorization: List[CombinedServicePackAuthorization] = field(
+        metadata={"alias": "servicePackAuthorization"}
     )
 
 
@@ -23995,6 +24012,60 @@ class EnhancedCallLogsRedirectedNumberFilter23(OCIType):
 
 
 @dataclass(kw_only=True)
+class SortOrderServiceProviderAdminGetPagedSortedList(OCIType):
+    """Used to sort the ServiceProviderAdminGetPagedSortedListRequest request.
+
+    Attributes:
+
+        sort_by_admin_id (Optional[SortByAdminId]):
+
+        sort_by_admin_last_name (Optional[SortByAdminLastName]):
+
+        sort_by_admin_first_name (Optional[SortByAdminFirstName]):
+
+    """
+
+    sort_by_admin_id: Optional[SortByAdminId] = field(
+        default=None, metadata={"alias": "sortByAdminId"}
+    )
+
+    sort_by_admin_last_name: Optional[SortByAdminLastName] = field(
+        default=None, metadata={"alias": "sortByAdminLastName"}
+    )
+
+    sort_by_admin_first_name: Optional[SortByAdminFirstName] = field(
+        default=None, metadata={"alias": "sortByAdminFirstName"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderGroupAdminGetPagedSortedList(OCIType):
+    """Used to sort the GroupAdminGetPagedSortedListRequest request.
+
+    Attributes:
+
+        sort_by_admin_id (Optional[SortByAdminId]):
+
+        sort_by_admin_last_name (Optional[SortByAdminLastName]):
+
+        sort_by_admin_first_name (Optional[SortByAdminFirstName]):
+
+    """
+
+    sort_by_admin_id: Optional[SortByAdminId] = field(
+        default=None, metadata={"alias": "sortByAdminId"}
+    )
+
+    sort_by_admin_last_name: Optional[SortByAdminLastName] = field(
+        default=None, metadata={"alias": "sortByAdminLastName"}
+    )
+
+    sort_by_admin_first_name: Optional[SortByAdminFirstName] = field(
+        default=None, metadata={"alias": "sortByAdminFirstName"}
+    )
+
+
+@dataclass(kw_only=True)
 class SortOrderGroupGetListInServiceProviderPagedSortedList(OCIType):
     """Used to sort the GroupGetListInServiceProviderPagedSortedListRequest request.
 
@@ -24037,60 +24108,6 @@ class SortOrderServiceProviderGetPagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupAdminGetPagedSortedList(OCIType):
-    """Used to sort the GroupAdminGetPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_admin_id (Optional[SortByAdminId]):
-
-        sort_by_admin_last_name (Optional[SortByAdminLastName]):
-
-        sort_by_admin_first_name (Optional[SortByAdminFirstName]):
-
-    """
-
-    sort_by_admin_id: Optional[SortByAdminId] = field(
-        default=None, metadata={"alias": "sortByAdminId"}
-    )
-
-    sort_by_admin_last_name: Optional[SortByAdminLastName] = field(
-        default=None, metadata={"alias": "sortByAdminLastName"}
-    )
-
-    sort_by_admin_first_name: Optional[SortByAdminFirstName] = field(
-        default=None, metadata={"alias": "sortByAdminFirstName"}
-    )
-
-
-@dataclass(kw_only=True)
-class SortOrderServiceProviderAdminGetPagedSortedList(OCIType):
-    """Used to sort the ServiceProviderAdminGetPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_admin_id (Optional[SortByAdminId]):
-
-        sort_by_admin_last_name (Optional[SortByAdminLastName]):
-
-        sort_by_admin_first_name (Optional[SortByAdminFirstName]):
-
-    """
-
-    sort_by_admin_id: Optional[SortByAdminId] = field(
-        default=None, metadata={"alias": "sortByAdminId"}
-    )
-
-    sort_by_admin_last_name: Optional[SortByAdminLastName] = field(
-        default=None, metadata={"alias": "sortByAdminLastName"}
-    )
-
-    sort_by_admin_first_name: Optional[SortByAdminFirstName] = field(
-        default=None, metadata={"alias": "sortByAdminFirstName"}
-    )
-
-
-@dataclass(kw_only=True)
 class SortOrderGroupAccessDeviceGetPagedSortedList(OCIType):
     """Used to sort the GroupAccessDeviceGetPagedSortedListRequest request.
 
@@ -24124,14 +24141,16 @@ class SortOrderGroupAccessDeviceGetPagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupHuntGroupGetInstancePagedSortedList(OCIType):
-    """Used to sort the GroupHuntGroupGetInstancePagedSortedListRequest request.
+class SortOrderGroupCollaborateBridgeGetAvailableUserPagedSortedList(OCIType):
+    """Used to sort the GroupCollaborateBridgeGetAvailableUserPagedSortedListRequest request.
 
     Attributes:
 
         sort_by_user_id (Optional[SortByUserId]):
 
         sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
 
         sort_by_dn (Optional[SortByDn]):
 
@@ -24145,6 +24164,10 @@ class SortOrderGroupHuntGroupGetInstancePagedSortedList(OCIType):
 
     sort_by_user_last_name: Optional[SortByUserLastName] = field(
         default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
     )
 
     sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
@@ -24155,8 +24178,8 @@ class SortOrderGroupHuntGroupGetInstancePagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupCollaborateBridgeGetInstancePagedSortedList(OCIType):
-    """Used to sort the GroupCollaborateBridgeGetInstancePagedSortedListRequest.
+class SortOrderGroupCallParkGetAvailableAlternateRecallUserPagedSortedList(OCIType):
+    """Used to sort the GroupCallParkGetAvailableAlternateRecallUserPagedSortedListRequest request.
 
     Attributes:
 
@@ -24164,9 +24187,13 @@ class SortOrderGroupCollaborateBridgeGetInstancePagedSortedList(OCIType):
 
         sort_by_user_last_name (Optional[SortByUserLastName]):
 
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
+
         sort_by_dn (Optional[SortByDn]):
 
         sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
 
     """
 
@@ -24178,10 +24205,18 @@ class SortOrderGroupCollaborateBridgeGetInstancePagedSortedList(OCIType):
         default=None, metadata={"alias": "sortByUserLastName"}
     )
 
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
+    )
+
     sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
 
     sort_by_extension: Optional[SortByExtension] = field(
         default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
     )
 
 
@@ -24217,24 +24252,20 @@ class SortOrderGroupAutoAttendantGetInstancePagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupCallCenterGetInstancePagedSortedList(OCIType):
-    """Used to sort the GroupCallCenterGetInstancePagedSortedListRequest request.
+class SortOrderGroupHuntGroupGetAvailableUserPagedSortedList(OCIType):
+    """Used to sort the GroupHuntGroupGetAvailableUserPagedSortedListRequest request.
 
     Attributes:
 
         sort_by_user_id (Optional[SortByUserId]):
 
-        sort_by_call_center_name (Optional[SortByCallCenterName]):
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
 
         sort_by_dn (Optional[SortByDn]):
 
         sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-        sort_by_hunt_policy (Optional[SortByHuntPolicy]):
-
-        sort_by_call_center_type (Optional[SortByCallCenterType]):
 
     """
 
@@ -24242,26 +24273,18 @@ class SortOrderGroupCallCenterGetInstancePagedSortedList(OCIType):
         default=None, metadata={"alias": "sortByUserId"}
     )
 
-    sort_by_call_center_name: Optional[SortByCallCenterName] = field(
-        default=None, metadata={"alias": "sortByCallCenterName"}
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
     )
 
     sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
 
     sort_by_extension: Optional[SortByExtension] = field(
         default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-    sort_by_hunt_policy: Optional[SortByHuntPolicy] = field(
-        default=None, metadata={"alias": "sortByHuntPolicy"}
-    )
-
-    sort_by_call_center_type: Optional[SortByCallCenterType] = field(
-        default=None, metadata={"alias": "sortByCallCenterType"}
     )
 
 
@@ -24327,8 +24350,186 @@ class SortOrderGroupDnGetAssignmentPagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
+class SortOrderGroupCallPickupGetInstancePagedSorted(OCIType):
+    """Used to sort the GroupCallPickupGetInstancePagedSortedRequest request.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
+
+        sort_by_email_address (Optional[SortByEmailAddress]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
+
+    sort_by_email_address: Optional[SortByEmailAddress] = field(
+        default=None, metadata={"alias": "sortByEmailAddress"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderGroupCollaborateBridgeGetInstancePagedSortedList(OCIType):
+    """Used to sort the GroupCollaborateBridgeGetInstancePagedSortedListRequest.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderEnterpriseCallCenterAgentThresholdProfileGetPagedSorted(OCIType):
+    """Used to sort the EnterpriseCallCenterAgentThresholdProfileGetPagedSortedRequest request.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
+
+        sort_by_email_address (Optional[SortByEmailAddress]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
+
+    sort_by_email_address: Optional[SortByEmailAddress] = field(
+        default=None, metadata={"alias": "sortByEmailAddress"}
+    )
+
+
+@dataclass(kw_only=True)
 class SortOrderGroupCallCenterAgentThresholdProfileGetPagedSorted(OCIType):
     """Used to sort the GroupCallCenterAgentThresholdProfileGetPagedSortedRequest request.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
+
+        sort_by_email_address (Optional[SortByEmailAddress]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
+
+    sort_by_email_address: Optional[SortByEmailAddress] = field(
+        default=None, metadata={"alias": "sortByEmailAddress"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderGroupCallParkGetAvailableUserPagedSortedList(OCIType):
+    """Used to sort the GroupCallParkGetAvailableUserPagedSortedListRequest request.
 
     Attributes:
 
@@ -24425,8 +24626,8 @@ class SortOrderGroupCallCenterGetAvailableAgentPagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupHuntGroupGetAvailableUserPagedSortedList(OCIType):
-    """Used to sort the GroupHuntGroupGetAvailableUserPagedSortedListRequest request.
+class SortOrderGroupCallPickupGetAvailableUserPagedSortedList(OCIType):
+    """Used to sort the GroupCallPickupGetAvailableUserPagedSortedListRequest request.
 
     Attributes:
 
@@ -24439,6 +24640,10 @@ class SortOrderGroupHuntGroupGetAvailableUserPagedSortedList(OCIType):
         sort_by_dn (Optional[SortByDn]):
 
         sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
+
+        sort_by_email_address (Optional[SortByEmailAddress]):
 
     """
 
@@ -24458,6 +24663,94 @@ class SortOrderGroupHuntGroupGetAvailableUserPagedSortedList(OCIType):
 
     sort_by_extension: Optional[SortByExtension] = field(
         default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
+
+    sort_by_email_address: Optional[SortByEmailAddress] = field(
+        default=None, metadata={"alias": "sortByEmailAddress"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderGroupHuntGroupGetInstancePagedSortedList(OCIType):
+    """Used to sort the GroupHuntGroupGetInstancePagedSortedListRequest request.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+
+@dataclass(kw_only=True)
+class SortOrderUserGetListInGroupPagedSortedList(OCIType):
+    """Used to sort the UserGetListInGroupPagedSortedListRequest request.
+
+    Attributes:
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_user_last_name (Optional[SortByUserLastName]):
+
+        sort_by_user_first_name (Optional[SortByUserFirstName]):
+
+        sort_by_department_name (Optional[SortByDepartmentName]):
+
+        sort_by_dn (Optional[SortByDn]):
+
+        sort_by_extension (Optional[SortByExtension]):
+
+        sort_by_email_address (Optional[SortByEmailAddress]):
+
+    """
+
+    sort_by_user_id: Optional[SortByUserId] = field(
+        default=None, metadata={"alias": "sortByUserId"}
+    )
+
+    sort_by_user_last_name: Optional[SortByUserLastName] = field(
+        default=None, metadata={"alias": "sortByUserLastName"}
+    )
+
+    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
+        default=None, metadata={"alias": "sortByUserFirstName"}
+    )
+
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
+
+    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
+
+    sort_by_extension: Optional[SortByExtension] = field(
+        default=None, metadata={"alias": "sortByExtension"}
+    )
+
+    sort_by_email_address: Optional[SortByEmailAddress] = field(
+        default=None, metadata={"alias": "sortByEmailAddress"}
     )
 
 
@@ -24515,112 +24808,6 @@ class SortOrderEnterpriseBroadWorksMobilityMobileSubscriberDirectoryNumberGetAss
 
     sort_by_dn_available: Optional[SortByDnAvailable] = field(
         default=None, metadata={"alias": "sortByDnAvailable"}
-    )
-
-
-@dataclass(kw_only=True)
-class SortOrderGroupPhoneDirectoryGetPagedSortedList(OCIType):
-    """Used to sort the GroupPhoneDirectoryGetPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_mobile_phone_number (Optional[SortByMobilePhoneNumber]):
-
-        sort_by_email_address (Optional[SortByEmailAddress]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-        sort_by_yahoo_id (Optional[SortByYahooId]):
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_imp_id (Optional[SortByImpId]):
-
-    """
-
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_mobile_phone_number: Optional[SortByMobilePhoneNumber] = field(
-        default=None, metadata={"alias": "sortByMobilePhoneNumber"}
-    )
-
-    sort_by_email_address: Optional[SortByEmailAddress] = field(
-        default=None, metadata={"alias": "sortByEmailAddress"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-    sort_by_yahoo_id: Optional[SortByYahooId] = field(
-        default=None, metadata={"alias": "sortByYahooId"}
-    )
-
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
-
-    sort_by_imp_id: Optional[SortByImpId] = field(
-        default=None, metadata={"alias": "sortByImpId"}
-    )
-
-
-@dataclass(kw_only=True)
-class SortOrderEnterpriseCallCenterAgentThresholdProfileGetPagedSorted(OCIType):
-    """Used to sort the EnterpriseCallCenterAgentThresholdProfileGetPagedSortedRequest request.
-
-    Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-        sort_by_email_address (Optional[SortByEmailAddress]):
-
-    """
-
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
-
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-    sort_by_email_address: Optional[SortByEmailAddress] = field(
-        default=None, metadata={"alias": "sortByEmailAddress"}
     )
 
 
@@ -24694,30 +24881,28 @@ class SortOrderEnterprisePhoneDirectoryGetPagedSortedList(OCIType):
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupCallParkGetAvailableUserPagedSortedList(OCIType):
-    """Used to sort the GroupCallParkGetAvailableUserPagedSortedListRequest request.
+class SortOrderGroupPhoneDirectoryGetPagedSortedList(OCIType):
+    """Used to sort the GroupPhoneDirectoryGetPagedSortedListRequest request.
 
     Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
 
         sort_by_user_last_name (Optional[SortByUserLastName]):
 
         sort_by_user_first_name (Optional[SortByUserFirstName]):
 
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
+        sort_by_mobile_phone_number (Optional[SortByMobilePhoneNumber]):
 
         sort_by_email_address (Optional[SortByEmailAddress]):
 
-    """
+        sort_by_department_name (Optional[SortByDepartmentName]):
 
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
+        sort_by_yahoo_id (Optional[SortByYahooId]):
+
+        sort_by_user_id (Optional[SortByUserId]):
+
+        sort_by_imp_id (Optional[SortByImpId]):
+
+    """
 
     sort_by_user_last_name: Optional[SortByUserLastName] = field(
         default=None, metadata={"alias": "sortByUserLastName"}
@@ -24727,75 +24912,28 @@ class SortOrderGroupCallParkGetAvailableUserPagedSortedList(OCIType):
         default=None, metadata={"alias": "sortByUserFirstName"}
     )
 
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
+    sort_by_mobile_phone_number: Optional[SortByMobilePhoneNumber] = field(
+        default=None, metadata={"alias": "sortByMobilePhoneNumber"}
     )
 
     sort_by_email_address: Optional[SortByEmailAddress] = field(
         default=None, metadata={"alias": "sortByEmailAddress"}
     )
 
+    sort_by_department_name: Optional[SortByDepartmentName] = field(
+        default=None, metadata={"alias": "sortByDepartmentName"}
+    )
 
-@dataclass(kw_only=True)
-class SortOrderGroupCallCenterAgentThresholdProfileGetAvailableAgentPagedSortedList(
-    OCIType
-):
-    """Used to sort the GroupCallCenterAgentThresholdProfileGetAvailableAgentPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-        sort_by_email_address (Optional[SortByEmailAddress]):
-
-        sort_by_agent_threshold_profile (Optional[SortByAgentThresholdProfile]):
-
-    """
+    sort_by_yahoo_id: Optional[SortByYahooId] = field(
+        default=None, metadata={"alias": "sortByYahooId"}
+    )
 
     sort_by_user_id: Optional[SortByUserId] = field(
         default=None, metadata={"alias": "sortByUserId"}
     )
 
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-    sort_by_email_address: Optional[SortByEmailAddress] = field(
-        default=None, metadata={"alias": "sortByEmailAddress"}
-    )
-
-    sort_by_agent_threshold_profile: Optional[SortByAgentThresholdProfile] = field(
-        default=None, metadata={"alias": "sortByAgentThresholdProfile"}
+    sort_by_imp_id: Optional[SortByImpId] = field(
+        default=None, metadata={"alias": "sortByImpId"}
     )
 
 
@@ -24857,51 +24995,10 @@ class SortOrderEnterpriseCallCenterAgentThresholdProfileGetAvailableAgentPagedSo
 
 
 @dataclass(kw_only=True)
-class SortOrderGroupCallParkGetAvailableAlternateRecallUserPagedSortedList(OCIType):
-    """Used to sort the GroupCallParkGetAvailableAlternateRecallUserPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-    """
-
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
-
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-
-@dataclass(kw_only=True)
-class SortOrderGroupCallPickupGetInstancePagedSorted(OCIType):
-    """Used to sort the GroupCallPickupGetInstancePagedSortedRequest request.
+class SortOrderGroupCallCenterAgentThresholdProfileGetAvailableAgentPagedSortedList(
+    OCIType
+):
+    """Used to sort the GroupCallCenterAgentThresholdProfileGetAvailableAgentPagedSortedListRequest request.
 
     Attributes:
 
@@ -24918,6 +25015,8 @@ class SortOrderGroupCallPickupGetInstancePagedSorted(OCIType):
         sort_by_department_name (Optional[SortByDepartmentName]):
 
         sort_by_email_address (Optional[SortByEmailAddress]):
+
+        sort_by_agent_threshold_profile (Optional[SortByAgentThresholdProfile]):
 
     """
 
@@ -24947,18 +25046,20 @@ class SortOrderGroupCallPickupGetInstancePagedSorted(OCIType):
         default=None, metadata={"alias": "sortByEmailAddress"}
     )
 
+    sort_by_agent_threshold_profile: Optional[SortByAgentThresholdProfile] = field(
+        default=None, metadata={"alias": "sortByAgentThresholdProfile"}
+    )
+
 
 @dataclass(kw_only=True)
-class SortOrderGroupCallPickupGetAvailableUserPagedSortedList(OCIType):
-    """Used to sort the GroupCallPickupGetAvailableUserPagedSortedListRequest request.
+class SortOrderGroupCallCenterGetInstancePagedSortedList(OCIType):
+    """Used to sort the GroupCallCenterGetInstancePagedSortedListRequest request.
 
     Attributes:
 
         sort_by_user_id (Optional[SortByUserId]):
 
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
+        sort_by_call_center_name (Optional[SortByCallCenterName]):
 
         sort_by_dn (Optional[SortByDn]):
 
@@ -24966,7 +25067,9 @@ class SortOrderGroupCallPickupGetAvailableUserPagedSortedList(OCIType):
 
         sort_by_department_name (Optional[SortByDepartmentName]):
 
-        sort_by_email_address (Optional[SortByEmailAddress]):
+        sort_by_hunt_policy (Optional[SortByHuntPolicy]):
+
+        sort_by_call_center_type (Optional[SortByCallCenterType]):
 
     """
 
@@ -24974,12 +25077,8 @@ class SortOrderGroupCallPickupGetAvailableUserPagedSortedList(OCIType):
         default=None, metadata={"alias": "sortByUserId"}
     )
 
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
+    sort_by_call_center_name: Optional[SortByCallCenterName] = field(
+        default=None, metadata={"alias": "sortByCallCenterName"}
     )
 
     sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
@@ -24992,94 +25091,12 @@ class SortOrderGroupCallPickupGetAvailableUserPagedSortedList(OCIType):
         default=None, metadata={"alias": "sortByDepartmentName"}
     )
 
-    sort_by_email_address: Optional[SortByEmailAddress] = field(
-        default=None, metadata={"alias": "sortByEmailAddress"}
+    sort_by_hunt_policy: Optional[SortByHuntPolicy] = field(
+        default=None, metadata={"alias": "sortByHuntPolicy"}
     )
 
-
-@dataclass(kw_only=True)
-class SortOrderGroupCollaborateBridgeGetAvailableUserPagedSortedList(OCIType):
-    """Used to sort the GroupCollaborateBridgeGetAvailableUserPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-    """
-
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
-
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-
-@dataclass(kw_only=True)
-class SortOrderUserGetListInGroupPagedSortedList(OCIType):
-    """Used to sort the UserGetListInGroupPagedSortedListRequest request.
-
-    Attributes:
-
-        sort_by_user_id (Optional[SortByUserId]):
-
-        sort_by_user_last_name (Optional[SortByUserLastName]):
-
-        sort_by_user_first_name (Optional[SortByUserFirstName]):
-
-        sort_by_department_name (Optional[SortByDepartmentName]):
-
-        sort_by_dn (Optional[SortByDn]):
-
-        sort_by_extension (Optional[SortByExtension]):
-
-        sort_by_email_address (Optional[SortByEmailAddress]):
-
-    """
-
-    sort_by_user_id: Optional[SortByUserId] = field(
-        default=None, metadata={"alias": "sortByUserId"}
-    )
-
-    sort_by_user_last_name: Optional[SortByUserLastName] = field(
-        default=None, metadata={"alias": "sortByUserLastName"}
-    )
-
-    sort_by_user_first_name: Optional[SortByUserFirstName] = field(
-        default=None, metadata={"alias": "sortByUserFirstName"}
-    )
-
-    sort_by_department_name: Optional[SortByDepartmentName] = field(
-        default=None, metadata={"alias": "sortByDepartmentName"}
-    )
-
-    sort_by_dn: Optional[SortByDn] = field(default=None, metadata={"alias": "sortByDn"})
-
-    sort_by_extension: Optional[SortByExtension] = field(
-        default=None, metadata={"alias": "sortByExtension"}
-    )
-
-    sort_by_email_address: Optional[SortByEmailAddress] = field(
-        default=None, metadata={"alias": "sortByEmailAddress"}
+    sort_by_call_center_type: Optional[SortByCallCenterType] = field(
+        default=None, metadata={"alias": "sortByCallCenterType"}
     )
 
 
@@ -25210,25 +25227,6 @@ class OutgoingCallingPlanDigitPatternRedirectingDepartmentPermissions(OCIType):
 
 
 @dataclass(kw_only=True)
-class OutgoingPinholeDigitPlanDigitPatternCallMeNowDepartmentPermissionsModify(OCIType):
-    """Modify Outgoing Pinhole Digit Plan Call Me Now call permissions for specified digit patterns.
-
-    Attributes:
-
-        department_key (DepartmentKey):
-
-        digit_pattern_permissions (OutgoingPinholeDigitPlanDigitPatternCallMeNowPermissions):
-
-    """
-
-    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
-
-    digit_pattern_permissions: OutgoingPinholeDigitPlanDigitPatternCallMeNowPermissions = field(
-        metadata={"alias": "digitPatternPermissions"}
-    )
-
-
-@dataclass(kw_only=True)
 class OutgoingPinholeDigitPlanDigitPatternCallMeNowDepartmentPermissions(OCIType):
     """Outgoing Pinhole Digit Plan Call Me Now call permissions for a department.
 
@@ -25248,6 +25246,25 @@ class OutgoingPinholeDigitPlanDigitPatternCallMeNowDepartmentPermissions(OCIType
 
     permissions: OutgoingPinholeDigitPlanDigitPatternCallMeNowPermissions = field(
         metadata={"alias": "permissions"}
+    )
+
+
+@dataclass(kw_only=True)
+class OutgoingPinholeDigitPlanDigitPatternCallMeNowDepartmentPermissionsModify(OCIType):
+    """Modify Outgoing Pinhole Digit Plan Call Me Now call permissions for specified digit patterns.
+
+    Attributes:
+
+        department_key (DepartmentKey):
+
+        digit_pattern_permissions (OutgoingPinholeDigitPlanDigitPatternCallMeNowPermissions):
+
+    """
+
+    department_key: DepartmentKey = field(metadata={"alias": "departmentKey"})
+
+    digit_pattern_permissions: OutgoingPinholeDigitPlanDigitPatternCallMeNowPermissions = field(
+        metadata={"alias": "digitPatternPermissions"}
     )
 
 
@@ -25356,6 +25373,190 @@ class ReplacementEnterpriseEnterpriseTrunkPriorityWeightedTrunkGroupList(OCIType
 
 
 @dataclass(kw_only=True)
+class ProfileAndServicePreAlertingAnnouncementInfo(OCIType):
+    """This is the configuration parameters for Pre Alerting Announcement service
+
+                The criteria table's column headings are: \"Is Active\", \"Criteria Name\",
+                \"Blacklisted\", and \"Calls From\".
+
+                The \"Calls From\" column is a string containing call numbers
+
+    Attributes:
+
+        is_active (bool):
+
+        audio_selection (str):
+
+        audio_file_description (Optional[str]):
+
+        audio_media_type (Optional[str]):
+
+        audio_file_url (Optional[str]):
+
+        video_selection (str):
+
+        video_file_description (Optional[str]):
+
+        video_media_type (Optional[str]):
+
+        video_file_url (Optional[str]):
+
+        criteria_table (OCITable):
+
+    """
+
+    is_active: bool = field(metadata={"alias": "isActive"})
+
+    audio_selection: str = field(metadata={"alias": "audioSelection"})
+
+    audio_file_description: Optional[str] = field(
+        default=None, metadata={"alias": "audioFileDescription"}
+    )
+
+    audio_media_type: Optional[str] = field(
+        default=None, metadata={"alias": "audioMediaType"}
+    )
+
+    audio_file_url: Optional[str] = field(
+        default=None, metadata={"alias": "audioFileUrl"}
+    )
+
+    video_selection: str = field(metadata={"alias": "videoSelection"})
+
+    video_file_description: Optional[str] = field(
+        default=None, metadata={"alias": "videoFileDescription"}
+    )
+
+    video_media_type: Optional[str] = field(
+        default=None, metadata={"alias": "videoMediaType"}
+    )
+
+    video_file_url: Optional[str] = field(
+        default=None, metadata={"alias": "videoFileUrl"}
+    )
+
+    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
+
+
+@dataclass(kw_only=True)
+class ProfileAndServiceCommunicationBarringUserControlInfo(OCIType):
+    """This is the configuration parameters for Communication Barring User Control service
+
+                profileTable has column headings: \"Name\", \"Code\", \"Activated\" and \"Primary\".
+
+    Attributes:
+
+        lockout_status (bool):
+
+        profile_table (OCITable):
+
+    """
+
+    lockout_status: bool = field(metadata={"alias": "lockoutStatus"})
+
+    profile_table: OCITable = field(metadata={"alias": "profileTable"})
+
+
+@dataclass(kw_only=True)
+class CallCenterScheduledReportAgentSelectionAdminRead(OCIType):
+    """Either all agents or 2 list of agents: one for current and one for past (deleted) agents.
+         This is used when an admin reads a Scheduled Report.
+         Each agent table has the following column headings:
+         \"User Id\", \"Last Name\", \"First Name\", \"Hiragana Last Name\" and \"Hiragana First Name\".
+
+    Attributes:
+
+        all_agent (Optional[bool]):
+
+        current_agent_table (Optional[OCITable]):
+
+        past_agent_table (Optional[OCITable]):
+
+    """
+
+    all_agent: Optional[bool] = field(default=None, metadata={"alias": "allAgent"})
+
+    current_agent_table: Optional[OCITable] = field(
+        default=None, metadata={"alias": "currentAgentTable"}
+    )
+
+    past_agent_table: Optional[OCITable] = field(
+        default=None, metadata={"alias": "pastAgentTable"}
+    )
+
+
+@dataclass(kw_only=True)
+class CallCenterScheduledReportAgentSelectionRead(OCIType):
+    """Either all agents or list of agents.
+        The agent table has the following column headings:
+        \"User Id\", \"Last Name\", \"First Name\", \"Hiragana Last Name\" and \"Hiragana First Name\".
+
+    Attributes:
+
+        all_agent (Optional[bool]):
+
+        agent_table (Optional[OCITable]):
+
+    """
+
+    all_agent: Optional[bool] = field(default=None, metadata={"alias": "allAgent"})
+
+    agent_table: Optional[OCITable] = field(
+        default=None, metadata={"alias": "agentTable"}
+    )
+
+
+@dataclass(kw_only=True)
+class ProfileAndServiceCallForwardingSelectiveInfo(OCIType):
+    """This is the configuration parameters for Call Forwarding Selective service
+
+                The criteria table's column headings are:
+                        \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Calls From\", \"Forward To\", \"Blacklisted\", \"Holiday Schedule\"
+
+                        The \"Calls From\" column is a string containing call numbers
+
+    Attributes:
+
+        is_active (bool):
+
+        default_forward_to_phone_number (Optional[str]):
+
+        play_ring_reminder (bool):
+
+        criteria_table (OCITable):
+
+    """
+
+    is_active: bool = field(metadata={"alias": "isActive"})
+
+    default_forward_to_phone_number: Optional[str] = field(
+        default=None, metadata={"alias": "defaultForwardToPhoneNumber"}
+    )
+
+    play_ring_reminder: bool = field(metadata={"alias": "playRingReminder"})
+
+    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
+
+
+@dataclass(kw_only=True)
+class ProfileAndServiceSelectiveCallRejectionInfo(OCIType):
+    """This is the configuration parameters for Selective Call Rejection service
+
+                The criteria table's column headings are:
+                \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Calls From\", \"Blacklisted\", \"Holiday Schedule\"
+
+                The \"Calls From\" column is a string containing call numbers
+
+    Attributes:
+
+        criteria_table (OCITable):
+
+    """
+
+    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
+
+
+@dataclass(kw_only=True)
 class ProfileAndServiceSharedCallAppearanceInfo(OCIType):
     """This is the configuration parameters for shared call appearance service
         The endpointTable contains columns:
@@ -25446,98 +25647,19 @@ class ProfileAndServiceSharedCallAppearanceInfo(OCIType):
 
 
 @dataclass(kw_only=True)
-class ProfileAndServicePreAlertingAnnouncementInfo(OCIType):
-    """This is the configuration parameters for Pre Alerting Announcement service
+class ProfileAndServiceCustomRingbackInfo(OCIType):
+    """This is the configuration parameters for Custom Ringback service
 
-                The criteria table's column headings are: \"Is Active\", \"Criteria Name\",
-                \"Blacklisted\", and \"Calls From\".
+                        The criteria table's column headings are: \"Is Active\", \"Criteria Name\",
+                        \"Time Schedule\", \"Calls From\", \"Blacklisted\", \"Holiday Schedule\".
 
-                The \"Calls From\" column is a string containing call numbers
+                        The \"Calls From\" column is a string containing call numbers
 
     Attributes:
-
-        is_active (bool):
-
-        audio_selection (str):
-
-        audio_file_description (Optional[str]):
-
-        audio_media_type (Optional[str]):
-
-        audio_file_url (Optional[str]):
-
-        video_selection (str):
-
-        video_file_description (Optional[str]):
-
-        video_media_type (Optional[str]):
-
-        video_file_url (Optional[str]):
 
         criteria_table (OCITable):
 
     """
-
-    is_active: bool = field(metadata={"alias": "isActive"})
-
-    audio_selection: str = field(metadata={"alias": "audioSelection"})
-
-    audio_file_description: Optional[str] = field(
-        default=None, metadata={"alias": "audioFileDescription"}
-    )
-
-    audio_media_type: Optional[str] = field(
-        default=None, metadata={"alias": "audioMediaType"}
-    )
-
-    audio_file_url: Optional[str] = field(
-        default=None, metadata={"alias": "audioFileUrl"}
-    )
-
-    video_selection: str = field(metadata={"alias": "videoSelection"})
-
-    video_file_description: Optional[str] = field(
-        default=None, metadata={"alias": "videoFileDescription"}
-    )
-
-    video_media_type: Optional[str] = field(
-        default=None, metadata={"alias": "videoMediaType"}
-    )
-
-    video_file_url: Optional[str] = field(
-        default=None, metadata={"alias": "videoFileUrl"}
-    )
-
-    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
-
-
-@dataclass(kw_only=True)
-class ProfileAndServiceSimultaneousRingPersonalInfo(OCIType):
-    """This is the configuration parameters for Simultaneous Ring Personal  service
-
-                Contains a criteria table with column heading: \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Holiday Schedule\", \"Calls From\" and \"Blacklisted\".
-
-                The \"Calls From\" column is a string containing call numbers
-
-    Attributes:
-
-        is_active (bool):
-
-        do_not_ring_if_on_call (bool):
-
-        simultaneous_ring_number (Optional[List[SimultaneousRingNumber]]):
-
-        criteria_table (OCITable):
-
-    """
-
-    is_active: bool = field(metadata={"alias": "isActive"})
-
-    do_not_ring_if_on_call: bool = field(metadata={"alias": "doNotRingIfOnCall"})
-
-    simultaneous_ring_number: Optional[List[SimultaneousRingNumber]] = field(
-        default=None, metadata={"alias": "simultaneousRingNumber"}
-    )
 
     criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
 
@@ -25593,21 +25715,20 @@ class ProfileAndServiceBusyLampFieldInfo(OCIType):
 
 
 @dataclass(kw_only=True)
-class ProfileAndServiceCallForwardingSelectiveInfo(OCIType):
-    """This is the configuration parameters for Call Forwarding Selective service
+class ProfileAndServiceSimultaneousRingPersonalInfo(OCIType):
+    """This is the configuration parameters for Simultaneous Ring Personal  service
 
-                The criteria table's column headings are:
-                        \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Calls From\", \"Forward To\", \"Blacklisted\", \"Holiday Schedule\"
+                Contains a criteria table with column heading: \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Holiday Schedule\", \"Calls From\" and \"Blacklisted\".
 
-                        The \"Calls From\" column is a string containing call numbers
+                The \"Calls From\" column is a string containing call numbers
 
     Attributes:
 
         is_active (bool):
 
-        default_forward_to_phone_number (Optional[str]):
+        do_not_ring_if_on_call (bool):
 
-        play_ring_reminder (bool):
+        simultaneous_ring_number (Optional[List[SimultaneousRingNumber]]):
 
         criteria_table (OCITable):
 
@@ -25615,117 +25736,13 @@ class ProfileAndServiceCallForwardingSelectiveInfo(OCIType):
 
     is_active: bool = field(metadata={"alias": "isActive"})
 
-    default_forward_to_phone_number: Optional[str] = field(
-        default=None, metadata={"alias": "defaultForwardToPhoneNumber"}
-    )
+    do_not_ring_if_on_call: bool = field(metadata={"alias": "doNotRingIfOnCall"})
 
-    play_ring_reminder: bool = field(metadata={"alias": "playRingReminder"})
+    simultaneous_ring_number: Optional[List[SimultaneousRingNumber]] = field(
+        default=None, metadata={"alias": "simultaneousRingNumber"}
+    )
 
     criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
-
-
-@dataclass(kw_only=True)
-class CallCenterScheduledReportAgentSelectionRead(OCIType):
-    """Either all agents or list of agents.
-        The agent table has the following column headings:
-        \"User Id\", \"Last Name\", \"First Name\", \"Hiragana Last Name\" and \"Hiragana First Name\".
-
-    Attributes:
-
-        all_agent (Optional[bool]):
-
-        agent_table (Optional[OCITable]):
-
-    """
-
-    all_agent: Optional[bool] = field(default=None, metadata={"alias": "allAgent"})
-
-    agent_table: Optional[OCITable] = field(
-        default=None, metadata={"alias": "agentTable"}
-    )
-
-
-@dataclass(kw_only=True)
-class ProfileAndServiceCommunicationBarringUserControlInfo(OCIType):
-    """This is the configuration parameters for Communication Barring User Control service
-
-                profileTable has column headings: \"Name\", \"Code\", \"Activated\" and \"Primary\".
-
-    Attributes:
-
-        lockout_status (bool):
-
-        profile_table (OCITable):
-
-    """
-
-    lockout_status: bool = field(metadata={"alias": "lockoutStatus"})
-
-    profile_table: OCITable = field(metadata={"alias": "profileTable"})
-
-
-@dataclass(kw_only=True)
-class ProfileAndServiceCustomRingbackInfo(OCIType):
-    """This is the configuration parameters for Custom Ringback service
-
-                        The criteria table's column headings are: \"Is Active\", \"Criteria Name\",
-                        \"Time Schedule\", \"Calls From\", \"Blacklisted\", \"Holiday Schedule\".
-
-                        The \"Calls From\" column is a string containing call numbers
-
-    Attributes:
-
-        criteria_table (OCITable):
-
-    """
-
-    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
-
-
-@dataclass(kw_only=True)
-class ProfileAndServiceSelectiveCallRejectionInfo(OCIType):
-    """This is the configuration parameters for Selective Call Rejection service
-
-                The criteria table's column headings are:
-                \"Is Active\", \"Criteria Name\", \"Time Schedule\", \"Calls From\", \"Blacklisted\", \"Holiday Schedule\"
-
-                The \"Calls From\" column is a string containing call numbers
-
-    Attributes:
-
-        criteria_table (OCITable):
-
-    """
-
-    criteria_table: OCITable = field(metadata={"alias": "criteriaTable"})
-
-
-@dataclass(kw_only=True)
-class CallCenterScheduledReportAgentSelectionAdminRead(OCIType):
-    """Either all agents or 2 list of agents: one for current and one for past (deleted) agents.
-         This is used when an admin reads a Scheduled Report.
-         Each agent table has the following column headings:
-         \"User Id\", \"Last Name\", \"First Name\", \"Hiragana Last Name\" and \"Hiragana First Name\".
-
-    Attributes:
-
-        all_agent (Optional[bool]):
-
-        current_agent_table (Optional[OCITable]):
-
-        past_agent_table (Optional[OCITable]):
-
-    """
-
-    all_agent: Optional[bool] = field(default=None, metadata={"alias": "allAgent"})
-
-    current_agent_table: Optional[OCITable] = field(
-        default=None, metadata={"alias": "currentAgentTable"}
-    )
-
-    past_agent_table: Optional[OCITable] = field(
-        default=None, metadata={"alias": "pastAgentTable"}
-    )
 
 
 @dataclass(kw_only=True)
@@ -106410,7 +106427,7 @@ class UserConsolidatedModifyRequest22(OCIRequest):
 
         sip_alias_list (Optional[Nillable[ReplacementSIPAliasList]]):
 
-        endpoint (Optional[Nillable[object]]):
+        endpoint (Optional[Nillable[Union[ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactModify, TrunkAddressingMultipleContactModify]]]):
 
         shared_call_appearance_access_device_endpoint_list (Optional[Nillable[ReplacementConsolidatedSharedCallAppearanceAccessDeviceMultipleIdentityEndpointList22]]):
 
@@ -106532,9 +106549,14 @@ class UserConsolidatedModifyRequest22(OCIRequest):
         default=None, metadata={"alias": "sipAliasList"}
     )
 
-    endpoint: Optional[Nillable[object]] = field(
-        default=None, metadata={"alias": "endpoint"}
-    )
+    endpoint: Optional[
+        Nillable[
+            Union[
+                ConsolidatedAccessDeviceMultipleIdentityEndpointAndContactModify,
+                TrunkAddressingMultipleContactModify,
+            ]
+        ]
+    ] = field(default=None, metadata={"alias": "endpoint"})
 
     shared_call_appearance_access_device_endpoint_list: Optional[
         Nillable[
@@ -110366,7 +110388,7 @@ class UserModifyRequest22(OCIRequest):
 
         sip_alias_list (Optional[Nillable[ReplacementSIPAliasList]]):
 
-        endpoint (Optional[Nillable[object]]):
+        endpoint (Optional[Nillable[Union[AccessDeviceMultipleIdentityAndContactEndpointModify22, TrunkAddressingMultipleContactModify22]]]):
 
         title (Optional[Nillable[str]]):
 
@@ -110458,9 +110480,14 @@ class UserModifyRequest22(OCIRequest):
         default=None, metadata={"alias": "sipAliasList"}
     )
 
-    endpoint: Optional[Nillable[object]] = field(
-        default=None, metadata={"alias": "endpoint"}
-    )
+    endpoint: Optional[
+        Nillable[
+            Union[
+                AccessDeviceMultipleIdentityAndContactEndpointModify22,
+                TrunkAddressingMultipleContactModify22,
+            ]
+        ]
+    ] = field(default=None, metadata={"alias": "endpoint"})
 
     title: Optional[Nillable[str]] = field(default=None, metadata={"alias": "title"})
 
