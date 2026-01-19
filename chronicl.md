@@ -52,6 +52,9 @@
 
 ## JOURNAL
 
+@KiPageFault 16.01.25
+- Added More Logging Components & Sanitized Already Present Logging Statements
+
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators

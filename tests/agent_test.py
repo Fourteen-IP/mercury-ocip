@@ -133,8 +133,7 @@ class TestPluginLoading:
         assert len(agent._installed_plugins) == 0
     
     @patch('importlib.metadata.entry_points')
-    @patch('builtins.print')
-    def test_handles_plugin_load_failure(self, mock_print, mock_entry_points, 
+    def test_handles_plugin_load_failure(self, mock_entry_points, 
                                         mock_client, reset_agent_singleton, reset_installed_plugins):
         """Test that plugin load failure is handled gracefully"""
         mock_ep = Mock(spec=EntryPoint)
@@ -149,8 +148,8 @@ class TestPluginLoading:
         agent = Agent.get_instance(mock_client)
         
         assert not hasattr(agent, 'mock_failing')
-        mock_print.assert_called_once()
-        assert "Failed to load plugin failing_plugin" in mock_print.call_args[0][0]
+        mock_client.logger.error.assert_called_once()
+        assert "Failed to load plugin failing_plugin" in mock_client.logger.error.call_args[0][0]
     
     @patch('importlib.metadata.entry_points')
     def test_plugin_name_conversion_to_snake_case(self, mock_entry_points, 

@@ -34,8 +34,10 @@ class Agent:
         if self.__instance is not None:
             raise Exception("Singleton cannot be instantiated more than once!")
         self.client = client
+        self.logger = client.logger
         self.bulk = BulkOperations(client)
         self.automate = AutomationTasks(client)
+        self.logger.info("Agent initialized")
         self.load_plugins()
 
     def load_plugins(self) -> None:
@@ -60,8 +62,9 @@ class Agent:
                 )
                 setattr(self, plugin_name, plugin_instance)
                 self._installed_plugins.append(entry_point)
+                self.logger.debug(f"Successfully loaded plugin: {entry_point.name}")
             except Exception as e:
-                print(f"Failed to load plugin {entry_point.name}: {e}")
+                self.logger.error(f"Failed to load plugin {entry_point.name}: {e}")
 
     def list_plugins(self) -> list[EntryPoint]:
         return self._installed_plugins

@@ -43,6 +43,7 @@ class BaseClient(ABC):
     - User_agent: The user agent of the client
     - Timeout: The timeout of the client
     - Logger: The logger of the client
+    - Log_level: The log level for the default logger (default is WARNING)
     - Authenticated: Whether the client is authenticated
     - Session_id: The session id of the client
     - Dispatch_table: The dispatch table of the client
@@ -56,6 +57,7 @@ class BaseClient(ABC):
     user_agent: str = attr.ib(default="Broadworks SDK")
     timeout: int = attr.ib(default=30)
     logger: logging.Logger = attr.ib(default=None)
+    log_level: int = attr.ib(default=logging.WARNING)
     authenticated: bool = attr.ib(default=False)
     session_id: str = attr.ib(default=str(uuid.uuid4()))
     tls: bool = attr.ib(default=True)
@@ -143,9 +145,9 @@ class BaseClient(ABC):
     def _set_up_logging(self):
         """Common logging setup for all clients"""
         logger = logging.getLogger(__name__)
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(self.log_level)
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.WARNING)
+        console_handler.setLevel(self.log_level)
         logger.addHandler(console_handler)
         return logger
 
@@ -165,6 +167,7 @@ class Client(BaseClient):
         timeout (int): The timeout of the client. Default is 30 seconds.
         user_agent (str): The user agent of the client, used for logging. Default is 'Thor\'s Hammer'.
         logger (logging.Logger): The logger of the client. Default is None.
+        log_level (int): The log level for the default logger. Default is logging.WARNING.
 
     Attributes:
         authenticated (bool): Whether the client is authenticated
@@ -322,6 +325,7 @@ class Client(BaseClient):
             raise MError(f"Failed To Find Raw Response Type: {type_name}")
 
         # Construct Response Class With Raw Response
+        self.logger.debug(f"Response -> {response_class}")
         return response_class.from_xml(response)  # type: ignore
 
     def disconnect(self):
