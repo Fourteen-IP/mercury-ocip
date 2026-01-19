@@ -79,6 +79,7 @@ nav:
           - Bulk Operations Overview: developer/bulk-operations/bulk-operations-overview.md
       - Plugins: developer/plugins/index.md
   - CLI: https://mercury-cli-docs.14ip.net/
+  - Async: https://mercury-fast-docs.14ip.net/
 
 markdown_extensions:
   - pymdownx.highlight:
