@@ -108,7 +108,7 @@ This means:
 - endpoint can only be one of the two Union types
 """
 
-def test_endpoint_omitted_not_in_xml(self):
+def test_endpoint_omitted_not_in_xml():
     """When endpoint is None (omitted), it should not appear in the XML output."""
     cmd = UserModifyRequest22(user_id="testuser@example.com")
     xml = cmd.to_xml()
@@ -116,7 +116,7 @@ def test_endpoint_omitted_not_in_xml(self):
     assert "endpoint" not in xml
     assert "<userId>testuser@example.com</userId>" in xml
 
-def test_endpoint_nil_generates_nil_element(self):
+def test_endpoint_nil_generates_nil_element():
     """When endpoint is set to OCINil, it should generate <endpoint C:nil="true"/>."""
     cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=OCINil)
     xml = cmd.to_xml()
@@ -124,7 +124,7 @@ def test_endpoint_nil_generates_nil_element(self):
     assert '<endpoint C:nil="true"/>' in xml
     assert "<userId>testuser@example.com</userId>" in xml
 
-def test_endpoint_accepts_access_device_type(self):
+def test_endpoint_accepts_access_device_type():
     """Endpoint should accept AccessDeviceMultipleIdentityAndContactEndpointModify22."""
     endpoint = AccessDeviceMultipleIdentityAndContactEndpointModify22(
         access_device=AccessDevice(device_level="Group", device_name="TestDevice"),
@@ -138,7 +138,7 @@ def test_endpoint_accepts_access_device_type(self):
     assert "<deviceName>TestDevice</deviceName>" in xml
     assert "<linePort>sip:test@example.com</linePort>" in xml
 
-def test_endpoint_accepts_trunk_addressing_type(self):
+def test_endpoint_accepts_trunk_addressing_type():
     """Endpoint should accept TrunkAddressingMultipleContactModify22."""
     endpoint = TrunkAddressingMultipleContactModify22(
         enterprise_trunk_name="TestTrunk"
