@@ -94,59 +94,57 @@ def test_as_data_mode_type_bug():
             allow_termination=True,
         )
 
+"""Tests for Optional[Nillable[Union[...]]] endpoint field in UserModifyRequest22.
 
-class TestNillableUnionEndpointField:
-    """Tests for Optional[Nillable[Union[...]]] endpoint field in UserModifyRequest22.
+The endpoint field has the type:
+    Optional[Nillable[Union[
+        AccessDeviceMultipleIdentityAndContactEndpointModify22,
+        TrunkAddressingMultipleContactModify22
+    ]]]
 
-    The endpoint field has the type:
-        Optional[Nillable[Union[
-            AccessDeviceMultipleIdentityAndContactEndpointModify22,
-            TrunkAddressingMultipleContactModify22
-        ]]]
+This means:
+- endpoint can be omitted (None) - not included in XML
+- endpoint can be set to nil (OCINil) - generates <endpoint C:nil="true"/>
+- endpoint can only be one of the two Union types
+"""
 
-    This means:
-    - endpoint can be omitted (None) - not included in XML
-    - endpoint can be set to nil (OCINil) - generates <endpoint C:nil="true"/>
-    - endpoint can only be one of the two Union types
-    """
+def test_endpoint_omitted_not_in_xml(self):
+    """When endpoint is None (omitted), it should not appear in the XML output."""
+    cmd = UserModifyRequest22(user_id="testuser@example.com")
+    xml = cmd.to_xml()
 
-    def test_endpoint_omitted_not_in_xml(self):
-        """When endpoint is None (omitted), it should not appear in the XML output."""
-        cmd = UserModifyRequest22(user_id="testuser@example.com")
-        xml = cmd.to_xml()
+    assert "endpoint" not in xml
+    assert "<userId>testuser@example.com</userId>" in xml
 
-        assert "endpoint" not in xml
-        assert "<userId>testuser@example.com</userId>" in xml
+def test_endpoint_nil_generates_nil_element(self):
+    """When endpoint is set to OCINil, it should generate <endpoint C:nil="true"/>."""
+    cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=OCINil)
+    xml = cmd.to_xml()
 
-    def test_endpoint_nil_generates_nil_element(self):
-        """When endpoint is set to OCINil, it should generate <endpoint C:nil="true"/>."""
-        cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=OCINil)
-        xml = cmd.to_xml()
+    assert '<endpoint C:nil="true"/>' in xml
+    assert "<userId>testuser@example.com</userId>" in xml
 
-        assert '<endpoint C:nil="true"/>' in xml
-        assert "<userId>testuser@example.com</userId>" in xml
+def test_endpoint_accepts_access_device_type(self):
+    """Endpoint should accept AccessDeviceMultipleIdentityAndContactEndpointModify22."""
+    endpoint = AccessDeviceMultipleIdentityAndContactEndpointModify22(
+        access_device=AccessDevice(device_level="Group", device_name="TestDevice"),
+        line_port="sip:test@example.com"
+    )
+    cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
+    xml = cmd.to_xml()
 
-    def test_endpoint_accepts_access_device_type(self):
-        """Endpoint should accept AccessDeviceMultipleIdentityAndContactEndpointModify22."""
-        endpoint = AccessDeviceMultipleIdentityAndContactEndpointModify22(
-            access_device=AccessDevice(device_level="Group", device_name="TestDevice"),
-            line_port="sip:test@example.com"
-        )
-        cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
-        xml = cmd.to_xml()
+    assert "<endpoint>" in xml
+    assert "<deviceLevel>Group</deviceLevel>" in xml
+    assert "<deviceName>TestDevice</deviceName>" in xml
+    assert "<linePort>sip:test@example.com</linePort>" in xml
 
-        assert "<endpoint>" in xml
-        assert "<deviceLevel>Group</deviceLevel>" in xml
-        assert "<deviceName>TestDevice</deviceName>" in xml
-        assert "<linePort>sip:test@example.com</linePort>" in xml
+def test_endpoint_accepts_trunk_addressing_type(self):
+    """Endpoint should accept TrunkAddressingMultipleContactModify22."""
+    endpoint = TrunkAddressingMultipleContactModify22(
+        enterprise_trunk_name="TestTrunk"
+    )
+    cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
+    xml = cmd.to_xml()
 
-    def test_endpoint_accepts_trunk_addressing_type(self):
-        """Endpoint should accept TrunkAddressingMultipleContactModify22."""
-        endpoint = TrunkAddressingMultipleContactModify22(
-            enterprise_trunk_name="TestTrunk"
-        )
-        cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
-        xml = cmd.to_xml()
-
-        assert "<endpoint>" in xml
-        assert "<enterpriseTrunkName>TestTrunk</enterpriseTrunkName>" in xml
+    assert "<endpoint>" in xml
+    assert "<enterpriseTrunkName>TestTrunk</enterpriseTrunkName>" in xml
