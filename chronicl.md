@@ -51,6 +51,8 @@
 
 
 ## JOURNAL
+@malkin0xb8 20.01.25
+- User digest now shows all data, instead of hiding data that isnt returned. E.g it shows all devices now not just registered ones.
 
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
