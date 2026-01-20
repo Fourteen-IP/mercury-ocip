@@ -75,6 +75,7 @@ Removed all bulk operation features
 Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
 Previous logic would overwrite required fields to be optional causing odd errors.
 
+
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators
