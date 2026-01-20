@@ -52,6 +52,11 @@
 
 ## JOURNAL
 
+@Jordan-Prescott 19.01.26
+- Using 'null' as a use for the OCINill type in bulk operations this is checked in _process_row
+- Removed from _process_row removing feilds from the data is they are set to 'none'. None is a valid option in some operations. 
+
+
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators

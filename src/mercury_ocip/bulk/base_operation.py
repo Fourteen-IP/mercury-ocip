@@ -4,13 +4,13 @@ import re
 
 
 from mercury_ocip.client import BaseClient
-from mercury_ocip.commands.base_command import OCICommand, ErrorResponse
+from mercury_ocip.commands.base_command import OCICommand, ErrorResponse, Nillable
 from mercury_ocip.utils.file_handler import FileHandler
 from mercury_ocip.utils.defines import (
     to_snake_case,
     is_boolean,
     str_to_bool,
-    is_none,
+    is_empty,
     normalise_phone_number,
 )
 from mercury_ocip.libs.types import OCIResponse
@@ -143,9 +143,14 @@ class BaseBulkOperations(ABC):
             key = to_snake_case(key)
 
             # Skip None values and empty strings
-            if value is None or (isinstance(value, str) and is_none(value)):
+            if value is None or (isinstance(value, str) and is_empty(value)):
                 continue
-            value = value.strip()
+
+            # Convert 'null' string to Python None (explicit nil marker)
+            if isinstance(value, str) and value.strip().lower() == "null":
+                value = Nillable
+            else:
+                value = value.strip()
 
             # Type conversions
             if isinstance(value, str) and is_boolean(value):

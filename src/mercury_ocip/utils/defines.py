@@ -55,11 +55,11 @@ def str_to_bool(name: str) -> bool:
     return name.lower() == "true"
 
 
-def is_none(name: str) -> bool:
+def is_empty(name: str) -> bool:
     data_type = isinstance(name, str)
     if not data_type:
         return False
-    if name.lower().strip() == "none" or name.strip() == "":
+    if name.strip() == "":
         return True
     return False
 
