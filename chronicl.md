@@ -51,6 +51,12 @@
 
 
 ## JOURNAL
+@malkin0xb8 14.01.26
+Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
+Previous logic would overwrite required fields to be optional causing odd errors.
+
+@KiPageFault 16.01.25
+- Added More Logging Components & Sanitized Already Present Logging Statements
 
 @malkin0xb8 16.01.26
 
@@ -63,6 +69,10 @@ Removed all bulk operation features
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators
+
+@malkin0xb8 06.01.26
+Added Nillable types in the generation to allow for voiding a field.
+Introduced OCINil Type (placeholder) and Nillable[T] to denote which fields can be voided.
 
 @malkin0xb8 12.12.25
 - Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.

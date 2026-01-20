@@ -47,7 +47,9 @@ nav:
   - Overview: index.md
   - Client:
       - Client: client/client.md
-  - Commands Reference: commands/
+  - Commands Reference:
+    - Overview: commands/index.md
+    - Commands: commands/
   - Agent:
       - Agent: agent/index.md
       - Bulk Operations:
@@ -76,6 +78,7 @@ nav:
           - Bulk Operations Overview: developer/bulk-operations/bulk-operations-overview.md
       - Plugins: developer/plugins/index.md
   - CLI: https://mercury-cli-docs.14ip.net/
+  - Async: https://mercury-fast-docs.14ip.net/
 
 markdown_extensions:
   - pymdownx.highlight:
