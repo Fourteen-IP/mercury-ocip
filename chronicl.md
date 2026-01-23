@@ -50,15 +50,12 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+
 @KiPageFault 23.01.25
 Added Time Saved Metrics To Base Library
 
 @malkin0xb8 20.01.25
 - User digest now shows all data, instead of hiding data that isnt returned. E.g it shows all devices now not just registered ones.
-
-@malkin0xb8 14.01.26
-Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
-Previous logic would overwrite required fields to be optional causing odd errors.
 
 @KiPageFault 16.01.25
 - Added More Logging Components & Sanitized Already Present Logging Statements
@@ -69,6 +66,10 @@ Major architectural changes:
 Added connection pool for managing multiple concurrent connections
 Removed SOAP support entirely - TCP only
 Removed all bulk operation features
+
+@malkin0xb8 14.01.26
+Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
+Previous logic would overwrite required fields to be optional causing odd errors.
 
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
