@@ -47,7 +47,6 @@ nav:
   - Overview: index.md
   - Client:
       - Client: client/client.md
-      - Async Client: client/async-client.md
   - Commands Reference:
     - Overview: commands/index.md
     - Commands: commands/
