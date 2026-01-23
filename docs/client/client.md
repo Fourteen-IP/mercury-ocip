@@ -1,22 +1,22 @@
-# Main Client 
+# Client
 
-The `Client` class is the core module of the library and provides a synchronous interface for interacting with BroadWorks servers. It is designed for applications that do not require asynchronous operations and handles all aspects of connection management, authentication, and command execution.
+The `Client` class is your main way to send messages to BroadWorks servers. It handles connection, authentication, and command execution. This is a synchronous client, so each call blocks until it finishes. If you need async, see [ocip-fast](https://mercury-fast-docs.14ip.net).
 
-## Key Features
+## What it does
 
-**Synchronous Operations**: All methods execute synchronously, blocking until completion. This makes it ideal for scripts, administrative tools, and applications where sequential execution is preferred.
+All methods block until they complete. This works well for scripts, admin tools, and anywhere you want straightforward sequential execution.
 
-**Automatic Authentication**: The client handles authentication automatically upon instantiation, streamlining the connection process.
+The client logs in automatically when you create it. You pass credentials, it authenticates, done.
 
-**Resource Management**: Built-in connection management with explicit disconnect functionality ensures proper cleanup of network resources.
+When you call `disconnect()`, network resources get cleaned up properly.
 
-**Comprehensive Error Handling**: Provides detailed exception handling with meaningful error messages for debugging and troubleshooting.
+Errors include actual information about what went wrong instead of generic failures.
 
 ---
 
-## Quick Start
+## Quick start
 
-The most basic example - connect, run a command, clean up:
+Connect, run a command, clean up:
 
 ```python
 from mercury_ocip.client import Client
@@ -30,7 +30,7 @@ def get_users():
         password="secret123",
         conn_type="SOAP"  # or "TCP"
     )
-    
+
     try:
         response = client.command(UserGetListInSystemRequest())
         return response.user_table  # Access the actual data
@@ -41,9 +41,9 @@ users = get_users()
 print(f"Found {len(users)} users")
 ```
 
-## Connection Types
+## Connection types
 
-**SOAP** (recommended for most cases):
+SOAP works for most cases:
 ```python
 client = Client(
     host="https://your-server.com",  # No /wsdl suffix needed
@@ -53,7 +53,7 @@ client = Client(
 )
 ```
 
-**TCP** (for legacy systems or specific requirements):
+TCP if you need it:
 ```python
 client = Client(
     host="broadworks.company.com",
@@ -65,9 +65,9 @@ client = Client(
 )
 ```
 
-## Running Commands
+## Running commands
 
-**Using command classes** (type-safe, autocompletion-friendly):
+Using command classes (you get type hints and autocompletion):
 ```python
 from mercury_ocip.commands.commands import GroupHuntGroupGetInstanceRequest20
 
@@ -81,9 +81,9 @@ response = client.command(
 print(f"Hunt Group: {response}")
 ```
 
-**Using raw commands** (when you know the exact command name):
+Using raw commands when you know the exact command name:
 ```python
-# Equivalent to the above, but as a string
+# Same as above, but as a string
 response = client.raw_command(
     "GroupHuntGroupGetInstanceRequest20",
     group_id="MyGroup",
@@ -91,9 +91,9 @@ response = client.raw_command(
 )
 ```
 
-## Practical Examples
+## Practical examples
 
-**Bulk user operations**:
+Bulk user operations:
 ```python
 def update_users_in_bulk():
     client = Client(
@@ -102,11 +102,11 @@ def update_users_in_bulk():
         password="admin123",
         conn_type="SOAP"
     )
-    
+
     try:
         # Get all users
         users_resp = client.command(UserGetListInSystemRequest())
-        
+
         # Process each user
         for user in users_resp.user_table:
             # Get detailed user info
@@ -115,7 +115,7 @@ def update_users_in_bulk():
                     user_id=user.user_id
                 )
             )
-            
+
             # Make some changes
             if user_detail.department == "Sales":
                 client.command(
@@ -125,14 +125,14 @@ def update_users_in_bulk():
                     )
                 )
                 print(f"Updated {user.user_id}")
-                
+
     except Exception as e:
         print(f"Something went wrong: {e}")
     finally:
         client.disconnect()
 ```
 
-**Configuration with custom settings**:
+Custom logging setup:
 ```python
 import logging
 
@@ -150,10 +150,11 @@ client = Client(
     logger=logger,  # Your custom logger
 )
 
-logging.basicConfig(level=logging.DEBUG) # Debug can be used to see exact commands sent and recieved
+# Use DEBUG to see exact commands sent and received
+logging.basicConfig(level=logging.DEBUG)
 ```
 
-## Example Debug Log
+## Example debug log
 
 ```plaintext
 DEBUG:zeep.transports:HTTP Post to https://broadworks.example.com/webservice/services/ProvisioningService:
@@ -176,9 +177,9 @@ b'
 DEBUG:httpcore.connection:connect_tcp.started host='broadworks.example.com' port=443 local_address=None timeout=5.0 socket_options=None
 ```
 
-## Error Handling Tips
+## Error handling
 
-Always wrap your client operations:
+Wrap your client operations:
 ```python
 from mercury_ocip.exceptions import MError
 
@@ -195,37 +196,37 @@ finally:
     client.disconnect()
 ```
 
-## Advanced Typing
+## Checking for error responses
 
-Response classes can be used to match Errors:
+You can type-hint responses to handle errors explicitly:
 ```python
-
 from mercury_ocip.commands import GroupHuntGroupGetInstanceRequest20, GroupHuntGroupGetInstanceResponse20
 from mercury_ocip.commands.base_command import ErrorResponse
+from mercury_ocip.libs.types import OCIResponse
 
-response: GroupHuntGroupGetInstanceResponse20 | ErrorResponse  = client.command(
+response: OCIResponse[GroupHuntGroupGetInstanceResponse20] = client.command(
     GroupHuntGroupGetInstanceRequest20(
         group_id="MyGroup",
         service_provider_id="MyProvider"
     )
 )
 
-if response isinstance(ErrorResponse): # We can now check the error response and its summary
-    print(f"Request Failed: {response.errorCode}: {response.summary}")
+if isinstance(response, ErrorResponse):
+    print(f"Request failed: {response.errorCode}: {response.summary}")
 else:
     print(f"Hunt Group: {response}")
 ```
 
-## Pro Tips
+## Tips
 
-**Reuse connections**: Don't create a new client for every command. One client can handle many requests.
+Reuse connections. Don't create a new client for every command. One client handles many requests.
 
-**Check authentication**: The client authenticates automatically, but you can check `client.authenticated` if needed.
+Check authentication status with `client.authenticated` if you need to.
 
-**TCP vs SOAP**: SOAP is usually easier and more reliable. Use TCP only if you have specific requirements.
+SOAP is usually easier to work with. Use TCP only if you have specific requirements.
 
-**Insecure connections**: Only use `tls=False` for development or if your network is completely trusted.
+Only use `tls=False` for development or on a completely trusted network.
 
-**Timeouts**: Increase timeout for operations that might take a while (like bulk imports).
+Increase timeout for slow operations like bulk imports.
 
 ::: mercury_ocip.client.Client
