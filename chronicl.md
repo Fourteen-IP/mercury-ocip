@@ -51,6 +51,9 @@
 
 
 ## JOURNAL
+@KiPageFault 23.01.25
+Added Time Saved Metrics To Base Library
+
 @malkin0xb8 14.01.26
 Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
 Previous logic would overwrite required fields to be optional causing odd errors.

@@ -1,10 +1,10 @@
 # Agent
 
-The `Agent` class is the gateway object that provides unified access to bulk operations and automation tasks. It implements a singleton pattern to ensure a single instance manages all operations across your application.
+The `Agent` class gives you access to bulk operations and automation tasks. It uses a singleton pattern so there's one instance managing everything.
 
-## Getting Started
+## Getting started
 
-The `Agent` must be accessed via the `get_instance()` class method. This ensures you're working with the singleton instance:
+Access the `Agent` through `get_instance()`:
 
 ```python
 from mercury_ocip import Client, Agent
@@ -18,13 +18,11 @@ client = Client(
 agent = Agent.get_instance(client)
 ```
 
-> **Important**: Always use `Agent.get_instance(client)` rather than instantiating directly with `Agent(client)`. The singleton pattern prevents multiple instances and ensures consistent state across your application.
+> Always use `Agent.get_instance(client)` rather than `Agent(client)` directly. The singleton pattern keeps state consistent across your application.
 
-## Available Functionality
+## Bulk operations
 
-### Bulk Operations
-
-Access bulk operations through `agent.bulk`. This provides methods to create and modify BroadWorks entities from CSV files or Python data structures.
+Access bulk operations through `agent.bulk`. These let you create and modify BroadWorks entities from CSV files or Python data.
 
 ```python
 # Create users from CSV
@@ -47,19 +45,20 @@ agent.bulk.create_device_from_csv("devices.csv")
 agent.bulk.create_call_center_from_data(call_center_data)
 ```
 
-The `bulk` object provides operations for creating, modifying, and deleting core BroadWorks entities:
-- Users
-- Devices 
-- Call Centers 
-- Hunt Groups 
-- Auto Attendants 
-- Call Pickup
+Available bulk operations:
 
-See the [Bulk Operations Overview](../developer/bulk_opertaions/bulk-operations-overview.md) for detailed information about bulk operations.
+* Users
+* Devices
+* Call Centers
+* Hunt Groups
+* Auto Attendants
+* Call Pickup
 
-### Automation Tasks
+See the [Bulk Operations Overview](../developer/bulk-operations/bulk-operations-overview.md) for details.
 
-Access automation tasks through `agent.automate`. These provide convenient methods for common administrative tasks.
+## Automation tasks
+
+Access automation tasks through `agent.automate`. These handle common admin tasks that would otherwise require multiple API calls.
 
 ```python
 # Find where an alias is assigned
@@ -70,32 +69,30 @@ result = agent.automate.find_alias(
 )
 ```
 
-The `automate` object provides various automation tasks. See the [Automations](../agent/automations/) section for detailed documentation on each automation.
+See the [Automations](../agent/automations/) section for what's available.
 
-## Plugin System
+## Plugin system
 
-The `Agent` automatically discovers and activates plugins installed in your environment. Any package with a name starting with `mercury_ocip_` will be loaded and its bulk operations and automation classes will be made available on the `agent.bulk` and `agent.automate` objects respectively.
+The `Agent` discovers and loads plugins automatically. Any installed package with a name starting with `mercury_ocip_` gets loaded, and its bulk operations and automations become available on `agent.bulk` and `agent.automate`.
 
-You can list installed plugins:
+List installed plugins:
 
 ```python
 plugins = agent.list_plugins()
 print(plugins)
 ```
 
-## Complete Example
+## Complete example
 
 ```python
 from mercury_ocip import Client, Agent
 
-# Initialise client
 client = Client(
     host="https://broadworks.example.com",
     username="admin",
     password="password",
 )
 
-# Get agent instance
 agent = Agent.get_instance(client)
 
 # Use bulk operations
@@ -109,4 +106,3 @@ alias_location = agent.automate.find_alias("SP", "Group", "user1@sp.com")
 print(f"Created users: {len([r for r in results if r['success']])}")
 print(f"Alias location: {alias_location}")
 ```
-
