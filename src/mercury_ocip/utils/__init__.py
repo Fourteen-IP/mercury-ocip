@@ -1,3 +1,3 @@
-from .parser import Parser, AsyncParser
+from .parser import Parser
 
-__all__ = ["Parser", "AsyncParser"]
+__all__ = ["Parser"]

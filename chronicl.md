@@ -61,6 +61,14 @@ Previous logic would overwrite required fields to be optional causing odd errors
 @KiPageFault 16.01.25
 - Added More Logging Components & Sanitized Already Present Logging Statements
 
+@malkin0xb8 16.01.26
+
+Project has been split: the async version is now a separate project called "mercury-ocip-fast"
+Major architectural changes:
+Added connection pool for managing multiple concurrent connections
+Removed SOAP support entirely - TCP only
+Removed all bulk operation features
+
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators
