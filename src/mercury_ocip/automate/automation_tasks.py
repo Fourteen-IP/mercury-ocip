@@ -31,7 +31,7 @@ class AutomationTasks:
             service_provider_id=service_provider_id, group_id=group_id, alias=alias
         )
         result = self._alias_finder.execute(request=request)
-        self.logger.debug(f"find_alias automation completed with status: {result.ok}")
+        self.logger.debug(f"find_alias automation completed with status: {result.ok}  | Time Saved: 20")
         return result
 
     def audit_group(
@@ -42,12 +42,12 @@ class AutomationTasks:
             service_provider_id=service_provider_id, group_id=group_id
         )
         result = self._group_auditor.execute(request=request)
-        self.logger.debug(f"audit_group automation completed with status: {result.ok}")
+        self.logger.debug(f"audit_group automation completed with status: {result.ok}  | Time Saved: 35")
         return result
 
     def user_digest(self, user_id: str) -> AutomationResult[UserDigestResult]:
         self.logger.info(f"Executing user_digest automation for {user_id}")
         request = UserDigestRequest(user_id=user_id)
         result = self._user_digest.execute(request=request)
-        self.logger.debug(f"user_digest automation completed with status: {result.ok}")
+        self.logger.debug(f"user_digest automation completed with status: {result.ok}  | Time Saved: 25")
         return result

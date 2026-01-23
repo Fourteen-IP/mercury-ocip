@@ -119,7 +119,7 @@ class BaseBulkOperations(ABC):
                     }
                 )
 
-        self.logger.info(f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed")
+        self.logger.info(f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed, Time Saved {success_count * 1.25}")
         return results
 
     def _parse_csv(self, data: list[dict[str, Any]]) -> List[Dict[str, Any]]:
