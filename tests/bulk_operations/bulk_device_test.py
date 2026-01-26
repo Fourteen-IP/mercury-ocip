@@ -222,7 +222,6 @@ device.group.create,TestServiceProvider,SalesGroup,Polycom VVX 450,sales-phone-0
             "deviceType": "Polycom VVX 450",
             "deviceName": "test-phone-01",
             "transportProtocol": "",
-            "netAddress": "None",
             "port": "",
         }
 
