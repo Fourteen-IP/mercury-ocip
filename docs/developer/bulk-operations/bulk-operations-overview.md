@@ -1,33 +1,33 @@
-# Bulk Operations Overview
+# Bulk operations overview
 
-The bulk operations system provides a unified way to create and modify BroadWorks entities from CSV files or Python data structures.
+The bulk operations system lets you create and modify BroadWorks entities from CSV files or Python data structures.
 
 ## Architecture
 
-The bulk operations system consists of three main layers:
+The system has three layers:
 
-1. **Gateway Layer** (`BulkOperations`) - Provides user-friendly methods for each entity type
-2. **Entity Layer** - Individual operation classes (e.g., `UserBulkOperations`, `CallCenterBulkOperations`)
-3. **Base Layer** (`BaseBulkOperations`) - Shared processing logic for all operations
+- **BulkOperations** (gateway) - User-friendly methods for each entity type
+- **Entity layer** - Individual operation classes like `UserBulkOperations` and `CallCenterBulkOperations`
+- **BaseBulkOperations** (base) - Shared processing logic
 
-## Data Processing Pipeline
+## Data processing pipeline
 
 ![Bulk Data Processing Pipeline](../../assets/bulk_data_proccessing_pipeline.png)
 
-The pipeline processes data through these stages:
+Data flows through these stages:
 
 1. **Input** - CSV file or Python data structure
 2. **Parse** - Convert CSV rows or dicts to structured data
 3. **Transform** - Apply type conversions, defaults, and nested object handling
-4. **Command Creation** - Build OCI command objects with nested types
-5. **Execute** - Send commands to BroadWorks API
+4. **Command creation** - Build OCI command objects with nested types
+5. **Execute** - Send commands to BroadWorks
 6. **Results** - Return structured response data
 
-## Key Components
+## Key components
 
 ### BaseBulkOperations
 
-Abstract base class containing shared processing logic:
+Abstract base class with shared processing logic:
 
 - CSV parsing with nested object and array handling
 - Data type conversions (booleans, integers, phone numbers)
@@ -35,7 +35,7 @@ Abstract base class containing shared processing logic:
 - Default value application
 - Error handling and result formatting
 
-### Entity Operations
+### Entity operations
 
 Each entity type has its own class inheriting from `BaseBulkOperations`:
 
@@ -53,9 +53,9 @@ Each class defines an `operation_mapping` dictionary that configures:
 - Default values
 - Integer field conversions
 
-### BulkOperations Gateway
+### BulkOperations gateway
 
-The `BulkOperations` class provides a unified interface:
+The `BulkOperations` class provides a single interface:
 
 ```python
 from mercury_ocip import Client, Agent
@@ -68,9 +68,9 @@ agent.bulk.create_user_from_csv("users.csv")
 agent.bulk.create_call_center_from_data([...])
 ```
 
-## Data Formats
+## Data formats
 
-### CSV Format
+### CSV format
 
 CSV files use dot notation for nested objects and bracket notation for arrays:
 
@@ -79,7 +79,7 @@ CSV files use dot notation for nested objects and bracket notation for arrays:
 - Nested arrays: `accessDeviceEndpoint.contact[0]`
 - Arrays with objects: `alternateUserId[0].alternateUserId`
 
-### Python Data Format
+### Python data format
 
 Python dictionaries use snake_case keys and nested dictionaries:
 
@@ -95,7 +95,7 @@ Python dictionaries use snake_case keys and nested dictionaries:
 }
 ```
 
-## Operation Mapping
+## Operation mapping
 
 Each entity operation class defines an `operation_mapping` that specifies:
 
@@ -112,7 +112,7 @@ Each entity operation class defines an `operation_mapping` that specifies:
 
 See [Adding a New Bulk Operation](./adding-bulk-operations.md) for details.
 
-## Response Format
+## Response format
 
 All operations return a list of result dictionaries:
 
@@ -129,4 +129,3 @@ All operations return a list of result dictionaries:
     }
 ]
 ```
-

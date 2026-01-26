@@ -49,17 +49,39 @@
 ## NOTES
 - Biggest blocker is Cisco copyright stopping open source
 
-
 ## JOURNAL
+
+@KiPageFault 23.01.25
+Added Time Saved Metrics To Base Library
+
+@malkin0xb8 20.01.25
+- User digest now shows all data, instead of hiding data that isnt returned. E.g it shows all devices now not just registered ones.
 
 @Jordan-Prescott 19.01.26
 - Using 'null' as a use for the OCINill type in bulk operations this is checked in _process_row
-- Removed from _process_row removing feilds from the data is they are set to 'none'. None is a valid option in some operations. 
+- Removed from _process_row removing feilds from the data is they are set to 'none'. None is a valid option in some operations.
 
+@KiPageFault 16.01.25
+- Added More Logging Components & Sanitized Already Present Logging Statements
+
+@malkin0xb8 16.01.26
+Project has been split: the async version is now a separate project called "mercury-ocip-fast"
+Major architectural changes:
+Added connection pool for managing multiple concurrent connections
+Removed SOAP support entirely - TCP only
+Removed all bulk operation features
+
+@malkin0xb8 14.01.26
+Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
+Previous logic would overwrite required fields to be optional causing odd errors.
 
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
 - Comes after numerous requests wanting to manage these better from amdinistrators
+
+@malkin0xb8 06.01.26
+Added Nillable types in the generation to allow for voiding a field.
+Introduced OCINil Type (placeholder) and Nillable[T] to denote which fields can be voided.
 
 @malkin0xb8 12.12.25
 - Updated Parser to use xmltodict for XML parsing, which simplifies the code and improves reliability. It is very stable and well maintained.

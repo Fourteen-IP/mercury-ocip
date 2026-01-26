@@ -23,6 +23,8 @@ from mercury_ocip.commands.commands import (
     UserVoiceMessagingUserGetVoiceManagementRequest23,
     UserVoiceMessagingUserGetVoiceManagementResponse23,
     GroupCallCenterGetInstanceRequest22,
+    UserSharedCallAppearanceGetRequest21sp1,
+    UserSharedCallAppearanceGetResponse21sp1,
 )
 from mercury_ocip.libs.types import OCIResponse
 from mercury_ocip.commands.base_command import (
@@ -64,8 +66,9 @@ class ForwardingDetails:
 @dataclass(slots=True)
 class DeviceDetails:
     device_name: str
-    endpoint_type: str
+    device_type: str
     line_port: str
+    is_registered: bool = False
 
 
 @dataclass(slots=True)
@@ -73,7 +76,7 @@ class UserDetailsResult:
     user_info: Optional[UserGetResponse23V2] = None
     forwards: ForwardingDetails = field(default_factory=ForwardingDetails)
     dnd_status: Optional[bool] = None
-    registered_devices: list[DeviceDetails] = field(default_factory=list)
+    devices: list[DeviceDetails] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -189,7 +192,7 @@ class UserDigest(BaseAutomation):
             user_info=user_details,
             forwards=forwarding_details,
             dnd_status=dnd_response.is_active if dnd_response else None,
-            registered_devices=device_details,
+            devices=device_details,
         )
 
     def _fetch_user_forwarding_details(
@@ -278,36 +281,59 @@ class UserDigest(BaseAutomation):
         ]
 
     def _fetch_device_details(self, user_id: str) -> list[DeviceDetails]:
-        """Fetch registered device details for the user."""
+        """Fetch all access device endpoints for the user and their registration status."""
 
-        device_details_list = []
+        all_devices: dict[str, DeviceDetails] = {}
+        registered_line_ports: set[str] = set()
 
         try:
-            device_details: OCIResponse[UserGetRegistrationListResponse] = (
+            registration_response: OCIResponse[UserGetRegistrationListResponse] = (
                 self._dispatch(UserGetRegistrationListRequest(user_id=user_id))
             )
-
+            registration_response = self._clean_response(registration_response)
+            for device in registration_response.registration_table.to_dict():
+                line_port = device.get("line/port", "")
+                if line_port:
+                    registered_line_ports.add(line_port)
         except Exception as e:
-            print(f"Error fetching device details for {user_id}: {e}")
-            return []
+            print(f"Error fetching registration list for {user_id}: {e}")
 
-        device_details = self._clean_response(device_details)
-
-        device_table = device_details.registration_table.to_dict()
-
-        if len(device_table) == 0:
-            return device_details_list
-
-        for device in device_table:
-            device_details_list.append(
-                DeviceDetails(
-                    device_name=device.get("device_name", "Unknown Device"),
-                    endpoint_type=device.get("endpoint_type", "Unknown Type"),
-                    line_port=device.get("line/port", "No Active Line Port"),
-                )
+        try:
+            sca_response: OCIResponse[UserSharedCallAppearanceGetResponse21sp1] = (
+                self._dispatch(UserSharedCallAppearanceGetRequest21sp1(user_id=user_id))
             )
+            sca_response = self._clean_response(sca_response)
+            for endpoint in sca_response.endpoint_table.to_dict():
+                line_port = endpoint.get("line/port", "")
+                if line_port:
+                    all_devices[line_port] = DeviceDetails(
+                        device_name=endpoint.get("device_name", "Unknown Device"),
+                        device_type=endpoint.get("device_type", "Unknown Type"),
+                        line_port=line_port,
+                        is_registered=line_port in registered_line_ports,
+                    )
+        except Exception as e:
+            print(f"Error fetching SCA endpoints for {user_id}: {e}")
 
-        return device_details_list
+        try:
+            user_response: OCIResponse[UserGetResponse23V2] = self._dispatch(
+                UserGetRequest23V2(user_id=user_id)
+            )
+            user_response = self._clean_response(user_response)
+            if user_response.access_device_endpoint:
+                primary_device = user_response.access_device_endpoint
+                line_port = primary_device.line_port
+                if line_port and line_port not in all_devices:
+                    all_devices[line_port] = DeviceDetails(
+                        device_name=primary_device.access_device.device_name,
+                        device_type="Primary",
+                        line_port=line_port,
+                        is_registered=line_port in registered_line_ports,
+                    )
+        except Exception as e:
+            print(f"Error fetching primary device for {user_id}: {e}")
+
+        return list(all_devices.values())
 
     def _fetch_call_center_membership(self, user_id: str) -> list[CallCentreDetails]:
         """Fetch call center membership details for the user."""

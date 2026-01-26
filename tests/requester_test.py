@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 import sys
 import os
 from lxml import etree
@@ -10,8 +10,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from mercury_ocip.requester import (
     SyncTCPRequester,
     SyncSOAPRequester,
-    AsyncSOAPRequester,
-    AsyncTCPRequester,
 )
 from mercury_ocip.exceptions import (
     MErrorSocketInitialisation,
@@ -248,67 +246,3 @@ class TestSyncSOAPRequester:
 
         assert isinstance(result, MErrorSendRequestFailed)
         mock_logger.error.assert_called_once()
-
-
-class TestAsyncTCPRequester:
-    @pytest.mark.asyncio
-    async def test_send_request_success(self):
-        mock_logger = Mock()
-
-        async def fake_command():
-            return "mocked_command"
-
-        mock_command = fake_command()
-
-        requester = AsyncTCPRequester.__new__(AsyncTCPRequester)
-        requester.logger = mock_logger
-        requester.host = "localhost"
-        requester.port = 2209
-        requester.timeout = 10
-        requester.session_id = None
-
-        requester.reader = AsyncMock()
-        requester.writer = AsyncMock()
-        requester.writer.drain = AsyncMock()
-        requester.reader.read = AsyncMock(
-            side_effect=[b"<data></BroadsoftDocument>", b""]
-        )
-
-        with patch.object(requester, "build_oci_xml", return_value=b"<mocked-xml>"):
-            result = await requester.send_request(mock_command)
-
-            assert isinstance(result, str)
-            assert "data" in result
-            requester.writer.write.assert_called_once()
-            requester.writer.drain.assert_called_once()
-
-
-class TestAsyncSOAPRequester:
-    @pytest.mark.asyncio
-    async def test_send_request_success(self):
-        mock_logger = Mock()
-
-        async def fake_command():
-            return "mocked_command"
-
-        mock_command = fake_command()
-
-        requester = AsyncSOAPRequester.__new__(AsyncSOAPRequester)
-        requester.logger = mock_logger
-        requester.host = "localhost"
-        requester.port = 2209
-        requester.timeout = 10
-        requester.session_id = None
-
-        requester.async_client = Mock()
-        requester.wsdl_client = Mock()
-        requester.zeep_client = Mock()
-        requester.zeep_client.service.processOCIMessage = AsyncMock(
-            return_value="soap response"
-        )
-
-        with patch.object(requester, "build_oci_xml", return_value=b"<mocked-xml>"):
-            result = await requester.send_request(mock_command)
-
-            assert result == "soap response"
-            requester.zeep_client.service.processOCIMessage.assert_called_once()

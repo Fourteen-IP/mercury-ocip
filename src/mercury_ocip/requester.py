@@ -1,12 +1,9 @@
-from asyncio.streams import StreamWriter
-from asyncio.streams import StreamReader
-import asyncio
 import socket
 import requests
 import ssl
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional, Union, Awaitable
+from typing import Optional, Union
 
 from mercury_ocip.exceptions import (
     MErrorSocketInitialisation,
@@ -23,10 +20,6 @@ from mercury_ocip.libs.types import (
 
 from lxml import etree, builder
 from zeep import Client, Settings, Transport
-from zeep import AsyncClient as AsyncClientZeep
-from zeep.transports import AsyncTransport
-from httpx import AsyncClient as AsyncClientHttpx
-from httpx import Client as ClientHttpx
 
 
 class BaseRequester(ABC):
@@ -55,9 +48,7 @@ class BaseRequester(ABC):
         self.session_id = session_id
 
     @abstractmethod
-    def send_request(
-        self, command: str
-    ) -> Union[RequestResult, Awaitable[RequestResult]]:
+    def send_request(self, command: str) -> RequestResult:
         """Sends a request to the server.
 
         Args:
@@ -68,7 +59,7 @@ class BaseRequester(ABC):
     @abstractmethod
     def connect(
         self,
-    ) -> Union[ConnectResult, Awaitable[ConnectResult]]:
+    ) -> ConnectResult:
         """Connects to the server.
 
         Returns:
@@ -78,7 +69,7 @@ class BaseRequester(ABC):
         pass
 
     @abstractmethod
-    def disconnect(self) -> Union[DisconnectResult, Awaitable[DisconnectResult]]:
+    def disconnect(self) -> DisconnectResult:
         """Disconnects from the server."""
         pass
 
@@ -346,237 +337,6 @@ class SyncSOAPRequester(BaseRequester):
             )
             return MErrorSendRequestFailed(str(e))
 
-    # def __del__(self):
-    #     self.disconnect()
-
-
-class AsyncTCPRequester(BaseRequester):
-    """An asynchronous TCP requester for BroadWorks OCI-P.
-
-    This class manages an asynchronous connection to a BroadWorks Application
-    Server. It will open a TCP Socket connection, using 2209 for an SSL wrapped
-    socket for encrypted traffic.
-
-    Args:
-        session_id (str): The session ID passed to keep the session alive.
-        logger (logging.Logger): An instance of `logging.Logger` for logging messages.
-        host (str): The hostname or IP address of the BroadWorks server.
-        port (int): The port for the OCI-P interface, defaults to 2209.
-        timeout (int): The timeout for HTTP requests in seconds, defaults to 10.
-    """
-
-    def __init__(
-        self,
-        logger: logging.Logger,
-        host: str,
-        port: int = 2209,
-        timeout: int = 10,
-        session_id: str = "",
-        tls: bool = True,
-    ) -> None:
-        self.reader: Optional[StreamReader] = None
-        self.writer: Optional[StreamWriter] = None
-        self.tls = tls
-        super().__init__(
-            logger=logger,
-            host=host,
-            port=port,
-            timeout=timeout,
-            session_id=session_id,
-        )
-
-    async def connect(self) -> ConnectResult:
-        """Connects to the server."""
-        if self.reader is None and self.writer is None:
-            try:
-                if self.tls:
-                    context: ssl.SSLContext = ssl.create_default_context()
-                    self.reader, self.writer = await asyncio.wait_for(
-                        asyncio.open_connection(
-                            host=self.host, port=self.port, ssl=context
-                        ),
-                        timeout=self.timeout,
-                    )
-                    self.logger.info(
-                        f"Initiated socket on {self.__class__.__name__}: {self.host}:{self.port}"
-                    )
-                else:
-                    self.reader, self.writer = await asyncio.wait_for(
-                        asyncio.open_connection(self.host, self.port),
-                        timeout=self.timeout,
-                    )
-            except Exception as e:
-                self.logger.error(
-                    f"Failed to initiate socket on {self.__class__.__name__}: {e}"
-                )
-                return MErrorSocketInitialisation(str(e))
-
-    async def disconnect(self) -> DisconnectResult:
-        """Disconnects from the server."""
-        if self.reader and self.writer:
-            try:
-                self.writer.close()
-                await self.writer.wait_closed()
-            except Exception as e:
-                self.logger.warning(
-                    f"Exception: {e} was raised when attemping to close {self.__class__.__name__}, but was ignored."
-                )
-                pass
-            finally:
-                self.writer = None
-                self.reader = None
-
-    async def send_request(self, command: str) -> RequestResult:
-        """Sends a request to the server.
-
-        Args:
-            command (BroadworksCommand): The command to send to the server.
-
-        Returns:
-            Any: The response from the server.
-        """
-        try:
-            if self.reader is None or self.writer is None:
-                result: MError | None = await self.connect()
-                if isinstance(result, MError):  # Error returned
-                    return result
-
-            assert self.reader is not None and self.writer is not None
-
-            command_bytes: bytes = self.build_oci_xml(command)
-
-            self.logger.debug(f"Sending command to {self.host}:{self.port}: {command}")
-
-            self.writer.write(command_bytes + b"\n")
-            await self.writer.drain()
-
-            content = b""
-            while True:
-                try:
-                    chunk: bytes = await asyncio.wait_for(
-                        self.reader.read(4096), timeout=self.timeout
-                    )
-                except asyncio.TimeoutError as e:
-                    self.logger.error(
-                        f"Socket read timed out in {self.__class__.__name__}: {e}"
-                    )
-                    return MErrorSocketTimeout(str(e))
-
-                if not chunk:
-                    break
-
-                content += chunk
-                if b"</BroadsoftDocument>" in content:
-                    break
-            return content.rstrip(b"\n").decode("ISO-8859-1")
-
-        except Exception as e:
-            self.logger.error(
-                f"Failed to send command over {self.__class__.__name__}: {e}"
-            )
-            return MErrorSendRequestFailed(str(e))
-
-
-class AsyncSOAPRequester(BaseRequester):
-    """An asynchronous SOAP requester for BroadWorks OCI-P.
-
-    This class manages an asynchronous connection to a BroadWorks Application
-    Server, handling the wrapping of OCI commands into SOAP envelopes and
-    returning the response.
-
-    Args:
-        logger (logging.Logger): An instance of `logging.Logger` for logging messages.
-        host (str): The hostname or IP address of the BroadWorks server.
-        port (int): The port for the OCI-P interface, defaults to 2209.
-        timeout (int): The timeout for HTTP requests in seconds, defaults to 10.
-    """
-
-    def __init__(
-        self,
-        logger: logging.Logger,
-        host: str,
-        port: int = 2209,
-        timeout: int = 10,
-        session_id: str = "",
-    ) -> None:
-        self.async_client: Optional[AsyncClientHttpx] = None
-        self.wsdl_client: Optional[ClientHttpx] = None
-        self.zeep_client: Optional[AsyncClientZeep] = None
-        super().__init__(
-            logger=logger,
-            host=host,
-            port=port,
-            timeout=timeout,
-            session_id=session_id,
-        )
-
-    async def connect(self) -> ConnectResult:
-        """Connects to the server."""
-        if None not in (self.async_client, self.wsdl_client, self.zeep_client):
-            pass
-        try:
-            self.async_client = AsyncClientHttpx()
-            self.wsdl_client = ClientHttpx()
-            # Zeep fetches the WSDL synchronously, but actual requests are asynchronous, so we must have a Sync and Async Httpx Client.
-
-            settings: Settings = Settings(strict=False, xml_huge_tree=True)  # type: ignore[call-arg]
-            transport: AsyncTransport = AsyncTransport(
-                client=self.async_client,
-                wsdl_client=self.wsdl_client,
-                timeout=self.timeout,
-            )
-
-            self.zeep_client = AsyncClientZeep(
-                wsdl=f"{self.host}?wsdl", transport=transport, settings=settings
-            )
-
-        except Exception as e:
-            self.logger.error(
-                f"Failed to initiate client on {self.__class__.__name__}: {e}"
-            )
-            return MErrorClientInitialisation(str(e))
-
-    async def disconnect(self) -> DisconnectResult:
-        """Disconnects from the server."""
-        if self.async_client:
-            try:
-                await self.async_client.aclose()
-            except Exception as e:
-                self.logger.warning(
-                    f"Exception: {e} was raised when attemping to close {self.__class__.__name__}, but was ignored."
-                )
-                pass
-            finally:
-                self.async_client = None
-
-    async def send_request(self, command: str) -> RequestResult:
-        """Sends a request to the server.
-
-        Args:
-            command (BroadworksCommand): The command to send to the server.
-
-        Returns:
-            Any: The response from the server.
-        """
-        if None in (self.async_client, self.wsdl_client, self.zeep_client):
-            connection: MError | None = await self.connect()
-            if isinstance(connection, MError):
-                return connection
-
-        assert self.zeep_client is not None
-
-        try:
-            response: str = await self.zeep_client.service.processOCIMessage(
-                self.build_oci_xml(command)
-            )
-
-            return response
-        except Exception as e:
-            self.logger.error(
-                f"Failed to send command over {self.__class__.__name__}: {e}"
-            )
-            return MErrorSendRequestFailed(str(e))
-
 
 def create_requester(
     logger: logging.Logger,
@@ -584,7 +344,6 @@ def create_requester(
     host: str,
     port: int,
     conn_type: str = "SOAP",
-    async_: bool = True,
     timeout: int = 10,
     tls: bool = True,
 ) -> BaseRequester:
@@ -603,40 +362,21 @@ def create_requester(
         BaseRequester: The created requester.
     """
     if conn_type == "SOAP":
-        if async_:
-            return AsyncSOAPRequester(
-                host=host,
-                port=port,
-                timeout=timeout,
-                logger=logger,
-                session_id=session_id,
-            )
-        else:
-            return SyncSOAPRequester(
-                host=host,
-                port=port,
-                timeout=timeout,
-                logger=logger,
-                session_id=session_id,
-            )
+        return SyncSOAPRequester(
+            host=host,
+            port=port,
+            timeout=timeout,
+            logger=logger,
+            session_id=session_id,
+        )
     elif conn_type == "TCP":
-        if async_:
-            return AsyncTCPRequester(
-                host=host,
-                port=port,
-                timeout=timeout,
-                logger=logger,
-                session_id=session_id,
-                tls=tls,
-            )
-        else:
-            return SyncTCPRequester(
-                host=host,
-                port=port,
-                timeout=timeout,
-                logger=logger,
-                session_id=session_id,
-                tls=tls,
-            )
+        return SyncTCPRequester(
+            host=host,
+            port=port,
+            timeout=timeout,
+            logger=logger,
+            session_id=session_id,
+            tls=tls,
+        )
     else:
         raise ValueError(f"Unknown connection type: {conn_type}")
