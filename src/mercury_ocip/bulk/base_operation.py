@@ -3,13 +3,13 @@ from typing import List, Dict, Any, cast
 import re
 
 from mercury_ocip.client import BaseClient
-from mercury_ocip.commands.base_command import OCICommand, ErrorResponse
+from mercury_ocip.commands.base_command import OCICommand, ErrorResponse, OCINil
 from mercury_ocip.utils.file_handler import FileHandler
 from mercury_ocip.utils.defines import (
     to_snake_case,
     is_boolean,
     str_to_bool,
-    is_none,
+    is_empty,
     normalise_phone_number,
 )
 from mercury_ocip.libs.types import OCIResponse
@@ -45,7 +45,9 @@ class BaseBulkOperations(ABC):
         Returns:
             List[Dict[str, Any]]: List of bwks entities created.
         """
-        self.logger.info(f"Starting bulk operation from CSV: {csv_path}, dry_run={dry_run}")
+        self.logger.info(
+            f"Starting bulk operation from CSV: {csv_path}, dry_run={dry_run}"
+        )
         data: list[dict[str, Any]] = FileHandler.read_csv_to_dict(csv_path)
         self.logger.debug(f"Loaded {len(data)} rows from CSV file")
         parsed_data: list[Dict[str, Any]] = self._parse_csv(data)
@@ -66,7 +68,9 @@ class BaseBulkOperations(ABC):
             List[Dict[str, Any]]: List of bwks entities created.
         """
         operation_class = self.__class__.__name__
-        self.logger.info(f"Starting bulk operation: {operation_class} with {len(data)} items, dry_run={dry_run}")
+        self.logger.info(
+            f"Starting bulk operation: {operation_class} with {len(data)} items, dry_run={dry_run}"
+        )
         results: list[dict[str, Any]] = []
         success_count = 0
         failure_count = 0
@@ -97,7 +101,9 @@ class BaseBulkOperations(ABC):
                     return_data["detail"] = response.detail  # type: ignore
                     return_data["success"] = False
                     failure_count += 1
-                    self.logger.warning(f"Row {i}: {operation} failed - {response.summary}")
+                    self.logger.warning(
+                        f"Row {i}: {operation} failed - {response.summary}"
+                    )
                 else:
                     success_count += 1
                     self.logger.debug(f"Row {i}: {operation} succeeded")
@@ -119,7 +125,9 @@ class BaseBulkOperations(ABC):
                     }
                 )
 
-        self.logger.info(f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed, Time Saved {success_count * 1.25}")
+        self.logger.info(
+            f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed, Time Saved {success_count * 1.25}"
+        )
         return results
 
     def _parse_csv(self, data: list[dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -157,9 +165,14 @@ class BaseBulkOperations(ABC):
             key = to_snake_case(key)
 
             # Skip None values and empty strings
-            if value is None or (isinstance(value, str) and is_none(value)):
+            if value is None or (isinstance(value, str) and is_empty(value)):
                 continue
-            value = value.strip()
+
+            # Convert 'null' string to Python None (explicit nil marker)
+            if isinstance(value, str) and value.strip().lower() == "null":
+                value = OCINil()
+            else:
+                value = value.strip()
 
             # Type conversions
             if isinstance(value, str) and is_boolean(value):
@@ -226,7 +239,7 @@ class BaseBulkOperations(ABC):
         Returns:
             List[tuple[str, int | None]]: List of (field_name, array_index) tuples
         """
-        segments = []
+        segments: List[tuple[str, int | None]] = []
         # Split by dots first, but we need to handle brackets within each part
         parts = key.split(".")
 
@@ -373,6 +386,9 @@ class BaseBulkOperations(ABC):
     ) -> Dict[str, Any]:
         """Handles nested types in the data.
 
+        Supports choice structures (XSD choice elements) via explicit type fields.
+        For nillable fields, use type field value OCINil (or 'null' in CSV) to explicitly set to None.
+
         Args:
             processed_data (Dict[str, Any]): The data to process.
             nested_types (Dict[str, Any]): The nested types to process.
@@ -380,7 +396,104 @@ class BaseBulkOperations(ABC):
         Returns:
             Dict[str, Any]: The processed data.
         """
+        from mercury_ocip.utils.defines import to_snake_case, snake_to_camel
+
         for nested_field, nested_type_class in nested_types.items():
+            # Handle choice structures (XSD choice elements) - process these first
+            if isinstance(nested_type_class, dict) and "_choice" in nested_type_class:
+                choice_options = nested_type_class["_choice"]
+
+                # Get the explicit type field name (e.g., "endpoint_type" or defaults to "{field}_type")
+                type_field = choice_options.get("_choice_field", f"{nested_field}_type")
+
+                # Use .get() - safe even if type_field doesn't exist (returns None)
+                choice_key = processed_data.get(type_field)
+
+                # Remove the type field - it's just metadata, not part of the schema
+                if type_field in processed_data:
+                    processed_data.pop(type_field)
+
+                # Handle explicit nil: if type is OCINil or None (from 'null' string), set field to None
+                if choice_key is None or isinstance(choice_key, OCINil):
+                    processed_data[nested_field] = OCINil()
+                    continue
+
+                # Normalise the choice key to snake_case to match our mapping keys
+                if isinstance(choice_key, str):
+                    choice_key = to_snake_case(choice_key)
+                else:
+                    # If it's not a string, skip (shouldn't happen, but be safe)
+                    processed_data[nested_field] = None
+                    continue
+
+                # Get the chosen structure
+                if choice_key not in choice_options:
+                    raise ValueError(
+                        f"Invalid choice type '{choice_key}' for field '{nested_field}'. "
+                        f"Valid options: {list(k for k in choice_options.keys() if not k.startswith('_'))}"
+                    )
+
+                chosen_structure = choice_options[choice_key]
+
+                # Get the data for the chosen option from ROOT LEVEL (not nested under field name)
+                # Try both snake_case and camelCase versions
+                chosen_data = processed_data.get(choice_key)
+                if chosen_data is None:
+                    camel_key = snake_to_camel(choice_key)
+                    chosen_data = processed_data.get(camel_key)
+
+                # If no data found, that's okay - might be empty structure
+                if chosen_data is None:
+                    chosen_data = {}
+
+                # Remove the choice data from root level (we'll assign it to nested_field)
+                if choice_key in processed_data:
+                    processed_data.pop(choice_key)
+                else:
+                    camel_key = snake_to_camel(choice_key)
+                    if camel_key in processed_data:
+                        processed_data.pop(camel_key)
+
+                # Process the chosen structure normally (it's just a regular nested type dict)
+                if isinstance(chosen_structure, dict):
+                    command_class_name, nested_structure = next(
+                        iter(chosen_structure.items())
+                    )
+                    # Recursively process the nested structure
+                    if nested_structure:
+                        chosen_data = self._handle_nested_types(
+                            chosen_data, nested_structure
+                        )
+
+                    # Create the command object
+                    if command_class := self.client._dispatch_table.get(
+                        command_class_name
+                    ):
+                        processed_data[nested_field] = command_class(**chosen_data)
+                    else:
+                        raise ValueError(
+                            f"Command class '{command_class_name}' not found in dispatch table"
+                        )
+                else:
+                    # Simple string type (shouldn't happen in choices, but handle it)
+                    if command_class := self.client._dispatch_table.get(
+                        chosen_structure
+                    ):
+                        processed_data[nested_field] = command_class(**chosen_data)
+                    else:
+                        raise ValueError(
+                            f"Command class '{chosen_structure}' not found in dispatch table"
+                        )
+                continue
+
+            # Universal Nillable handling - check if field value is Nillable (explicit nil)
+            if isinstance(processed_data, dict):
+                field_value = processed_data.get(nested_field)
+                if isinstance(field_value, OCINil):
+                    # Preserve Nillable - don't process, just keep it as-is
+                    continue
+
+            # Regular nested type handling (non-choice)
             nested_data: Any = ""
             # Try to get the data, but don't pop it yet
             if isinstance(processed_data, dict):

@@ -57,6 +57,10 @@ Added Time Saved Metrics To Base Library
 @malkin0xb8 20.01.25
 - User digest now shows all data, instead of hiding data that isnt returned. E.g it shows all devices now not just registered ones.
 
+@Jordan-Prescott 19.01.26
+- Using 'null' as a use for the OCINill type in bulk operations this is checked in _process_row
+- Removed from _process_row removing feilds from the data is they are set to 'none'. None is a valid option in some operations.
+
 @KiPageFault 16.01.25
 - Added More Logging Components & Sanitized Already Present Logging Statements
 
@@ -70,6 +74,7 @@ Removed all bulk operation features
 @malkin0xb8 14.01.26
 Updated the logic for generating commands where it will seperate types base on AS and XS, XS being made optional.
 Previous logic would overwrite required fields to be optional causing odd errors.
+
 
 @Jordan-Prescott 12.01.26
 - Added delete SP/ Group Admins to bulk upload sheet
