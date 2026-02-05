@@ -5,6 +5,9 @@ site_url: "https://mercury-docs.14ip.net/"
 repo_url: "https://github.com/fourteen-ip/mercury-ocip"
 repo_name: "fourteen-ip/mercury-ocip"
 dev_addr: 0.0.0.0:8000
+docs_dir: docs-ocip
+site_dir: site-ocip
+
 extra_css:
   - styles/extra.css
 
