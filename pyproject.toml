@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mercury-ocip"
-version = "v1.0.1"
+version = "v1.1.1"
 description = "Python SDK for BroadWorks OCI (Open Client Interface) API"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -55,7 +55,16 @@ dependencies = [
     "types-lxml>=2025.3.30",
     "lxml-stubs>=0.5.1",
     "xmltodict>=1.0.2",
+    # CLI dependencies
+    "prompt-toolkit>=3.0.52",
+    "argparse>=1.4.0",
+    "asciimatics>=1.15.0",
+    "fourteen-prompt-toolkit-action-completer>=1.2.2",
+    "rich>=14.2.0",
 ]
+
+[project.scripts]
+mercury-cli = "mercury_ocip.cli.main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -90,10 +99,11 @@ docs = [
     "mkdocs-minify-html-plugin>=0.3.5",
     "mkdocstrings[python]>=0.30.0",
     "pymdown-extensions>=10.16.1",
+    "mkdocs-asciinema-player>=0.18.0",
 ]
 
 [tool.pyrefly]
-project-excludes = ["tests/", "sandbox.py", "*/commands.py", "docs/", "scripts/"]
+project-excludes = ["tests/", "sandbox.py", "*/commands.py", "docs/", "scripts/", "*/cli/"]
 
 [[tool.uv.index]]
 name = "pypi"

@@ -24,11 +24,22 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      id: push
+    - name: Build and push OCIP docs
       uses: docker/build-push-action@v6.9.0
       with:
         context: .
         push: true
+        build-args: |
+          MKDOCS_CONFIG=mkdocs-ocip.yml
         tags: |
           ghcr.io/fourteen-ip/mercury-ocip-docs:latest
+
+    - name: Build and push CLI docs
+      uses: docker/build-push-action@v6.9.0
+      with:
+        context: .
+        push: true
+        build-args: |
+          MKDOCS_CONFIG=mkdocs-cli.yml
+        tags: |
+          ghcr.io/fourteen-ip/mercury-cli-docs:latest

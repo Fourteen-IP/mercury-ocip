@@ -51,17 +51,20 @@
 
 ## JOURNAL
 
-@KiPageFault 23.01.25
+@malkin0xb8 05.02.26
+Merged the cli into this project, means both track 1 version, shared depdencies and generally makes developing easier. Merged the docs and everything else. RUnning `mercury-cli` still works.
+
+@KiPageFault 23.01.26
 Added Time Saved Metrics To Base Library
 
-@malkin0xb8 20.01.25
+@malkin0xb8 20.01.26
 - User digest now shows all data, instead of hiding data that isnt returned. E.g it shows all devices now not just registered ones.
 
 @Jordan-Prescott 19.01.26
 - Using 'null' as a use for the OCINill type in bulk operations this is checked in _process_row
 - Removed from _process_row removing feilds from the data is they are set to 'none'. None is a valid option in some operations.
 
-@KiPageFault 16.01.25
+@KiPageFault 16.01.26
 - Added More Logging Components & Sanitized Already Present Logging Statements
 
 @malkin0xb8 16.01.26

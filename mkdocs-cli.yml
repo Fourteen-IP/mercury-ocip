@@ -1,0 +1,89 @@
+site_name: Mercury-CLI
+site_description: A Command Line Wrapper for interacting with BroadWorks OCIP.
+
+site_url: "https://mercury-cli-docs.14ip.net"
+repo_url: "https://github.com/fourteen-ip/mercury-ocip"
+repo_name: "fourteen-ip/mercury-ocip"
+dev_addr: 0.0.0.0:8080
+docs_dir: docs-cli
+site_dir: site-cli
+
+extra_css:
+- styles/extra.css
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+
+  palette:
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: "custom"
+    accent: "custom"
+    toggle:
+      icon: material/brightness-4
+      name: Switch to light mode
+
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: "custom"
+    accent: "custom"
+    toggle:
+      icon: material/brightness-7
+      name: Switch to dark mode
+
+  font:
+    text: "JetBrains Mono"
+    code: "JetBrains Mono"
+
+  features:
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - toc.integrate
+  - header.autohide
+  - content.code.copy
+  - content.code.annotate
+
+nav:
+- Overview: index.md
+- Commands: commands/*
+- Mercury: https://mercury-docs.14ip.net
+- Async: https://mercury-fast-docs.14ip.net/
+
+markdown_extensions:
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+    use_pygments: true
+- pymdownx.inlinehilite
+- pymdownx.superfences
+- pymdownx.magiclink
+- pymdownx.snippets
+- admonition
+- pymdownx.details
+- pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji ""
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg ""
+- def_list
+- pymdownx.tasklist:
+    custom_checkbox: true
+
+plugins:
+- asciinema-player:
+- search
+- literate-nav
+- minify_html
+- mkdocstrings:
+    handlers:
+      python:
+        paths: [ "src" ]
+        options:
+          show_source: true
+          show_signature: true
+          docstring_style: google
+          selection:
+            filters:
+            - "!^_"

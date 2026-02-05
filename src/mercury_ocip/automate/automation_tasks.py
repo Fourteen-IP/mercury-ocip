@@ -10,6 +10,11 @@ from mercury_ocip.automate.user_digest import (
     UserDigestRequest,
     UserDigest,
 )
+from mercury_ocip.automate.call_center_digest import (
+    CallCenterDigest,
+    CallCenterDigestRequest,
+    CallCenterDigestResult,
+)
 from mercury_ocip.automate.base_automation import AutomationResult
 
 class AutomationTasks:
@@ -21,6 +26,7 @@ class AutomationTasks:
         self._alias_finder = AliasFinder(client)
         self._group_auditor = GroupAuditor(client)
         self._user_digest = UserDigest(client)
+        self._call_center_digest = CallCenterDigest(client)
         self.logger.debug("AutomationTasks initialized")
 
     def find_alias(
@@ -50,4 +56,13 @@ class AutomationTasks:
         request = UserDigestRequest(user_id=user_id)
         result = self._user_digest.execute(request=request)
         self.logger.debug(f"user_digest automation completed with status: {result.ok}  | Time Saved: 25")
+        return result
+    
+    def call_center_digest(
+        self, service_user_id: str
+    ) -> AutomationResult[CallCenterDigestResult]:
+        self.logger.info(f"Executing call_center_digest automation for {service_user_id}")
+        request = CallCenterDigestRequest(service_user_id=service_user_id)
+        result = self._call_center_digest.execute(request=request)
+        self.logger.debug(f"call_center_digest automation completed with status: {result.ok}")
         return result

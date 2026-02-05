@@ -1,0 +1,173 @@
+/* Refined Mercury-CLI Retro Terminal Theme for MkDocs Material */
+
+:root {
+  /* Softer brand tones for better contrast */
+  --mercury-purple: #a86cff;        /* primary */
+  --mercury-purple-600: #e6d7ff;    /* accent */
+  --mercury-purple-300: #eddcff;    /* light accent */
+  --surface-dark: #0c0b11;
+  --surface-light: #ffffff;
+  --mono-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Monospace;
+  --terminal-green: #72f1b8;
+  --terminal-amber: #ffd479;
+  --terminal-cyan: #7ae1ff;
+}
+
+/* ---------- LIGHT MODE ---------- */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: var(--surface-light);
+  --md-default-fg-color: #1f162b;
+  --md-primary-fg-color: var(--mercury-purple);
+  --md-accent-fg-color: var(--mercury-purple-600);
+  --md-code-bg-color: #f7f2ff;
+  --md-code-fg-color: #2d133f;
+}
+
+/* ---------- DARK MODE (RETRO TERMINAL) ---------- */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--surface-dark);
+  --md-default-fg-color: #e9defa; /* slightly dimmer */
+  --md-primary-fg-color: var(--mercury-purple);
+  --md-accent-fg-color: var(--mercury-purple-600);
+  --md-code-bg-color: #121019;   /* a touch darker for contrast */
+  --md-code-fg-color: #efe9ff;
+  --md-shadow-z1: 0 0 0 1px rgba(168,108,255,0.12), 0 12px 36px rgba(0,0,0,0.55);
+}
+
+/* Subtle CRT overlay */
+[data-md-color-scheme="slate"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 2px,
+    transparent 4px,
+    transparent 6px
+  );
+  opacity: .22; /* reduce harsh overlay */
+}
+.md-container { z-index: 1; position: relative; }
+
+/* Header logo + blinking cursor */
+.md-header__button.md-logo { position: relative; display: inline-flex; align-items: center; }
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 24px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(168,108,255,.45));
+}
+/* Pseudo element on the ANCHOR (not the image) */
+.md-header__button.md-logo::after {
+  content: "_";
+  font-family: var(--mono-font);
+  font-size: 20px;
+  color: var(--md-primary-fg-color);
+  margin-left: 8px;
+  line-height: 1;
+  display: inline-block;
+  animation: blink 1s steps(2, end) infinite;
+  text-shadow: 0 0 8px rgba(168,108,255,.35);
+}
+/* Sidebar logo gets the same cursor */
+.md-nav__button.md-logo { position: relative; display: inline-flex; align-items: center; }
+.md-nav__button.md-logo::after {
+  content: "_";
+  font-family: var(--mono-font);
+  font-size: 18px;
+  color: var(--md-primary-fg-color);
+  margin-left: 6px;
+  line-height: 1;
+  display: inline-block;
+  animation: blink 1s steps(2, end) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Tabs: show "> " before active tab */
+.md-tabs__item--active > .md-tabs__link::before {
+  content: "> ";
+  font-family: var(--mono-font);
+  color: var(--terminal-amber);
+  text-shadow: 0 0 8px rgba(255,212,121,.18);
+}
+/* Sidebar nav: active link prefix */
+.md-nav__link--active::before {
+  content: "> ";
+  font-family: var(--mono-font);
+  color: var(--terminal-amber);
+  margin-right: 2px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .md-header__button.md-logo img,
+  .md-header__button.md-logo svg { height: 24px; }
+  .md-header__button.md-logo::after { font-size: 16px; }
+}
+
+/* Typography glow */
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2 {
+  text-shadow: 0 0 12px rgba(177,0,255,0.28);
+  letter-spacing: .35px;
+}
+
+/* Links */
+.md-typeset a { transition: color .15s ease, text-shadow .15s ease; }
+.md-typeset a:hover { text-shadow: 0 0 8px rgba(168,108,255,.45); }
+
+/* Code blocks */
+.md-typeset pre {
+  border-radius: 8px;
+  border: 1px solid rgba(168,108,255,.14);
+  background-image: linear-gradient(to bottom, rgba(168,108,255,.05), transparent 40%);
+  box-shadow: inset 0 0 0 1px rgba(168,108,255,.04), 0 10px 20px rgba(0,0,0,.4);
+}
+.md-typeset pre code { text-shadow: 0 0 10px rgba(168,108,255,.14); }
+
+/* Admonitions */
+[data-md-color-scheme="slate"] .md-typeset .admonition > .admonition-title {
+  background: rgba(177,0,255,0.12);
+  border-bottom: 1px solid rgba(177,0,255,.25);
+  backdrop-filter: blur(3px);
+}
+
+/* Search bar stylization */
+.md-search__form input {
+  font-family: var(--mono-font);
+  caret-color: var(--md-primary-fg-color);
+}
+
+/* Button and chip subtle styling */
+[data-md-color-scheme="slate"] .md-button, [data-md-color-scheme="slate"] .md-typeset .md-button {
+  border-color: rgba(168,108,255,.35);
+}
+
+/* Subtle selection color */
+::selection {
+  background: rgba(168,108,255,.35);
+  color: #0b0a10;
+}
+
+/* Reduce motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+.ap-wrapper {
+  padding: 8px 12px; /* Reduce padding */
+  border-radius: 6px; /* Softer corners */
+  border: 1px solid var(--mkap-border-color); /* Subtle border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Subtle shadow for depth */
+  max-width: 80%; /* Prevent it from taking up too much space */
+  margin: 0 auto;
+}

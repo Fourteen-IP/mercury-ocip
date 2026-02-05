@@ -234,7 +234,7 @@ class SharedOperations:
         if summary is None:
             return []
         if isinstance(summary, ErrorResponse):
-            raise MErrorResponse(message=summary.summary, context=summary.detail)
+            raise MErrorResponse(summary.summary, summary.detail)
         if summary_type is not None and not isinstance(summary, summary_type):
             raise TypeError(
                 f"Unexpected summary response type: {type(summary).__name__} (expected {summary_type})"

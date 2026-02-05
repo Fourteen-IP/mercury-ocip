@@ -8,4 +8,7 @@ RUN uv sync --frozen --only-group=docs
 ENV PATH=/app/.venv/bin:$PATH
 EXPOSE 8080
 
-CMD ["mkdocs", "serve"]
+ARG MKDOCS_CONFIG=mkdocs-ocip.yml
+ENV MKDOCS_CONFIG=${MKDOCS_CONFIG}
+
+CMD ["sh", "-c", "mkdocs serve -f ${MKDOCS_CONFIG}"]

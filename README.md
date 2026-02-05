@@ -131,6 +131,22 @@ agent.bulk.create_users_from_csv(
 
 ---
 
+## Command Line Interface
+
+The CLI is now part of this package. You can manage BroadWorks instances directly from your terminal without installing anything extra.
+
+### Running the CLI
+
+After installation:
+
+```bash
+mercury-cli
+```
+
+CLI docs: [mercury-cli-docs.14ip.net](https://mercury-cli-docs.14ip.net/)
+
+---
+
 ## Credits
 
 This package builds upon the excellent work of the Broadworks OCI-P Interface package. Special thanks to:
