@@ -57,9 +57,23 @@ def authenticate() -> None:
     username = Prompt.ask("[prompt]Username [/prompt]", console=console)
     password = Prompt.ask("[prompt]Password [/prompt]", password=True, console=console)
     host = Prompt.ask(
-        "[prompt]URL (e.g., https://mercury.example.com/webservice/services/ProvisioningService) [/prompt]",
+        "[prompt]URL [/prompt]",
         console=console,
     )
+
+    if not host.endswith("/webservice/services/ProvisioningService"):
+        suffix = "/webservice/services/ProvisioningService"
+
+        suffix_append = Prompt.ask(
+            f"[prompt]Append Provisioning Service suffix?[/prompt]\n"
+            f"  {host}[dim]{suffix}[/dim]",
+            console=console,
+            choices=["y", "n"],
+            default="y",
+        )
+
+        if suffix_append == "y":
+            host += suffix
 
     MERCURY_CLI.get().client_auth(
         username=username, password=password, host=host, tls=True
