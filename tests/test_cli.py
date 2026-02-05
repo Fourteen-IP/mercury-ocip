@@ -47,7 +47,7 @@ def test_authenticate_flow(mock_cli_get, mock_prompt):
     mock_cli_get.return_value = mock_instance
 
     # Mock user input: username, password, host, tls (y)
-    mock_prompt.side_effect = ["testuser", "secret", "https://test.host"]
+    mock_prompt.side_effect = ["testuser", "secret", "https://test.host/webservice/services/ProvisioningService"]
 
     authenticate()
 
@@ -56,5 +56,5 @@ def test_authenticate_flow(mock_cli_get, mock_prompt):
 
     # Verify client_auth was called on the singleton instance with correct args
     mock_instance.client_auth.assert_called_once_with(
-        username="testuser", password="secret", host="https://test.host", tls=True
+        username="testuser", password="secret", host="https://test.host/webservice/services/ProvisioningService", tls=True
     )
