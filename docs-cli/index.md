@@ -21,10 +21,10 @@
 
 ## Installation
 
-To install `mercury-cli`, use pip:
+mercury-cli is now part of the mercury-ocip package, to install run the following:
 
 ```bash
-pip install mercury-cli
+pip install mercury-ocip
 ```
 
 You can then run the CLI using the following command:
@@ -50,19 +50,19 @@ See the Commands section for more details on commands and features available in 
 You can pass parameters to `mercury-cli` when starting it from the command line. For example:
 
 ```bash
-mercury_cli --username your.username --password-env YOUR_PASSWORD_ENV_VARIABLE --host https://mercury.example.com/webservice/services/ProvisioningService
+mercury-cli --username your.username --password-env YOUR_PASSWORD_ENV_VARIABLE --host https://mercury.example.com/webservice/services/ProvisioningService
 ```
 
 Additionally, you can use `--no-login` to skip the login process:
 
 ```bash
-mercury_cli --no-login
+mercury-cli --no-login
 ```
 
 or `--action` to login and immediately execute a command:
 
 ```bash
-mercury_cli --username your.username --password-env YOUR_PASSWORD_ENV_VARIABLE --host https://mercury.example.com/webservice/services/ProvisioningService --action "automations find_alias SVPID GRPID 1234"
+mercury-cli --username your.username --password-env YOUR_PASSWORD_ENV_VARIABLE --host https://mercury.example.com/webservice/services/ProvisioningService --action "automations find_alias SVPID GRPID 1234"
 ```
 
 This will drop you directly into the CLI with the provided credentials.

@@ -213,3 +213,15 @@ automations user_digest USER123
 ```
 ✘ Digest failed for User ID 'USER123'.
 ```
+
+### call_center_digest
+
+Performs a detailed report of the given Call Center, including its profile settings and the status of all agents within it.
+
+- Parameters:
+    * `service_user_id` - The ID Of the Call Center
+
+**Example:**
+```bash title="Call Center Digest"
+automations call_center_digest TESTAA123456@domain.com
+```
