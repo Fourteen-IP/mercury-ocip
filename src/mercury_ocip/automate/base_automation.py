@@ -41,7 +41,9 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
             raw = self._run(request)
             self.logger.debug(f"Execution completed for {automation_name}")
             result = self._wrap(raw)
-            self.logger.info(f"Automation {automation_name} completed successfully: {result.ok}")
+            self.logger.info(
+                f"Automation {automation_name} completed successfully: {result.ok}"
+            )
             return result
         except Exception as e:
             self.logger.error(f"Automation {automation_name} failed: {str(e)}")
@@ -68,20 +70,20 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
             raise  # upstream already wrapped it correctly
         except Exception as exc:
             raise MErrorUnknown(
-                message=f"{command.__class__.__name__} failed unexpectedly",
-                context=exc,
+                f"{command.__class__.__name__} failed unexpectedly",
+                exc,
             )
 
         if response is None:
             raise MErrorUnknown(
-                message=f"{command.__class__.__name__} returned no payload",
-                context=None,
+                f"{command.__class__.__name__} returned no payload",
+                None,
             )
 
         if isinstance(response, ErrorResponse):
             raise MErrorResponse(
-                message=response.summary,
-                context=response.detail,
+                response.summary,
+                response.detail,
             )
 
         return cast(OCIResponse, response)

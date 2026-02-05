@@ -38,7 +38,7 @@ def show_splash() -> None:
     Prints out the SPLASH_ART and welcome message to the console.
     """
 
-    version = metadata.version("mercury-cli")
+    version = metadata.version("mercury-ocip")
     welcome_text = Text.assemble(
         (SPLASH_ART, "header"),
         ("\nWelcome to mercury_cli ", "subheader"),
