@@ -26,9 +26,8 @@ jobs:
               uses: astral-sh/setup-uv@v6
 
             - name: Setup Venv
-              run: uv sync && uv venv && source .venv/bin/activate
+              run: uv sync
 
             - name: Run Pyrefly type checker
               run: |
-                source .venv/bin/activate
-                pyrefly check
+                uv run pyrefly check
