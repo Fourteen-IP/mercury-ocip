@@ -26,9 +26,8 @@ jobs:
               uses: astral-sh/setup-uv@v6
 
             - name: Setup Venv
-              run: uv sync && uv venv && source .venv/bin/activate
+              run: uv sync
 
             - name: Run tests with coverage
               run: |
-                source .venv/bin/activate
-                pytest
+                uv run pytest
