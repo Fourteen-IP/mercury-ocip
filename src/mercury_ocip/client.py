@@ -198,16 +198,16 @@ class Client(BaseClient):
             self.authenticate()
 
         self.logger.info(
-            msg=f"Executing command: {command}",
+            msg=f"Executing command: {str(command)}",
             extra={
                 "event": {
                     "type": "execution",
                     "category": "command",
-                    "outcome": "success"  # optimistic; failures can override later
+                    "outcome": "success"
                 },
                 "log": {
                     "type": "audit",
-                    "command": command
+                    "command": str(command).split('(')[0]
                 }
             }
         )
