@@ -50,6 +50,8 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@KiPageFault 06.02.26
+Revised Client, Bulk, & Automation Logging Structure to perform verbose keyword logging for team metrics and visibility
 
 @malkin0xb8 05.02.26
 Merged the cli into this project, means both track 1 version, shared depdencies and generally makes developing easier. Merged the docs and everything else. RUnning `mercury-cli` still works.

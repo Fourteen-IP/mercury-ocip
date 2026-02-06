@@ -46,10 +46,10 @@ class BaseBulkOperations(ABC):
             List[Dict[str, Any]]: List of bwks entities created.
         """
         self.logger.info(
-            f"Starting bulk operation from CSV: {csv_path}, dry_run={dry_run}"
+            msg=f"Starting bulk operation from CSV: {csv_path}, dry_run={dry_run}"
         )
         data: list[dict[str, Any]] = FileHandler.read_csv_to_dict(csv_path)
-        self.logger.debug(f"Loaded {len(data)} rows from CSV file")
+        self.logger.debug(msg=f"Loaded {len(data)} rows from CSV file")
         parsed_data: list[Dict[str, Any]] = self._parse_csv(data)
         return self.execute_from_data(parsed_data, dry_run)
 
@@ -69,7 +69,7 @@ class BaseBulkOperations(ABC):
         """
         operation_class = self.__class__.__name__
         self.logger.info(
-            f"Starting bulk operation: {operation_class} with {len(data)} items, dry_run={dry_run}"
+            msg=f"Starting bulk operation: {operation_class} with {len(data)} items, dry_run={dry_run}"
         )
         results: list[dict[str, Any]] = []
         success_count = 0
@@ -102,18 +102,18 @@ class BaseBulkOperations(ABC):
                     return_data["success"] = False
                     failure_count += 1
                     self.logger.warning(
-                        f"Row {i}: {operation} failed - {response.summary}"
+                        msg=f"Row {i}: {operation} failed - {response.summary}"
                     )
                 else:
                     success_count += 1
-                    self.logger.debug(f"Row {i}: {operation} succeeded")
+                    self.logger.debug(msg=f"Row {i}: {operation} succeeded")
 
                 results.append(return_data)
 
             except Exception as e:
                 failure_count += 1
                 # Pydantic validation errors or other failures
-                self.logger.error(f"Row {i}: Failed to execute operation - {str(e)}")
+                self.logger.error(msg=f"Row {i}: Failed to execute operation - {str(e)}")
                 results.append(
                     {
                         "index": i,
@@ -126,7 +126,26 @@ class BaseBulkOperations(ABC):
                 )
 
         self.logger.info(
-            f"Bulk operation {operation_class} completed: {success_count} successful, {failure_count} failed, Time Saved {success_count * 1.25}"
+            msg=(
+                f"Bulk operation {operation_class} completed "
+                f"({success_count} successful, {failure_count} failed)"
+            ),
+            extra={
+                "event": {
+                    "type": "execution",
+                    "category": "bulk",
+                    "outcome": "success" if failure_count == 0 else "partial"
+                },
+                "log": {
+                    "type": "performance",
+                    "command": operation_class
+                },
+                "metrics": {
+                    "time_saved_ms": int((success_count * 1.25) * 1000),
+                    "success_count": success_count,
+                    "failure_count": failure_count
+                }
+            }
         )
         return results
 
