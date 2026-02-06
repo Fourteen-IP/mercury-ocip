@@ -196,8 +196,22 @@ class Client(BaseClient):
         """
         if not self.authenticated:
             self.authenticate()
-        self.logger.info(f"Executing command: {command.__class__.__name__}")
-        self.logger.debug(f"Command: {command.to_dict()}")
+
+        self.logger.info(
+            msg=f"Executing command: {command}",
+            extra={
+                "event": {
+                    "type": "execution",
+                    "category": "command",
+                    "outcome": "success"  # optimistic; failures can override later
+                },
+                "log": {
+                    "type": "audit",
+                    "command": command
+                }
+            }
+        )
+
         response = self._requester.send_request(command.to_xml())
         return self._receive_response(response)
 
@@ -217,7 +231,20 @@ class Client(BaseClient):
         """
         command_class = self._dispatch_table.get(command)
         if not command_class:
-            self.logger.error(f"Command {command} not found in dispatch table")
+            self.logger.error(
+                msg=f"Command {command} not found in dispatch table",
+                extra={
+                    "event": {
+                        "type": "execution",
+                        "category": "command",
+                        "outcome": "failure"  
+                    },   
+                    "log": {
+                        "type": "audit",
+                        "command": command
+                    }    
+                }
+            )
             raise ValueError(f"Command {command} not found in dispatch table")
         return self.command(command_class(**kwargs))
 
@@ -282,7 +309,6 @@ class Client(BaseClient):
         if isinstance(login_resp, BWKSErrorResponse):
             raise MError(f"Failed to authenticate: {login_resp.summary}")
 
-        self.logger.info("Authenticated with server")
         self.authenticated = True
         return login_resp
 
@@ -324,7 +350,17 @@ class Client(BaseClient):
             raise MError(f"Failed To Find Raw Response Type: {type_name}")
 
         # Construct Response Class With Raw Response
-        self.logger.debug(f"Response -> {response_class}")
+        self.logger.debug(
+            msg=f"Response -> {response_class}",
+            extra={
+                "event": {
+                    "type": "response",
+                    "category": "command",
+                    "outcome": "debug"  
+                },
+            }
+        )
+
         return response_class.from_xml(response)  # type: ignore
 
     def disconnect(self):
