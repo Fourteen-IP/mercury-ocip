@@ -82,8 +82,7 @@ class Agent:
                     self.client.logger.debug(
                         f"Successfully loaded plugin: {entry_point.name}"
                     )
-                except Exception:
-                    pass
+                except Exception as e:
                     self.client.logger.error(
                         f"Failed to load plugin {entry_point.name}: {e}"
                     )
