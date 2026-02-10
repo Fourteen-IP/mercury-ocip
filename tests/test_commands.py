@@ -120,33 +120,36 @@ def test_plugin_found_listing_with_installed(mock_cli_components):
     class MockPlugin(BasePlugin):
         def __init__(self, client):
             self.description = "Mock plugin description"
-        
+
         def get_commands(self):
             return {}
 
     fake_entrypoint = MagicMock()
     fake_entrypoint.name = "MockPlugin"
-    fake_entrypoint.load.return_value = MockPlugin
 
-    with patch.object(mock_cli_components.agent, 'list_plugins', return_value=[fake_entrypoint]):
+    plugin_instance = MockPlugin(None)
 
-        load_plugins()
-        
-        completer = MERCURY_CLI.completer()
-        
-        assert "plugin" in completer.root.children
-        
-        plugin_action = completer.root.children["plugin"]
+    mock_cli_components.agent._discoverable_plugins = [
+        (MockPlugin, plugin_instance, fake_entrypoint),
+    ]
 
-        assert plugin_action.display_meta == "Used to view and manage plugins"
+    load_plugins()
 
-        assert "mock_plugin" in plugin_action.children
-        assert plugin_action.children["mock_plugin"].display_meta == "Mock plugin description"
+    completer = MERCURY_CLI.completer()
+
+    assert "plugin" in completer.root.children
+
+    plugin_action = completer.root.children["plugin"]
+
+    assert plugin_action.display_meta == "Used to view and manage plugins"
+
+    assert "mock_plugin" in plugin_action.children
+    assert plugin_action.children["mock_plugin"].display_meta == "Mock plugin description"
 
 def test_plugin_not_found_listing_with_none_installed(mock_cli_components):
-    with patch.object(mock_cli_components.agent, 'list_plugins', return_value=[]):
+    mock_cli_components.agent._discoverable_plugins = []
 
-        load_plugins()
+    load_plugins()
         
         completer = MERCURY_CLI.completer()
         
