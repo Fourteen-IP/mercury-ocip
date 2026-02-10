@@ -1,9 +1,7 @@
 from action_completer.types import Empty
 from action_completer.completer import ActionCompleter, ActionParam
-import inspect
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.utils.defines import to_snake_case
-from mercury_ocip.plugins.base_plugin import BasePlugin
 
 completer: ActionCompleter = MERCURY_CLI.completer()
 
