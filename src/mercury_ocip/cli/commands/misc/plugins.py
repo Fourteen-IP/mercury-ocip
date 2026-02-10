@@ -15,12 +15,6 @@ def _list_plugins():
         print(plugin.name)
 
 
-@plugin_group.action("debug", display_meta="List allins")
-def _thingy03846759364589736458736458yu756():
-    print(MERCURY_CLI.client().logger)
-    print(MERCURY_CLI.agent().logger)
-
-
 def _create_plugin_command(plugin_instance, command_class, full_command_name):
     """Create a command function that executes the plugin command.
 
