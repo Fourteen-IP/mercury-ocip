@@ -151,12 +151,12 @@ def test_plugin_not_found_listing_with_none_installed(mock_cli_components):
 
     load_plugins()
         
-        completer = MERCURY_CLI.completer()
-        
-        assert "plugin" in completer.root.children
-        
-        plugin_action = completer.root.children["plugin"]
+    completer = MERCURY_CLI.completer()
+    
+    assert "plugin" in completer.root.children
+    
+    plugin_action = completer.root.children["plugin"]
 
-        assert plugin_action.display_meta == "Used to view and manage plugins"
+    assert plugin_action.display_meta == "Used to view and manage plugins"
 
-        assert len(plugin_action.children) == 1 # Only 'list' command should be present
+    assert len(plugin_action.children) == 1 # Only 'list' command should be present
