@@ -29,24 +29,23 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
 
     def __init__(self, client: BaseClient) -> None:
         self.client = client
-        self.logger = client.logger
         self.shared_ops = SharedOperations(client)
 
     def execute(self, request: RequestT) -> AutomationResult[PayloadT]:
         automation_name = self.__class__.__name__
-        self.logger.info(f"Starting automation: {automation_name}")
+        self.client.logger.info(f"Starting automation: {automation_name}")
         try:
             self._validate(request)
-            self.logger.debug(f"Validation passed for {automation_name}")
+            self.client.logger.debug(f"Validation passed for {automation_name}")
             raw = self._run(request)
-            self.logger.debug(f"Execution completed for {automation_name}")
+            self.client.logger.debug(f"Execution completed for {automation_name}")
             result = self._wrap(raw)
-            self.logger.info(
+            self.client.logger.info(
                 f"Automation {automation_name} completed successfully: {result.ok}"
             )
             return result
         except Exception as e:
-            self.logger.error(f"Automation {automation_name} failed: {str(e)}")
+            self.client.logger.error(f"Automation {automation_name} failed: {str(e)}")
             raise
 
     def _validate(self, request: RequestT) -> None:
@@ -64,7 +63,7 @@ class BaseAutomation(ABC, Generic[RequestT, PayloadT]):
     def _dispatch(self, command: OCICommand) -> OCIResponse:
         """Send a single OCI command and normalise failures."""
         try:
-            self.logger.debug(f"Dispatching command: {command.__class__.__name__}")
+            self.client.logger.debug(f"Dispatching command: {command.__class__.__name__}")
             response = self.client.command(command)
         except MError:
             raise  # upstream already wrapped it correctly

@@ -184,7 +184,7 @@ class CallCenterDigest(BaseAutomation[CallCenterDigestRequest, CallCenterDigestR
                         break
 
             except Exception as e:
-                self.logger.warning(f"Failed to get ACD status for {user_id}: {e}")
+                self.client.logger.warning(f"Failed to get ACD status for {user_id}: {e}")
 
             # Convert skill_level and weight from string to int if present
             skill_level_str = row.get("skill_level")
@@ -233,7 +233,7 @@ class CallCenterDigest(BaseAutomation[CallCenterDigestRequest, CallCenterDigestR
                 agents_staffed=response.agents_currently_staffed.to_dict(),
             )
         except Exception as e:
-            self.logger.warning(f"Failed to get queue status for {service_user_id}: {e}")
+            self.client.logger.warning(f"Failed to get queue status for {service_user_id}: {e}")
             return None
 
     def _clean_response(self, response: OCIResponse[T]) -> T:

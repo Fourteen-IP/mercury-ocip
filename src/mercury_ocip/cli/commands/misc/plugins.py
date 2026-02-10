@@ -17,6 +17,12 @@ def _list_plugins():
         print(plugin.name)
 
 
+@plugin_group.action("debug", display_meta="List allins")
+def _thingy03846759364589736458736458yu756():
+    print(MERCURY_CLI.client().logger)
+    print(MERCURY_CLI.agent().logger)
+
+
 def _create_plugin_command(plugin_instance, command_class, full_command_name):
     """Create a command function that executes the plugin command.
 
@@ -55,22 +61,9 @@ def _create_plugin_command(plugin_instance, command_class, full_command_name):
     return command_function
 
 
-def load_plugins():
-    for entrypoint in MERCURY_CLI.agent().list_plugins():
-        try:
-            plugin_class = entrypoint.load()
-
-            if not (
-                inspect.isclass(plugin_class)
-                and issubclass(plugin_class, BasePlugin)
-                and plugin_class is not BasePlugin
-            ):
-                continue
-
-            plugin_instance = plugin_class(MERCURY_CLI.client())
-        except Exception as e:
-            print(f"Failed to load plugin {entrypoint.name}: {e}")
-            continue
+def load_plugins() -> None:
+    for plugin in MERCURY_CLI.agent()._discoverable_plugins:
+        plugin_class, plugin_instance, entry_point = plugin
 
         named_group = plugin_group.group(
             to_snake_case(plugin_class.__name__),
