@@ -50,6 +50,10 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb 10.02.26
+Updated agent to lock to prevent recursion when reloading plugins.
+Updated the logger to dependency inject to client rather than spawning a new instance per object.
+
 @KiPageFault 06.02.26
 Revised Client, Bulk, & Automation Logging Structure to perform verbose keyword logging for team metrics and visibility
 

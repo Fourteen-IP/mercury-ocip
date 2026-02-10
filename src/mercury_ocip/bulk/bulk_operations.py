@@ -22,7 +22,6 @@ class BulkOperations:
 
     def __init__(self, client):
         self.client = client
-        self.logger = client.logger
         self.call_center = CallCenterBulkOperations(client)
         self.call_pickup = CallPickupBulkOperations(client)
         self.hunt_group = HuntGroupBulkOperations(client)
@@ -30,7 +29,7 @@ class BulkOperations:
         self.devices = DeviceBulkOperations(client)
         self.users = UserBulkOperations(client)
         self.administrator = AdminBulkOperations(client)
-        self.logger.debug("BulkOperations initialized")
+        self.client.logger.debug("BulkOperations initialized")
 
     # Call Pickup
     def create_call_pickup_from_csv(

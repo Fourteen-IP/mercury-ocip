@@ -1,9 +1,7 @@
 from action_completer.types import Empty
 from action_completer.completer import ActionCompleter, ActionParam
-import inspect
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.utils.defines import to_snake_case
-from mercury_ocip.plugins.base_plugin import BasePlugin
 
 completer: ActionCompleter = MERCURY_CLI.completer()
 
@@ -55,22 +53,9 @@ def _create_plugin_command(plugin_instance, command_class, full_command_name):
     return command_function
 
 
-def load_plugins():
-    for entrypoint in MERCURY_CLI.agent().list_plugins():
-        try:
-            plugin_class = entrypoint.load()
-
-            if not (
-                inspect.isclass(plugin_class)
-                and issubclass(plugin_class, BasePlugin)
-                and plugin_class is not BasePlugin
-            ):
-                continue
-
-            plugin_instance = plugin_class(MERCURY_CLI.client())
-        except Exception as e:
-            print(f"Failed to load plugin {entrypoint.name}: {e}")
-            continue
+def load_plugins() -> None:
+    for plugin in MERCURY_CLI.agent()._discoverable_plugins:
+        plugin_class, plugin_instance, entry_point = plugin
 
         named_group = plugin_group.group(
             to_snake_case(plugin_class.__name__),
