@@ -88,34 +88,36 @@ def main():
     """
     show_splash()
 
-    while True:  # If authentication fails, prompt again
+    if args.username and args.password_env and args.host:
         try:
-            if (
-                args.username and args.password_env and args.host
-            ):  # Command line args provided
-                MERCURY_CLI.get().client_auth(
-                    username=args.username,
-                    password=os.getenv(args.password_env),
-                    host=args.host,
-                    tls=True,
-                )
+            MERCURY_CLI.get().client_auth(
+                username=args.username,
+                password=os.getenv(args.password_env),
+                host=args.host,
+                tls=True,
+            )
 
-                if args.action:  # Run single action and exit
-                    MERCURY_CLI.completer().run_action(args.action)
-                    sys.exit()
-            elif not args.no_login:  # Skip login if --no-login is provided
-                authenticate()
-            break
-        except MError as e:
-            console.print(
-                f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
-            )
-            continue
+            if args.action:  # Run single action and exit
+                MERCURY_CLI.completer().run_action(args.action)
+                sys.exit()
         except Exception as e:
-            console.print(
-                f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
-            )
-            sys.exit()
+            console.print(f"[error]Authentication failed: {e}[/error]")
+            sys.exit(1)
+    elif not args.no_login:
+        while True:  # If authentication fails, prompt again
+            try:
+                authenticate()
+                break
+            except MError as e:
+                console.print(
+                    f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
+                )
+                continue
+            except Exception as e:
+                console.print(
+                    f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
+                )
+                sys.exit(1)
 
     MERCURY_CLI.get().session_create(  # Create terminal prompt session
         message="mercury_cli >>> ",
