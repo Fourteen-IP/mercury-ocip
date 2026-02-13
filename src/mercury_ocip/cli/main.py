@@ -10,7 +10,7 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.utils.egg import main as egg_main  # noqa: F401
 from mercury_ocip.cli.commands.misc.plugins import load_plugins
-from mercury_ocip.exceptions import MError
+from mercury_ocip.exceptions import MError, MErrorSocketTimeout
 
 SPLASH_ART = """
 ███╗   ███╗███████╗██████╗  ██████╗██╗   ██╗██████╗ ██╗   ██╗      ██████╗██╗     ██╗
@@ -165,6 +165,8 @@ def command_loop() -> None:
                 case _:  # Default case to run any other command
                     try:
                         MERCURY_CLI.completer().run_action(text)
+                    except MErrorSocketTimeout:
+                        MERCURY_CLI.client().authenticated = False
                     except ValueError as ve:
                         # Check if this is actually a "command not found" error
                         if (

@@ -331,6 +331,11 @@ class SyncSOAPRequester(BaseRequester):
             )
 
             return response
+        except requests.exceptions.Timeout as e:
+            self.logger.error(
+                f"Failed to send command over {self.__class__.__name__} due to timeout: {e}"
+            )
+            return MErrorSocketTimeout(str(e))
         except Exception as e:
             self.logger.error(
                 f"Failed to send command over {self.__class__.__name__}: {e}"
