@@ -1,10 +1,9 @@
 from action_completer import ActionCompleter
-from mercury_ocip import Client
-from mercury_ocip import Agent
 from prompt_toolkit import PromptSession
 from rich.console import Console
 from rich.theme import Theme
-import logging
+
+from mercury_ocip import Agent, Client
 
 
 class MERCURY_CLI:
