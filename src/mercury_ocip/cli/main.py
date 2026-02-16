@@ -110,7 +110,11 @@ def main():
             console.print(f"[error]Authentication failed: {e}[/error]")
             sys.exit(1)
     elif not args.no_login:
-        while True:  # If authentication fails, prompt again
+        # Retry loop for interactive authentication.
+        # MError covers recoverable issues (bad credentials, timeouts, etc.)
+        # so we let the user try again. Any other exception is likely a
+        # configuration or network problem we can't recover from, so we exit.
+        while True:
             try:
                 authenticate()
                 break
