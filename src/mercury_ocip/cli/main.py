@@ -1,16 +1,17 @@
-import sys
-import os
 import argparse
+import os
+import sys
 from importlib import metadata
-from prompt_toolkit.styles import Style
-from rich.text import Text
-from rich.prompt import Prompt
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.styles import Style
+from rich.prompt import Prompt
+from rich.text import Text
+
+from mercury_ocip.cli.commands.misc.plugins import load_plugins
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.utils.egg import main as egg_main  # noqa: F401
-from mercury_ocip.cli.commands.misc.plugins import load_plugins
-from mercury_ocip.exceptions import MError
+from mercury_ocip.exceptions import MError, MErrorSocketTimeout
 
 SPLASH_ART = """
 ███╗   ███╗███████╗██████╗  ██████╗██╗   ██╗██████╗ ██╗   ██╗      ██████╗██╗     ██╗
@@ -18,7 +19,7 @@ SPLASH_ART = """
 ██╔████╔██║█████╗  ██████╔╝██║     ██║   ██║██████╔╝ ╚████╔╝█████╗██║     ██║     ██║
 ██║╚██╔╝██║██╔══╝  ██╔══██╗██║     ██║   ██║██╔══██╗  ╚██╔╝ ╚════╝██║     ██║     ██║
 ██║ ╚═╝ ██║███████╗██║  ██║╚██████╗╚██████╔╝██║  ██║   ██║        ╚██████╗███████╗██║
-╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═════╝╚══════╝╚═╝                                                                                                                                              
+╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═════╝╚══════╝╚═╝
 """
 
 # CSS Style for the CLI
@@ -88,34 +89,45 @@ def main():
     """
     show_splash()
 
-    while True:  # If authentication fails, prompt again
+    if args.username and args.password_env and args.host:
         try:
-            if (
-                args.username and args.password_env and args.host
-            ):  # Command line args provided
-                MERCURY_CLI.get().client_auth(
-                    username=args.username,
-                    password=os.getenv(args.password_env),
-                    host=args.host,
-                    tls=True,
-                )
+            password_env = os.getenv(args.password_env)
 
-                if args.action:  # Run single action and exit
-                    MERCURY_CLI.completer().run_action(args.action)
-                    sys.exit()
-            elif not args.no_login:  # Skip login if --no-login is provided
-                authenticate()
-            break
-        except MError as e:
-            console.print(
-                f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
+            if not password_env:
+                raise ValueError("Failed to fetch environment variable")
+
+            MERCURY_CLI.get().client_auth(
+                username=args.username,
+                password=password_env,
+                host=args.host,
+                tls=True,
             )
-            continue
+
+            if args.action:  # Run single action and exit
+                MERCURY_CLI.completer().run_action(args.action)
+                sys.exit()
         except Exception as e:
-            console.print(
-                f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
-            )
-            sys.exit()
+            console.print(f"[error]Authentication failed: {e}[/error]")
+            sys.exit(1)
+    elif not args.no_login:
+        # Retry loop for interactive authentication.
+        # MError covers recoverable issues (bad credentials, timeouts, etc.)
+        # so we let the user try again. Any other exception is likely a
+        # configuration or network problem we can't recover from, so we exit.
+        while True:
+            try:
+                authenticate()
+                break
+            except MError as e:
+                console.print(
+                    f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
+                )
+                continue
+            except Exception as e:
+                console.print(
+                    f"[error]Authentication failed: {e} \n Please try again.\n [/error]"
+                )
+                sys.exit(1)
 
     MERCURY_CLI.get().session_create(  # Create terminal prompt session
         message="mercury_cli >>> ",
@@ -163,6 +175,8 @@ def command_loop() -> None:
                 case _:  # Default case to run any other command
                     try:
                         MERCURY_CLI.completer().run_action(text)
+                    except MErrorSocketTimeout:
+                        MERCURY_CLI.client().authenticated = False
                     except ValueError as ve:
                         # Check if this is actually a "command not found" error
                         if (

@@ -1,9 +1,9 @@
 from action_completer import ActionCompleter
-from mercury_ocip import Client
-from mercury_ocip import Agent
 from prompt_toolkit import PromptSession
 from rich.console import Console
 from rich.theme import Theme
+
+from mercury_ocip import Agent, Client
 
 
 class MERCURY_CLI:
@@ -67,6 +67,7 @@ class MERCURY_CLI:
         self.__client = Client(
             username=username, password=password, host=host, conn_type="SOAP", tls=tls
         )
+        self.__client.logger.addFilter(lambda record: False)
         self.agent_auth()
 
     def agent_auth(self):
