@@ -1,15 +1,16 @@
-import sys
-import os
 import argparse
+import os
+import sys
 from importlib import metadata
-from prompt_toolkit.styles import Style
-from rich.text import Text
-from rich.prompt import Prompt
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.styles import Style
+from rich.prompt import Prompt
+from rich.text import Text
+
+from mercury_ocip.cli.commands.misc.plugins import load_plugins
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.utils.egg import main as egg_main  # noqa: F401
-from mercury_ocip.cli.commands.misc.plugins import load_plugins
 from mercury_ocip.exceptions import MError, MErrorSocketTimeout
 
 SPLASH_ART = """
@@ -18,7 +19,7 @@ SPLASH_ART = """
 ██╔████╔██║█████╗  ██████╔╝██║     ██║   ██║██████╔╝ ╚████╔╝█████╗██║     ██║     ██║
 ██║╚██╔╝██║██╔══╝  ██╔══██╗██║     ██║   ██║██╔══██╗  ╚██╔╝ ╚════╝██║     ██║     ██║
 ██║ ╚═╝ ██║███████╗██║  ██║╚██████╗╚██████╔╝██║  ██║   ██║        ╚██████╗███████╗██║
-╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═════╝╚══════╝╚═╝                                                                                                                                              
+╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝         ╚═════╝╚══════╝╚═╝
 """
 
 # CSS Style for the CLI
@@ -90,9 +91,14 @@ def main():
 
     if args.username and args.password_env and args.host:
         try:
+            password_env = os.getenv(args.password_env)
+
+            if not password_env:
+                raise ValueError("Failed to fetch environment variable")
+
             MERCURY_CLI.get().client_auth(
                 username=args.username,
-                password=os.getenv(args.password_env),
+                password=password_env,
                 host=args.host,
                 tls=True,
             )
