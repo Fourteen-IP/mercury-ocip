@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb8 16.02.26
+Added some quality of life features to the cli, such as better csv parsing, session handling, and removing duplicate logs.
+
 @malkin0xb 10.02.26
 Updated agent to lock to prevent recursion when reloading plugins.
 Updated the logger to dependency inject to client rather than spawning a new instance per object.
@@ -252,4 +255,4 @@ I noticed that returns from the request do not fit convential OCITable structure
 
 @KiPageFault
 - Modified Parser To Fix Nested Conversions When Multiple OCIType Objects Were Translated
-- Modified OCITable To Construct Table Entries On Initialisation 
+- Modified OCITable To Construct Table Entries On Initialisation
