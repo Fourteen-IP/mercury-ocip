@@ -292,3 +292,4 @@ user.create,TestServiceProvider,SalesGroup,john.doe@test.com,John,Doe,John,Doe,1
         assert "access_device_endpoint" in result
         assert "use_custom_user_name_password" in result["access_device_endpoint"]
         assert "port_number" in result["access_device_endpoint"]
+        

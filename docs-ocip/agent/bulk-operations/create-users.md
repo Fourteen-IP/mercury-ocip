@@ -60,7 +60,7 @@ The CSV template includes these columns:
 | `accessDeviceEndpoint.accessDeviceCredentials.userName` | Device username | No | `"device_user"` |
 | `accessDeviceEndpoint.accessDeviceCredentials.password` | Device password | No | `"device_pass"` |
 | `accessDeviceEndpoint.linePort` | Line port | No | `"1"` |
-| `accessDeviceEndpoint.useHotline` | Use hotline | No | `false` |
+| `accessDeviceEndpoint.useHotline` | Use hotline | Yes | `false` |
 | `accessDeviceEndpoint.privateIdentity` | Private identity | No | `"sip:user@domain.com"` |
 | `accessDeviceEndpoint.contact[0-2]` | Contact addresses (up to 3) | No | `"sip:user@192.168.1.100"` |
 | `accessDeviceEndpoint.hotlineContact` | Hotline contact | No | `"sip:hotline@domain.com"` |
