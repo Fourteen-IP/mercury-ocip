@@ -48,8 +48,6 @@ class Parser:
         if isinstance(obj, HasFieldAliases):
             aliases = obj.get_field_aliases()
 
-        # ensure default empty namespace on <command>; don't declare xmlns:xsi here
-        # because the surrounding requester/BroadsoftDocument will provide it.
         root_content: Dict[str, Any] = {
             "@xmlns": "",
             "@xsi:type": obj.__class__.__name__,
@@ -113,7 +111,6 @@ class Parser:
                     if hasattr(raw_val, "__dict__"):
                         attrs[a] = serialize_obj_with_aliases(raw_val, declared_hint=h)
                     elif isinstance(raw_val, list):
-                        # determine declared subtype for this list attribute
                         _a_origin = getattr(h, "__origin__", None)
                         _a_args = get_args(h)
                         _a_subtype = _a_args[0] if _a_origin in (list, List) and _a_args else None
