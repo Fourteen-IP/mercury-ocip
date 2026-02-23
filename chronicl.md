@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@Jordan-Prescott 23.02.26
+- Users reported failing uploads due to 'use_hotline' in accessDevice was set as optional when schema stated mandatory. Updated upload sheet and docs.
+
 @malkin0xb8 16.02.26
 Added some quality of life features to the cli, such as better csv parsing, session handling, and removing duplicate logs.
 
