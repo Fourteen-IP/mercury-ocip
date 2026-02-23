@@ -133,7 +133,7 @@ def test_endpoint_accepts_access_device_type():
     cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
     xml = cmd.to_xml()
 
-    assert "<endpoint>" in xml
+    assert "<endpoint" in xml
     assert "<deviceLevel>Group</deviceLevel>" in xml
     assert "<deviceName>TestDevice</deviceName>" in xml
     assert "<linePort>sip:test@example.com</linePort>" in xml
@@ -146,5 +146,5 @@ def test_endpoint_accepts_trunk_addressing_type():
     cmd = UserModifyRequest22(user_id="testuser@example.com", endpoint=endpoint)
     xml = cmd.to_xml()
 
-    assert "<endpoint>" in xml
+    assert "<endpoint" in xml
     assert "<enterpriseTrunkName>TestTrunk</enterpriseTrunkName>" in xml

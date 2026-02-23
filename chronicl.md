@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@KiPageFault 23.02.26
+Rekitted parser to handle nested object alias conversions, added recursive xml namespace declarations for types which inherit from other objects (eg DepartmentKey -> GroupDepartmentKey in xml)
+
 @malkin0xb8 16.02.26
 Added some quality of life features to the cli, such as better csv parsing, session handling, and removing duplicate logs.
 

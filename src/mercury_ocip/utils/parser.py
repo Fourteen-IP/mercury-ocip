@@ -14,6 +14,7 @@ from typing import (
 )
 
 from mercury_ocip.utils.defines import snake_to_camel, to_snake_case
+from dataclasses import is_dataclass, fields
 
 OCIType = TypeVar("OCIType")
 T = TypeVar("T")
@@ -47,44 +48,121 @@ class Parser:
         if isinstance(obj, HasFieldAliases):
             aliases = obj.get_field_aliases()
 
-        # ensure default empty namespace on <command> and declare the xsi namespace using prefix "C"
+        # ensure default empty namespace on <command>; don't declare xmlns:xsi here
+        # because the surrounding requester/BroadsoftDocument will provide it.
         root_content: Dict[str, Any] = {
             "@xmlns": "",
-            "@xmlns:C": "http://www.w3.org/2001/XMLSchema-instance",
-            "@C:type": obj.__class__.__name__,
+            "@xsi:type": obj.__class__.__name__,
         }
 
         type_hints = get_type_hints(obj.__class__)
         for attr, hint in type_hints.items():
             value = getattr(obj, attr, None)
 
-            if value is None:
-                continue
-
-            if type(value).__name__ == "OCINil" or (
-                isinstance(value, type) and value.__name__ == "OCINil"
+            if (
+                value is not None
+                and (
+                    type(value).__name__ == "OCINil"
+                    or (isinstance(value, type) and value.__name__ == "OCINil")
+                )
             ):
                 key = aliases.get(attr, snake_to_camel(attr))
-                root_content[key] = {"@C:nil": "true"}
+                root_content[key] = {"@C:nil": "true"} 
+                continue
+
+            if value is None:
                 continue
 
             key = aliases.get(attr, snake_to_camel(attr))
 
+            def _convert_with_aliases(dct: Dict[str, Any], aliases_map: Dict[str, str] | None) -> Dict[str, Any]:
+                new_d: Dict[str, Any] = {}
+                for k, v in dct.items():
+                    if aliases_map and k in aliases_map:
+                        new_k = aliases_map[k]
+                    else:
+                        new_k = snake_to_camel(k)
+                    new_d[new_k] = convert_keys(v)
+                return new_d
+
+            # resolve declared subtype for lists/optionals to aid xsi:type emission
+            _origin = getattr(hint, "__origin__", None)
+            _args = get_args(hint)
+            _declared_subtype = _args[0] if _origin in (list, List) and _args else None
+
+            def serialize_obj_with_aliases(o: object, declared_hint: Any | None = None) -> Dict[str, Any]:
+                """Serialize an object to a dict while applying its field aliases recursively."""
+                aliases_map: Dict[str, str] = {}
+                get_aliases = getattr(o, "get_field_aliases", None)
+                if callable(get_aliases):
+                    aliases_map = cast(Dict[str, str], get_aliases())
+
+                # Start from the generic dict conversion, then replace nested objects/lists
+                attrs = Parser.to_dict_from_class(o, wrap_in_class_name=False)
+
+                # Walk the type hints to replace nested object/list entries with recursive serialization
+                obj_type_hints = get_type_hints(o.__class__)
+                for a, h in obj_type_hints.items():
+                    if a not in attrs:
+                        continue
+                    raw_val = getattr(o, a, None)
+                    if raw_val is None:
+                        continue
+
+                    # Propagate declared hint for nested attributes so xsi:type can be emitted when needed
+                    if hasattr(raw_val, "__dict__"):
+                        attrs[a] = serialize_obj_with_aliases(raw_val, declared_hint=h)
+                    elif isinstance(raw_val, list):
+                        # determine declared subtype for this list attribute
+                        _a_origin = getattr(h, "__origin__", None)
+                        _a_args = get_args(h)
+                        _a_subtype = _a_args[0] if _a_origin in (list, List) and _a_args else None
+
+                        new_list: List[Any] = []
+                        for it in raw_val:
+                            if hasattr(it, "__dict__"):
+                                new_list.append(serialize_obj_with_aliases(it, declared_hint=_a_subtype))
+                            else:
+                                new_list.append(it)
+                        attrs[a] = new_list
+
+                # If declared_hint indicates a different runtime class, add xsi:type attribute
+                declared_name = None
+                if declared_hint is not None:
+                    # unwrap Optional / Union
+                    d_origin = getattr(declared_hint, "__origin__", None)
+                    d_args = get_args(declared_hint)
+                    if d_origin is Union and d_args:
+                        non_none = [x for x in d_args if x is not type(None)]
+                        if non_none:
+                            declared_hint = non_none[0]
+                    if getattr(declared_hint, "__name__", None):
+                        declared_name = declared_hint.__name__
+
+                if declared_name and declared_name != o.__class__.__name__:
+                    result = _convert_with_aliases(attrs, aliases_map)
+                    # inject xsi type attribute using prefix xsi to match root
+                    result["@xsi:type"] = o.__class__.__name__
+                    return result
+
+                return _convert_with_aliases(attrs, aliases_map)
+
             def convert_keys(d: Any) -> Any:
                 """Recursively convert dictionary keys to camelCase."""
                 if isinstance(d, dict):
-                    new_d: Dict[str, Any] = {}
-                    for k, v in d.items():
-                        new_k = snake_to_camel(k)
-                        new_d[new_k] = convert_keys(v)
-                    return new_d
+                    return _convert_with_aliases(d, None)
                 elif isinstance(d, list):
                     result_list = []
                     for i in d:
                         # If list item is an object, convert it to dict first
                         if hasattr(i, "__dict__"):
+                            # If the item exposes field aliases, use them when converting
+                            item_aliases: Dict[str, str] = {}
+                            get_aliases = getattr(i, "get_field_aliases", None)
+                            if callable(get_aliases):
+                                item_aliases = cast(Dict[str, str], get_aliases())
                             result_list.append(
-                                convert_keys(Parser.to_dict_from_class(i))
+                                _convert_with_aliases(Parser.to_dict_from_class(i), item_aliases)
                             )
                         else:
                             result_list.append(convert_keys(i))
@@ -121,6 +199,27 @@ class Parser:
                     root_content[key] = table_dict
                     continue
 
+                # Attempt to fetch alias mapping from subtype arguements if an object is nested. 
+                # This attempts to resolve the issue of class types being passed via a list or tuple into commands
+                # Originally, there was no implementation to query a list member to extract potential field aliases leading to the snake_to_camel fallback
+                origin = getattr(hint, "__origin__", None)
+                args = get_args(hint)
+                subtype = args[0] if origin in (list, List) and args else None
+                subtype_aliases = None
+                if subtype is not None and is_dataclass(subtype):
+                    subtype_aliases = {f.name: f.metadata.get("alias", f.name) for f in fields(subtype)}
+
+                processed_list = []
+                for item in value:
+                    if isinstance(item, dict):
+                        processed_list.append(_convert_with_aliases(item, subtype_aliases))
+                    else:
+                        # Fallback to generic conversion
+                        processed_list.append(convert_keys(item))
+
+                root_content[key] = processed_list
+                continue
+
             if isinstance(value, list):
                 if not value:  # empty list
                     continue
@@ -128,13 +227,8 @@ class Parser:
                 processed_list: List[Any] = []
                 for item in value:
                     if hasattr(item, "__dict__"):
-                        # Convert to dict first
-                        item_dict = Parser.to_dict_from_class(item)
-
-                        # Then convert keys to camelCase
-                        item_dict_camel = convert_keys(item_dict)
-
-                        processed_list.append(item_dict_camel)
+                        # Serialize object recursively with its own aliases
+                        processed_list.append(serialize_obj_with_aliases(item, declared_hint=_declared_subtype))
                     else:
                         processed_list.append(
                             str(item).lower() if isinstance(item, bool) else item
@@ -143,7 +237,8 @@ class Parser:
                 # Assign the processed list
                 root_content[key] = processed_list
             elif hasattr(value, "__dict__"):
-                root_content[key] = convert_keys(Parser.to_dict_from_class(value))
+                # Serialize nested object with its own aliases, passing the declared hint so xsi:type can be emitted if needed
+                root_content[key] = serialize_obj_with_aliases(value, declared_hint=hint)
             else:
                 root_content[key] = (
                     str(value).lower() if isinstance(value, bool) else value

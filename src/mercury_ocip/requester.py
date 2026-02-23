@@ -85,26 +85,62 @@ class BaseRequester(ABC):
         Returns:
             bytes: The serialized XML document as bytes, encoded with ISO-8859-1.
         """
+        if isinstance(command, str):
+            cmd = command
+        elif hasattr(command, "encode") and callable(command.encode):
+            cmd = command.encode()
+        else:
+            raise TypeError(
+                "Command must be a string or an object with an encode() method."
+            )
+
+        if not isinstance(cmd, str):
+            raise TypeError("Command.encode() must return a string.")
+
+        cmd = cmd.strip()
+
+        if cmd.startswith("<?xml"):
+            parts = cmd.split("?>", 1)
+            if len(parts) == 2:
+                cmd = parts[1].strip()
 
         ElementMaker = builder.ElementMaker(
             namespace="C",
-            nsmap={None: "C", "xsi": "http://www.w3.org/2001/XMLSchema-instance"},
+            nsmap={
+                None: "C",
+                "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            },
         )
 
         session_id = etree.Element("sessionId")
         session_id.text = self.session_id
         session_id.set("xmlns", "")
 
-        command_element = etree.fromstring(command.encode("ISO-8859-1"))
+        wrapper_xml = (
+            '<_wrap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            + cmd
+            + "</_wrap>"
+        )
+
+        wrapper_element = etree.fromstring(wrapper_xml.encode("ISO-8859-1"))
+
+        if len(wrapper_element) == 0:
+            raise ValueError("Encoded command did not produce a valid XML element.")
+
+        command_element = wrapper_element[0]
 
         broadsoft_doc = ElementMaker.BroadsoftDocument(
-            session_id, command_element, protocol="OCI"
+            session_id,
+            command_element,
+            protocol="OCI",
         )
 
         return etree.tostring(
-            broadsoft_doc, xml_declaration=True, encoding="ISO-8859-1"
+            broadsoft_doc,
+            xml_declaration=True,
+            encoding="ISO-8859-1",
         )
-
+        
     def __del__(self) -> None:
         self.disconnect()
 
