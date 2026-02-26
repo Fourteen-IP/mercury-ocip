@@ -57,6 +57,7 @@ class Parser:
         for attr, hint in type_hints.items():
             value = getattr(obj, attr, None)
 
+            # Check if the value is described as nillable in the schema to drop undeclared fields from the command body
             if (
                 value is not None
                 and (
