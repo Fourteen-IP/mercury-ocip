@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@KiPageFault 23.02.26
+Rekitted parser to handle nested object alias conversions, added recursive xml namespace declarations for types which inherit from other objects (eg DepartmentKey -> GroupDepartmentKey in xml)
+
 @Jordan-Prescott 23.02.26
 - Users reported failing uploads due to 'use_hotline' in accessDevice was set as optional when schema stated mandatory. Updated upload sheet and docs.
 

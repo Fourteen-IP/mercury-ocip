@@ -44,7 +44,7 @@ def test_build_oci_xml_creates_correct_structure(mock_logger):
 
     mock_command = Mock()
     mock_command.encode.return_value = """
-    <command xmlns="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="AuthenticationRequest">
+    <command xmlns="" xsi:type="AuthenticationRequest">
     <userId>vinny</userId>
     </command>"""
 
