@@ -1,26 +1,32 @@
-name: Parser Sync
+name: Sync Parser
 
 on:
     push:
         branches: [main]
         paths:
-            - "src/mercury_ocip_fast/utils/**"
-    workflow_dispatch:
+            - "src/mercury_ocip/utils/parser.py"
 
 jobs:
     sync:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
                   token: ${{ secrets.SYNC_TOKEN }}
 
-            - name: Sync parser to other repo
+            - name: Sync parser to mercury-ocip-fast
               run: |
-                  git remote add target https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git
+                  git clone https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git target-repo
+                  cp src/mercury_ocip/utils/parser.py target-repo/src/mercury_ocip_fast/utils/parser.py
+                  cd target-repo
+                  git config user.email "devteam@fourteenip.com"
+                  git config user.name "devteam-service-account"
                   git checkout -b chore/parser-sync
-                  git subtree push --prefix=src/mercury_ocip_fast/utils target chore/parser-sync
+                  git add .
+                  git diff --staged --quiet && echo "No changes, skipping" && exit 0
+                  git commit -m "chore: sync parser.py from mercury-ocip"
+                  git push origin chore/parser-sync
 
             - name: Create PR
               run: |
@@ -28,7 +34,7 @@ jobs:
                     --repo Fourteen-IP/mercury-ocip-fast \
                     --head chore/parser-sync \
                     --base main \
-                    --title "Sync parser.py" \
-                    --body "Automated sync from mercury-ocip"
+                    --title "chore: sync parser.py from mercury-ocip" \
+                    --body "Automated sync of \`parser.py\` from [mercury-ocip](https://github.com/Fourteen-IP/mercury-ocip). Please review before merging."
               env:
                   GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
