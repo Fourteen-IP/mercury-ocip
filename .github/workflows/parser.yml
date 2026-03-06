@@ -1,12 +1,10 @@
 name: Sync Parser
-
 on:
     push:
         branches: [main]
         paths:
             - "src/mercury_ocip/utils/parser.py"
     workflow_dispatch:
-
 jobs:
     sync:
         runs-on: ubuntu-latest
@@ -15,11 +13,11 @@ jobs:
               with:
                   fetch-depth: 0
                   token: ${{ secrets.SYNC_TOKEN }}
-
             - name: Sync parser to mercury-ocip-fast
               run: |
                   git clone https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git target-repo
                   cp src/mercury_ocip/utils/parser.py target-repo/src/mercury_ocip_fast/utils/parser.py
+                  sed -i 's/mercury_ocip/mercury_ocip_fast/g' target-repo/src/mercury_ocip_fast/utils/parser.py
                   cd target-repo
                   git config user.email "devteam@fourteenip.com"
                   git config user.name "devteam-service-account"
@@ -28,7 +26,6 @@ jobs:
                   git diff --staged --quiet && echo "No changes, skipping" && exit 0
                   git commit -m "chore: sync parser.py from mercury-ocip"
                   git push origin chore/parser-sync
-
             - name: Create PR
               run: |
                   gh pr create \
