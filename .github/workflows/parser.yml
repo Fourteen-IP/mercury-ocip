@@ -4,6 +4,7 @@ on:
         branches: [main]
         paths:
             - "src/mercury_ocip/utils/parser.py"
+            - "tests/parser_test.py"
     workflow_dispatch:
 jobs:
     sync:
@@ -17,14 +18,16 @@ jobs:
               run: |
                   git clone https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git target-repo
                   cp src/mercury_ocip/utils/parser.py target-repo/src/mercury_ocip_fast/utils/parser.py
+                  cp tests/parser_test.py target-repo/tests/parser_test.py
                   sed -i 's/mercury_ocip/mercury_ocip_fast/g' target-repo/src/mercury_ocip_fast/utils/parser.py
+                  sed -i 's/mercury_ocip/mercury_ocip_fast/g' target-repo/tests/parser_test.py
                   cd target-repo
                   git config user.email "devteam@fourteenip.com"
                   git config user.name "devteam-service-account"
                   git checkout -b chore/parser-sync
                   git add .
                   git diff --staged --quiet && echo "No changes, skipping" && exit 0
-                  git commit -m "chore: sync parser.py from mercury-ocip"
+                  git commit -m "chore: sync parser.py and tests from mercury-ocip"
                   git push origin chore/parser-sync
             - name: Create PR
               run: |
@@ -32,7 +35,7 @@ jobs:
                     --repo Fourteen-IP/mercury-ocip-fast \
                     --head chore/parser-sync \
                     --base main \
-                    --title "chore: sync parser.py from mercury-ocip" \
-                    --body "Automated sync of \`parser.py\` from [mercury-ocip](https://github.com/Fourteen-IP/mercury-ocip). Please review before merging."
+                    --title "chore: sync parser.py and tests from mercury-ocip" \
+                    --body "Automated sync of \`parser.py\` and \`tests/parser_test.py\` from [mercury-ocip](https://github.com/Fourteen-IP/mercury-ocip). Please review before merging."
               env:
                   GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
