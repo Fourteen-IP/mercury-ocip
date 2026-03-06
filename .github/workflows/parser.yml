@@ -4,7 +4,7 @@ on:
     push:
         branches: [main]
         paths:
-            - "parser.py"
+            - "src/mercury_ocip_fast/utils/parser.py"
     workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
               run: |
                   git remote add target https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git
                   git checkout -b chore/parser-sync
-                  git subtree push --prefix=parser.py target chore/parser-sync
+                  git subtree push --prefix=src/mercury_ocip_fast/utils/parser.py target chore/parser-sync
 
             - name: Create PR
               run: |
