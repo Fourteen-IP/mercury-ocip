@@ -1,0 +1,34 @@
+name: Parser Sync
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "parser.py"
+    workflow_dispatch:
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.SYNC_TOKEN }}
+
+            - name: Sync parser to other repo
+              run: |
+                  git remote add target https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/Fourteen-IP/mercury-ocip-fast.git
+                  git checkout -b chore/parser-sync
+                  git subtree push --prefix=parser.py target chore/parser-sync
+
+            - name: Create PR
+              run: |
+                  gh pr create \
+                    --repo Fourteen-IP/mercury-ocip-fast \
+                    --head chore/parser-sync \
+                    --base main \
+                    --title "Sync parser.py" \
+                    --body "Automated sync from mercury-ocip"
+              env:
+                  GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
