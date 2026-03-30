@@ -1,6 +1,5 @@
+from dataclasses import dataclass
 from typing import cast
-
-from attr import dataclass
 
 from mercury_ocip.automate.base_automation import BaseAutomation
 from mercury_ocip.client import BaseClient
