@@ -1,15 +1,17 @@
 from typing import Iterable, Optional
-from action_completer.types import ActionParam, Action
+
+from action_completer.types import Action, ActionParam
 from action_completer.utils import get_fragments
+
+from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.commands.commands import (
     GroupGetListInServiceProviderPagedSortedListRequest,
     GroupGetListInServiceProviderPagedSortedListResponse,
-    ServiceProviderGetListRequest,
-    ServiceProviderGetListResponse,
     GroupServiceGetAuthorizedListRequest,
     GroupServiceGetAuthorizedListResponse,
+    ServiceProviderGetListRequest,
+    ServiceProviderGetListResponse,
 )
-from mercury_ocip.cli.globals import MERCURY_CLI
 
 
 def _get_group_id_completions(
@@ -75,7 +77,7 @@ def _get_group_id_completions(
         group_ids = [g.get("group_id", "") for g in group_table]
         if value:
             group_ids = [gid for gid in group_ids if str(gid).startswith(value)]
-        return group_ids
+        return sorted(group_ids)
     except Exception:
         return []
 
@@ -112,9 +114,10 @@ def _get_service_provider_id_completions(
         sp_ids = [sp.get("service_provider_id", "") for sp in service_provider_table]
         if value:
             sp_ids = [sid for sid in sp_ids if str(sid).startswith(value)]
-        return sp_ids
+        return sorted(sp_ids)
     except Exception:
         return []
+
 
 def _get_group_service_pack_completions(
     action: Action, param: Optional[ActionParam] = None, value: str = ""
@@ -178,13 +181,12 @@ def _get_group_service_pack_completions(
         service_table: GroupServiceGetAuthorizedListResponse = (
             MERCURY_CLI.client().command(
                 GroupServiceGetAuthorizedListRequest(
-                    service_provider_id=service_provider_id,
-                    group_id=group_id
+                    service_provider_id=service_provider_id, group_id=group_id
                 )
             )
         )
 
-        return service_table.service_pack_name
+        return sorted(service_table.service_pack_name)
     except Exception:
         return []
 
