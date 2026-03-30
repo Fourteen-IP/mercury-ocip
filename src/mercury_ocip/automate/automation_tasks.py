@@ -1,21 +1,21 @@
-from mercury_ocip.client import BaseClient
 from mercury_ocip.automate.alias_finder import AliasFinder, AliasRequest, AliasResult
+from mercury_ocip.automate.base_automation import AutomationResult
+from mercury_ocip.automate.call_center_digest import (
+    CallCenterDigest,
+    CallCenterDigestRequest,
+    CallCenterDigestResult,
+)
 from mercury_ocip.automate.group_auditor import (
     GroupAuditor,
     GroupAuditRequest,
     GroupAuditResult,
 )
 from mercury_ocip.automate.user_digest import (
-    UserDigestResult,
-    UserDigestRequest,
     UserDigest,
+    UserDigestRequest,
+    UserDigestResult,
 )
-from mercury_ocip.automate.call_center_digest import (
-    CallCenterDigest,
-    CallCenterDigestRequest,
-    CallCenterDigestResult,
-)
-from mercury_ocip.automate.base_automation import AutomationResult
+from mercury_ocip.client import BaseClient
 
 
 class AutomationTasks:
