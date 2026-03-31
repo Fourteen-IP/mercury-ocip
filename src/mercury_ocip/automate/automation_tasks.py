@@ -1,21 +1,26 @@
-from mercury_ocip.client import BaseClient
 from mercury_ocip.automate.alias_finder import AliasFinder, AliasRequest, AliasResult
+from mercury_ocip.automate.base_automation import AutomationResult
+from mercury_ocip.automate.call_center_digest import (
+    CallCenterDigest,
+    CallCenterDigestRequest,
+    CallCenterDigestResult,
+)
+from mercury_ocip.automate.enterprise_number_block import (
+    EnterpriseNumBlock,
+    EnterpriseNumBlockRequest,
+    EnterpriseNumBlockResult,
+)
 from mercury_ocip.automate.group_auditor import (
     GroupAuditor,
     GroupAuditRequest,
     GroupAuditResult,
 )
 from mercury_ocip.automate.user_digest import (
-    UserDigestResult,
-    UserDigestRequest,
     UserDigest,
+    UserDigestRequest,
+    UserDigestResult,
 )
-from mercury_ocip.automate.call_center_digest import (
-    CallCenterDigest,
-    CallCenterDigestRequest,
-    CallCenterDigestResult,
-)
-from mercury_ocip.automate.base_automation import AutomationResult
+from mercury_ocip.client import BaseClient
 
 
 class AutomationTasks:
@@ -27,6 +32,7 @@ class AutomationTasks:
         self._group_auditor = GroupAuditor(client)
         self._user_digest = UserDigest(client)
         self._call_center_digest = CallCenterDigest(client)
+        self._enterprise_num_block = EnterpriseNumBlock(client)
         self.client.logger.debug("AutomationTasks initialized")
 
     def find_alias(
@@ -120,6 +126,32 @@ class AutomationTasks:
                 },
                 "log": {"type": "performance", "command": "call_center_digest"},
                 "metrics": {"time_saved_ms": 1000000},
+            },
+        )
+
+        return result
+
+    def block_number_in_enterprise(
+        self, enterprise_id: str, number: str
+    ) -> AutomationResult[EnterpriseNumBlockResult]:
+        self.client.logger.info(
+            f"Executing block_number_in_enterprise automation for {enterprise_id}/{number}"
+        )
+        request = EnterpriseNumBlockRequest(
+            enterprise_id=enterprise_id, number=number
+        )
+        result = self._enterprise_num_block.execute(request=request)
+
+        self.client.logger.info(
+            msg="block_number_in_enterprise automation completed",
+            extra={
+                "event": {
+                    "type": "execution",
+                    "category": "automation",
+                    "outcome": "success" if result.ok else "failure",
+                },
+                "log": {"type": "performance", "command": "block_number_in_enterprise"},
+                "metrics": {"time_saved_ms": 600000},
             },
         )
 

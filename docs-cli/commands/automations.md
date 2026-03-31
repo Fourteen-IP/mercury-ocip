@@ -225,3 +225,32 @@ Performs a detailed report of the given Call Center, including its profile setti
 ```bash title="Call Center Digest"
 automations call_center_digest TESTAA123456@domain.com
 ```
+
+---
+
+### block_number
+
+Blocks a number across every group and department in an enterprise. Adds the digit pattern to each group's calling plan and sets the incoming calling plan permission to deny. Groups that BroadWorks rejects are skipped with a warning.
+
+- Parameters:
+    * `enterprise_id` - The Enterprise / Service Provider ID
+    * `number` - The number or digit pattern to block
+
+**Example:**
+```bash title="Block Number"
+automations block_number MyEnterprise 01234567890
+```
+
+#### Output
+
+**Success:** Shows the pattern name that was applied.
+
+```
+✔ 'Block 01234567890' applied across all groups in 'MyEnterprise'.
+```
+
+**Failure:** Shows that the block could not be applied.
+
+```
+✘ Failed to block '01234567890' in enterprise 'MyEnterprise'.
+```

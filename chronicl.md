@@ -50,6 +50,11 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb8 30.03.26
+- Added EnterpriseNumBlock automation to block a number across all groups and departments in an enterprise.
+- Updated CLI to sort completion alphabetically
+
+
 @KiPageFault 23.02.26
 Rekitted parser to handle nested object alias conversions, added recursive xml namespace declarations for types which inherit from other objects (eg DepartmentKey -> GroupDepartmentKey in xml)
 
