@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb8 21.05.26
+- Fixed bug in `_handle_nested_types` where a missing `endpoint_type` CSV column was treated the same as an explicit `null`, causing `<endpoint C:nil="true"/>` to be injected into every `user.modify` that didn't specify an endpoint change.
+
 @malkin0xb8 30.03.26
 - Added EnterpriseNumBlock automation to block a number across all groups and departments in an enterprise.
 - Updated CLI to sort completion alphabetically
