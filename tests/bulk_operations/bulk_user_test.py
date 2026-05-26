@@ -11,6 +11,8 @@ from mercury_ocip.commands.commands import (
     ReplacementSIPAliasList,
     AlternateUserIdEntry,
     StreetAddress,
+    TrunkAddressingMultipleContactModify,
+    TrunkGroupDeviceMultipleContactEndpointModify,
 )
 from mercury_ocip.commands.base_command import OCINil
 
@@ -28,6 +30,8 @@ class TestUserBulkOperations:
             "ReplacementSIPAliasList": ReplacementSIPAliasList,
             "AlternateUserIdEntry": AlternateUserIdEntry,
             "StreetAddress": StreetAddress,
+            "TrunkAddressingMultipleContactModify": TrunkAddressingMultipleContactModify,
+            "TrunkGroupDeviceMultipleContactEndpointModify": TrunkGroupDeviceMultipleContactEndpointModify,
         }
         return client
 
@@ -358,5 +362,44 @@ user.create,TestServiceProvider,SalesGroup,john.doe@test.com,John,Doe,John,Doe,1
             assert isinstance(command.endpoint, OCINil), (
                 "endpoint must be OCINil when endpoint_type is explicitly 'null' in the CSV"
             )
+        finally:
+            os.unlink(temp_file)
+
+    def test_user_modify_trunk_addressing_endpoint_uses_choice_wrapper(self, mock_client):
+        """Regression: endpoint choice must serialize as endpoint/trunkAddressing.
+
+        UserConsolidatedModifyRequest22 defines endpoint as an anonymous wrapper
+        containing a choice. The selected trunkAddressing object must not be
+        serialized directly as the endpoint element's xsi:type.
+        """
+        csv_content = (
+            "operation,userId,endpointType,trunkAddressing.trunkGroupDeviceEndpoint.name,"
+            "trunkAddressing.trunkGroupDeviceEndpoint.linePort\n"
+            "user.modify,HYCOLOGM8101@hycologm.ev.com,TrunkAddressing,COLOG_GWL_A,"
+            "HYCOLOGM84101@hycologm.ev.com\n"
+        )
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            f.write(csv_content)
+            temp_file = f.name
+
+        try:
+            user_ops = UserBulkOperations(mock_client)
+            mock_client.command.return_value = Mock()
+
+            results = user_ops.execute_from_csv(temp_file, dry_run=True)
+
+            assert len(results) == 1
+            command: UserConsolidatedModifyRequest22 = results[0]["command"]
+            xml = command.to_xml()
+
+            assert "<endpoint><trunkAddressing>" in xml
+            assert "<trunkGroupDeviceEndpoint" in xml
+            assert "<name>COLOG_GWL_A</name>" in xml
+            assert (
+                "<linePort>HYCOLOGM84101@hycologm.ev.com</linePort>"
+                in xml
+            )
+            assert 'endpoint xsi:type="TrunkAddressingMultipleContactModify"' not in xml
         finally:
             os.unlink(temp_file)
