@@ -165,6 +165,8 @@ class Parser:
                         else:
                             result_list.append(convert_keys(i))
                     return result_list
+                elif hasattr(d, "__dict__"):
+                    return serialize_obj_with_aliases(d)
                 elif isinstance(d, bool):
                     return str(d).lower()
                 else:
@@ -237,6 +239,8 @@ class Parser:
             elif hasattr(value, "__dict__"):
                 # Serialize nested object with its own aliases, passing the declared hint so xsi:type can be emitted if needed
                 root_content[key] = serialize_obj_with_aliases(value, declared_hint=hint)
+            elif isinstance(value, dict):
+                root_content[key] = convert_keys(value)
             else:
                 root_content[key] = (
                     str(value).lower() if isinstance(value, bool) else value

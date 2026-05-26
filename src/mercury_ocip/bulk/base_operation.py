@@ -484,11 +484,14 @@ class BaseBulkOperations(ABC):
                             chosen_data, nested_structure
                         )
 
-                    # Create the command object
+                    # Create the selected choice object and preserve the choice
+                    # element wrapper expected by anonymous xs:choice fields.
                     if command_class := self.client._dispatch_table.get(
                         command_class_name
                     ):
-                        processed_data[nested_field] = command_class(**chosen_data)
+                        processed_data[nested_field] = {
+                            choice_key: command_class(**chosen_data)
+                        }
                     else:
                         raise ValueError(
                             f"Command class '{command_class_name}' not found in dispatch table"
@@ -498,7 +501,9 @@ class BaseBulkOperations(ABC):
                     if command_class := self.client._dispatch_table.get(
                         chosen_structure
                     ):
-                        processed_data[nested_field] = command_class(**chosen_data)
+                        processed_data[nested_field] = {
+                            choice_key: command_class(**chosen_data)
+                        }
                     else:
                         raise ValueError(
                             f"Command class '{chosen_structure}' not found in dispatch table"
