@@ -375,8 +375,8 @@ user.create,TestServiceProvider,SalesGroup,john.doe@test.com,John,Doe,John,Doe,1
         csv_content = (
             "operation,userId,endpointType,trunkAddressing.trunkGroupDeviceEndpoint.name,"
             "trunkAddressing.trunkGroupDeviceEndpoint.linePort\n"
-            "user.modify,HYCOLOGM8101@hycologm.ev.com,TrunkAddressing,COLOG_GWL_A,"
-            "HYCOLOGM84101@hycologm.ev.com\n"
+            "user.modify,testuser001@test.example.com,TrunkAddressing,TEST_GWL_A,"
+            "testuser001-lp@test.example.com\n"
         )
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
@@ -395,9 +395,9 @@ user.create,TestServiceProvider,SalesGroup,john.doe@test.com,John,Doe,John,Doe,1
 
             assert "<endpoint><trunkAddressing>" in xml
             assert "<trunkGroupDeviceEndpoint" in xml
-            assert "<name>COLOG_GWL_A</name>" in xml
+            assert "<name>TEST_GWL_A</name>" in xml
             assert (
-                "<linePort>HYCOLOGM84101@hycologm.ev.com</linePort>"
+                "<linePort>testuser001-lp@test.example.com</linePort>"
                 in xml
             )
             assert 'endpoint xsi:type="TrunkAddressingMultipleContactModify"' not in xml
