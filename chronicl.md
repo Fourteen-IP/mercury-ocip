@@ -50,6 +50,9 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb8 29.05.26
+Updated the base operatiosn to include group admin delete.
+
 @malkin0xb8 21.05.26
 - Fixed bug in `_handle_nested_types` where a missing `endpoint_type` CSV column was treated the same as an explicit `null`, causing `<endpoint C:nil="true"/>` to be injected into every `user.modify` that didn't specify an endpoint change.
 
