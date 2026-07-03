@@ -1,19 +1,7 @@
 import sys
 
-from rich import box
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
-
 from mercury_ocip.cli.core import cli, debug, debug_enabled
 from mercury_ocip.cli.globals import MERCURY_CLI
-from mercury_ocip.cli.utils.service_group_id_callable import (
-    group_ids,
-    group_service_packs,
-    service_provider_ids,
-)
-from mercury_ocip.commands.base_command import ErrorResponse
-from mercury_ocip.commands.commands import GroupGetUserServiceAssignedUserListResponse
 
 console = MERCURY_CLI.console()
 
