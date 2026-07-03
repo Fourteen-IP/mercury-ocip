@@ -5,7 +5,7 @@ Mercury exceptions
 import attr
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MError(Exception):
     """Base Exception raised by Mercury.
 
@@ -21,7 +21,7 @@ class MError(Exception):
         return f"{self.__class__.__name__}({self.message})"
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorResponse(MError):
     """
     Exception raised when an ErrorResponse is received and decoded.
@@ -30,7 +30,7 @@ class MErrorResponse(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorTimeOut(MError):
     """
     Exception raised when nothing is head back from the server.
@@ -39,7 +39,7 @@ class MErrorTimeOut(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorUnknown(MError):
     """
     Exception raised when life becomes too much for the software.
@@ -48,7 +48,7 @@ class MErrorUnknown(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorAPISetup(MError):
     """
     Exception raised when life becomes too much for the software.
@@ -57,7 +57,7 @@ class MErrorAPISetup(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorAttributeMissing(MError):
     """
     Exception raised when a required attribute is missing.
@@ -66,7 +66,7 @@ class MErrorAttributeMissing(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorUnexpectedAttribute(MError):
     """
     Exception raised when additional elements passed to __init__
@@ -75,7 +75,7 @@ class MErrorUnexpectedAttribute(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorSocketInitialisation(MError):
     """
     Exception raised when the TCP socket fails to initiate.
@@ -84,7 +84,7 @@ class MErrorSocketInitialisation(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorSocketTimeout(MError):
     """
     Exception raised when the TCP socket fails to initiate.
@@ -93,7 +93,7 @@ class MErrorSocketTimeout(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorSendRequestFailed(MError):
     """
     Exception raised when a requester send request command fails.
@@ -102,7 +102,7 @@ class MErrorSendRequestFailed(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorClientInitialisation(MError):
     """
     Exception raised when the SOAP Client fails to initiate.
@@ -111,7 +111,7 @@ class MErrorClientInitialisation(MError):
     pass
 
 
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, eq=False)
 class MErrorFailedXMLConversion(MError):
     """
     Exception raised when Parser fails to translate XML data to a Dictionary.

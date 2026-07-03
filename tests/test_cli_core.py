@@ -367,3 +367,58 @@ class TestParamHintToolbar:
         frags = param_hint_fragments(reg, "help bulk create hunt")
         styles = _styles_by_label(frags)
         assert styles["<command_path>"] == "bold underline"
+
+
+def _wide_registry():
+    reg = CommandRegistry()
+
+    @reg.command("wide", meta="Command with a wide signature")
+    @reg.param("alpha_param", meta="First parameter description")
+    @reg.param("beta_param", meta="Second parameter description")
+    @reg.param("gamma_param", meta="Third parameter description")
+    @reg.param("delta_param", meta="Fourth parameter description")
+    def _wide(alpha_param, beta_param, gamma_param, delta_param):
+        return None
+
+    return reg
+
+
+class TestToolbarScrolling:
+    def test_no_trim_when_it_fits(self):
+        reg = _wide_registry()
+        frags = param_hint_fragments(reg, "wide ", width=500)
+        text = "".join(t for _, t in frags)
+        assert "…" not in text
+        assert "<alpha_param>" in text and "<delta_param>" in text
+
+    def test_width_none_never_trims(self):
+        reg = _wide_registry()
+        frags = param_hint_fragments(reg, "wide ")
+        assert "…" not in "".join(t for _, t in frags)
+
+    def test_trims_to_width_and_keeps_current_param_visible(self):
+        reg = _wide_registry()
+        frags = param_hint_fragments(reg, "wide a b c ", width=40)
+        text = "".join(t for _, t in frags)
+        assert len(text) <= 40
+        assert "<delta_param>" in text  # current param on screen
+        assert text.startswith("… ")  # earlier params trimmed away
+        styles = _styles_by_label(frags)
+        assert styles["<delta_param>"] == "bold underline"
+
+    def test_start_of_signature_trims_right_only(self):
+        reg = _wide_registry()
+        frags = param_hint_fragments(reg, "wide ", width=40)
+        text = "".join(t for _, t in frags)
+        assert len(text) <= 40
+        assert "<alpha_param>" in text
+        assert not text.startswith("…")
+        assert text.endswith(" …")
+
+    def test_middle_param_trims_both_sides(self):
+        reg = _wide_registry()
+        frags = param_hint_fragments(reg, "wide a b ", width=40)
+        text = "".join(t for _, t in frags)
+        assert len(text) <= 40
+        assert "<gamma_param>" in text
+        assert text.startswith("… ") and text.endswith(" …")

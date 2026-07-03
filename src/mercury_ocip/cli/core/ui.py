@@ -20,6 +20,7 @@ import traceback
 from contextlib import contextmanager
 from typing import Iterable, Iterator
 
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -77,6 +78,18 @@ class Operation:
     def update(self, message: str) -> None:
         self._status.update(f"[cyan]{message}")
 
+    def step(self, message: str, ok: bool = True) -> None:
+        """Report one completed step of a multi-step operation.
+
+        Prints a ✔/✘ line WITHOUT stopping the spinner, so successive steps
+        stack above the live status while the operation continues. Pair with
+        update() to describe the next step being worked on.
+        """
+        if ok:
+            self._console.print(f"✔ {message}", style="success")
+        else:
+            self._console.print(f"✘ {message}", style="error")
+
     def success(self, message: str) -> None:
         self.stop()
         self._console.print(f"✔ {message}", style="success")
@@ -104,9 +117,13 @@ def operation(message: str) -> Iterator[Operation]:
         yield op
     except Exception as e:
         op.stop()
-        console.print(f"✘ {e}", style="error")
+        # Fall back to the exception type when str(e) is empty (e.g. a bare
+        # assert), and escape so bracketed text in server messages renders
+        # literally instead of being parsed as Rich markup.
+        detail = str(e).strip() or type(e).__name__
+        console.print(f"✘ {escape(detail)}", style="error")
         if _debug:
-            console.print(f"[dim]{traceback.format_exc()}[/]")
+            console.print(f"[dim]{escape(traceback.format_exc())}[/]")
     finally:
         op.stop()
 

@@ -119,9 +119,15 @@ def _current_param(
     return params[index], CompletionContext(values=values, partial=partial)
 
 
-def param_hint_fragments(registry: CommandRegistry, text: str):
+def param_hint_fragments(
+    registry: CommandRegistry, text: str, width: Optional[int] = None
+):
     """Build bottom-toolbar fragments showing the resolved command's signature,
     with the param currently being typed highlighted and described.
+
+    If width is given and the signature is wider, the fragments are trimmed
+    to a sliding window that keeps the current param visible, with ellipses
+    marking the cut edges.
 
     Returns None when the input doesn't resolve to a command yet (the
     completion menu covers group/command names).
@@ -135,19 +141,57 @@ def param_hint_fragments(registry: CommandRegistry, text: str):
 
     current = len(remaining)  # index of the param being typed / expected next
     fragments = [("", " "), ("bold", node.name)]
+    focus_start = focus_end = 0  # char range of the highlighted param
 
     for i, param in enumerate(node.params):
         label = f"<{param.name}>"
         is_current = i == current or (param.greedy and current >= i)
         if is_current:
             fragments.append(("", "  "))
+            focus_start = sum(len(t) for _, t in fragments)
             fragments.append(("bold underline", label))
+            # Focus covers only the label: the window must keep it visible,
+            # while a long meta description may be cut at the edge.
+            focus_end = focus_start + len(label)
             if param.meta:
                 fragments.append(("", f" — {param.meta}"))
         else:
             fragments.append(("", f"  {label}"))
 
+    if width is not None:
+        fragments = _scroll_fragments(fragments, width, focus_start, focus_end)
     return fragments
+
+
+def _scroll_fragments(fragments, width: int, focus_start: int, focus_end: int):
+    """Trim styled fragments to at most `width` characters.
+
+    Slides the visible window so the [focus_start, focus_end) char range is
+    on screen (roughly centered), replacing trimmed edges with "… " / " …".
+    """
+    total = sum(len(text) for _, text in fragments)
+    if total <= width or width <= 4:
+        return fragments
+
+    start = focus_start - max((width - (focus_end - focus_start)) // 2, 0)
+    start = max(0, min(start, total - width))
+    end = start + width
+
+    # Reserve room for the edge markers inside the window.
+    inner_start = start + 2 if start > 0 else 0
+    inner_end = end - 2 if end < total else total
+
+    out = []
+    if start > 0:
+        out.append(("class:muted", "… "))
+    pos = 0
+    for style, text in fragments:
+        if pos + len(text) > inner_start and pos < inner_end:
+            out.append((style, text[max(inner_start - pos, 0) : inner_end - pos]))
+        pos += len(text)
+    if end < total:
+        out.append(("class:muted", " …"))
+    return out
 
 
 def make_bottom_toolbar(registry: CommandRegistry):
@@ -164,7 +208,8 @@ def make_bottom_toolbar(registry: CommandRegistry):
         if quit_hint_active() and not text:
             return [("class:muted", " Press Ctrl+C again to quit ")]
 
-        fragments = param_hint_fragments(registry, text)
+        width = get_app().output.get_size().columns
+        fragments = param_hint_fragments(registry, text, width=width)
         if fragments is None:
             fragments = [("", " Tab: complete · 'help' lists all commands")]
         return fragments
