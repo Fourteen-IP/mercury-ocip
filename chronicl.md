@@ -56,6 +56,12 @@
 - Added a gradient splash screen, double-tap-to-exit, and a host prompt on startup; the old plain "Welcome to mercury_cli" splash text is gone in favour of a rendered ASCII wordmark/banner that adapts to terminal width.
 - Fixed FrozenInstanceError on MError/MErrorResponse (attrs classes needed `eq=False` so Python's exception machinery can set `__traceback__`/`__cause__`), and added scrolling to the param hint toolbar so long signatures stay readable.
 
+@malkin0xb8 29.05.26
+Updated the base operatiosn to include group admin delete.
+
+@malkin0xb8 21.05.26
+- Fixed bug in `_handle_nested_types` where a missing `endpoint_type` CSV column was treated the same as an explicit `null`, causing `<endpoint C:nil="true"/>` to be injected into every `user.modify` that didn't specify an endpoint change.
+
 @malkin0xb8 30.03.26
 - Added EnterpriseNumBlock automation to block a number across all groups and departments in an enterprise.
 - Updated CLI to sort completion alphabetically

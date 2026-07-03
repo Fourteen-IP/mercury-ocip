@@ -5,7 +5,16 @@ from unittest.mock import Mock
 
 from mercury_ocip.client import Client
 from mercury_ocip.bulk.user import UserBulkOperations
-from mercury_ocip.commands.commands import UserConsolidatedAddRequest22, AlternateUserIdEntry, StreetAddress, AlternateUserIdEntry
+from mercury_ocip.commands.commands import (
+    UserConsolidatedAddRequest22,
+    UserConsolidatedModifyRequest22,
+    ReplacementSIPAliasList,
+    AlternateUserIdEntry,
+    StreetAddress,
+    TrunkAddressingMultipleContactModify,
+    TrunkGroupDeviceMultipleContactEndpointModify,
+)
+from mercury_ocip.commands.base_command import OCINil
 
 
 class TestUserBulkOperations:
@@ -17,8 +26,12 @@ class TestUserBulkOperations:
         client = Mock(spec=Client)
         client._dispatch_table = {
             "UserConsolidatedAddRequest22": UserConsolidatedAddRequest22,
+            "UserConsolidatedModifyRequest22": UserConsolidatedModifyRequest22,
+            "ReplacementSIPAliasList": ReplacementSIPAliasList,
             "AlternateUserIdEntry": AlternateUserIdEntry,
             "StreetAddress": StreetAddress,
+            "TrunkAddressingMultipleContactModify": TrunkAddressingMultipleContactModify,
+            "TrunkGroupDeviceMultipleContactEndpointModify": TrunkGroupDeviceMultipleContactEndpointModify,
         }
         return client
 
@@ -292,4 +305,101 @@ user.create,TestServiceProvider,SalesGroup,john.doe@test.com,John,Doe,John,Doe,1
         assert "access_device_endpoint" in result
         assert "use_custom_user_name_password" in result["access_device_endpoint"]
         assert "port_number" in result["access_device_endpoint"]
-        
+
+    def test_user_modify_sip_alias_no_endpoint_in_xml(self, mock_client):
+        """Regression: user.modify with only sipAliasList must not emit <endpoint C:nil="true"/>.
+
+        When endpoint_type is absent from the CSV, the choice handler must skip
+        the endpoint field entirely rather than setting it to OCINil, which would
+        tell BroadWorks to clear the user's endpoint assignment.
+        """
+        csv_content = (
+            "operation,userId,sipAliasList.sipAlias[0]\n"
+            "user.modify,HYCOLOGM8101@hycologm.ev.com,84101\n"
+        )
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            f.write(csv_content)
+            temp_file = f.name
+
+        try:
+            user_ops = UserBulkOperations(mock_client)
+            mock_client.command.return_value = Mock()
+
+            results = user_ops.execute_from_csv(temp_file, dry_run=True)
+
+            assert len(results) == 1
+            command: UserConsolidatedModifyRequest22 = results[0]["command"]
+            assert command.endpoint is None, (
+                "endpoint must be None when endpoint_type is absent from the CSV; "
+                "got OCINil which serialises to <endpoint C:nil=\"true\"/>"
+            )
+        finally:
+            os.unlink(temp_file)
+
+    def test_user_modify_explicit_null_endpoint_sets_ocipnil(self, mock_client):
+        """When endpoint_type is explicitly 'null' in the CSV, endpoint must be OCINil.
+
+        This is the intentional clear-endpoint path, distinct from simply omitting the field.
+        """
+        csv_content = (
+            "operation,userId,sipAliasList.sipAlias[0],endpoint_type\n"
+            "user.modify,HYCOLOGM8101@hycologm.ev.com,84101,null\n"
+        )
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            f.write(csv_content)
+            temp_file = f.name
+
+        try:
+            user_ops = UserBulkOperations(mock_client)
+            mock_client.command.return_value = Mock()
+
+            results = user_ops.execute_from_csv(temp_file, dry_run=True)
+
+            assert len(results) == 1
+            command: UserConsolidatedModifyRequest22 = results[0]["command"]
+            assert isinstance(command.endpoint, OCINil), (
+                "endpoint must be OCINil when endpoint_type is explicitly 'null' in the CSV"
+            )
+        finally:
+            os.unlink(temp_file)
+
+    def test_user_modify_trunk_addressing_endpoint_uses_choice_wrapper(self, mock_client):
+        """Regression: endpoint choice must serialize as endpoint/trunkAddressing.
+
+        UserConsolidatedModifyRequest22 defines endpoint as an anonymous wrapper
+        containing a choice. The selected trunkAddressing object must not be
+        serialized directly as the endpoint element's xsi:type.
+        """
+        csv_content = (
+            "operation,userId,endpointType,trunkAddressing.trunkGroupDeviceEndpoint.name,"
+            "trunkAddressing.trunkGroupDeviceEndpoint.linePort\n"
+            "user.modify,testuser001@test.example.com,TrunkAddressing,TEST_GWL_A,"
+            "testuser001-lp@test.example.com\n"
+        )
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+            f.write(csv_content)
+            temp_file = f.name
+
+        try:
+            user_ops = UserBulkOperations(mock_client)
+            mock_client.command.return_value = Mock()
+
+            results = user_ops.execute_from_csv(temp_file, dry_run=True)
+
+            assert len(results) == 1
+            command: UserConsolidatedModifyRequest22 = results[0]["command"]
+            xml = command.to_xml()
+
+            assert "<endpoint><trunkAddressing>" in xml
+            assert "<trunkGroupDeviceEndpoint" in xml
+            assert "<name>TEST_GWL_A</name>" in xml
+            assert (
+                "<linePort>testuser001-lp@test.example.com</linePort>"
+                in xml
+            )
+            assert 'endpoint xsi:type="TrunkAddressingMultipleContactModify"' not in xml
+        finally:
+            os.unlink(temp_file)

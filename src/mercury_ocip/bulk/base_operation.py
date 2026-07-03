@@ -424,14 +424,15 @@ class BaseBulkOperations(ABC):
                 # Get the explicit type field name (e.g., "endpoint_type" or defaults to "{field}_type")
                 type_field = choice_options.get("_choice_field", f"{nested_field}_type")
 
-                # Use .get() - safe even if type_field doesn't exist (returns None)
-                choice_key = processed_data.get(type_field)
+                # Track whether the type field was actually present in the data
+                type_field_present = type_field in processed_data
+                choice_key = processed_data.pop(type_field, None)
 
-                # Remove the type field - it's just metadata, not part of the schema
-                if type_field in processed_data:
-                    processed_data.pop(type_field)
+                # If the type field was never in the CSV, skip this choice field entirely
+                if not type_field_present:
+                    continue
 
-                # Handle explicit nil: if type is OCINil or None (from 'null' string), set field to None
+                # Handle explicit nil: type field present but value is null/OCINil
                 if choice_key is None or isinstance(choice_key, OCINil):
                     processed_data[nested_field] = OCINil()
                     continue
@@ -483,11 +484,14 @@ class BaseBulkOperations(ABC):
                             chosen_data, nested_structure
                         )
 
-                    # Create the command object
+                    # Create the selected choice object and preserve the choice
+                    # element wrapper expected by anonymous xs:choice fields.
                     if command_class := self.client._dispatch_table.get(
                         command_class_name
                     ):
-                        processed_data[nested_field] = command_class(**chosen_data)
+                        processed_data[nested_field] = {
+                            choice_key: command_class(**chosen_data)
+                        }
                     else:
                         raise ValueError(
                             f"Command class '{command_class_name}' not found in dispatch table"
@@ -497,7 +501,9 @@ class BaseBulkOperations(ABC):
                     if command_class := self.client._dispatch_table.get(
                         chosen_structure
                     ):
-                        processed_data[nested_field] = command_class(**chosen_data)
+                        processed_data[nested_field] = {
+                            choice_key: command_class(**chosen_data)
+                        }
                     else:
                         raise ValueError(
                             f"Command class '{chosen_structure}' not found in dispatch table"

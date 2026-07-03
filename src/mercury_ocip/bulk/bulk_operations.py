@@ -118,6 +118,17 @@ class BulkOperations:
     ) -> List[Dict[str, Any]]:
         return self.administrator.execute_from_data(group_admin_data, dry_run)
 
+    # Group Admin Delete
+    def delete_group_admin_from_csv(
+        self, csv_path: str, dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_csv(csv_path, dry_run)
+
+    def delete_group_admin_from_data(
+        self, group_admin_data: List[Dict[str, Any]], dry_run: bool = False
+    ) -> List[Dict[str, Any]]:
+        return self.administrator.execute_from_data(group_admin_data, dry_run)
+
     # Group Admin Modify Policy
     def modify_group_admin_policy_from_csv(
         self, csv_path: str, dry_run: bool = False
