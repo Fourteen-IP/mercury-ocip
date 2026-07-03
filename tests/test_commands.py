@@ -6,6 +6,7 @@ from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.core import cli, dispatch
 from mercury_ocip.cli.commands.misc.plugins import load_plugins
 from mercury_ocip.plugins.base_plugin import BasePlugin
+from mercury_ocip.commands.commands import SystemSoftwareVersionGetResponse
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -101,7 +102,7 @@ def test_help_for_specific_command(capsys):
 def test_sysver_command(capsys, mock_cli_components):
     """Test the sysver command which interacts with the client."""
     # Setup mock return value
-    mock_version = MagicMock()
+    mock_version = MagicMock(spec=SystemSoftwareVersionGetResponse)
     mock_version.version = "1.0.0"
     mock_cli_components.client.raw_command.return_value = mock_version
 

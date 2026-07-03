@@ -50,6 +50,12 @@
 - Biggest blocker is Cisco copyright stopping open source
 
 ## JOURNAL
+@malkin0xb8 03.07.26
+- Replaced the old third-party action-completer dependency with a custom CLI core (`cli/core`) built in-house: a command tree, tokenizer, dispatcher, and completer, plus dedicated error types (CommandAborted, CommandSyntaxError, IncompleteCommandError, UnknownCommandError) instead of ad-hoc exceptions. All automations, bulk, and misc commands were migrated onto the new `@cli.command` decorator.
+- Consolidated shared CLI UI helpers (spinners, tables, printing) into `cli/core/ui.py` and exposed them to plugins via BasePlugin so third-party plugins get the same look and feel as built-in commands for free.
+- Added a gradient splash screen, double-tap-to-exit, and a host prompt on startup; the old plain "Welcome to mercury_cli" splash text is gone in favour of a rendered ASCII wordmark/banner that adapts to terminal width.
+- Fixed FrozenInstanceError on MError/MErrorResponse (attrs classes needed `eq=False` so Python's exception machinery can set `__traceback__`/`__cause__`), and added scrolling to the param hint toolbar so long signatures stay readable.
+
 @malkin0xb8 30.03.26
 - Added EnterpriseNumBlock automation to block a number across all groups and departments in an enterprise.
 - Updated CLI to sort completion alphabetically
