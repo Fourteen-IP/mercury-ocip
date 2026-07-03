@@ -1,9 +1,9 @@
-from action_completer import ActionCompleter
 from prompt_toolkit import PromptSession
 from rich.console import Console
 from rich.theme import Theme
 
 from mercury_ocip import Agent, Client
+from mercury_ocip.cli.core import MercuryCompleter, cli
 
 
 class MERCURY_CLI:
@@ -16,7 +16,7 @@ class MERCURY_CLI:
     """
 
     __instance: "MERCURY_CLI" = None
-    __completer: ActionCompleter
+    __completer: MercuryCompleter
     __client: Client = None
     __session: PromptSession = None
     __agent: Agent = None
@@ -34,9 +34,9 @@ class MERCURY_CLI:
 
     def __init__(self):
         """
-        Initializes the action completer for the CLI.
+        Initializes the completer for the CLI.
         """
-        self.__completer = ActionCompleter()
+        self.__completer = MercuryCompleter(cli)
         self.__console = Console(
             theme=Theme(
                 {
@@ -121,12 +121,12 @@ class MERCURY_CLI:
         return MERCURY_CLI.__instance.__session
 
     @staticmethod
-    def completer() -> ActionCompleter:
+    def completer() -> MercuryCompleter:
         """
-        Retrieves the action completer instance.
+        Retrieves the prompt completer instance.
 
         Returns:
-            ActionCompleter: The action completer.
+            MercuryCompleter: The completer backed by the command tree.
         """
         return MERCURY_CLI.__instance.__completer
 

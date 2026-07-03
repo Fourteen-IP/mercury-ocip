@@ -1,7 +1,7 @@
 from mercury_ocip.automate.user_digest import UserDetailsResult
 from mercury_ocip.automate.user_digest import UserDigestResult
+from mercury_ocip.cli.core import cli, operation
 from mercury_ocip.cli.globals import MERCURY_CLI
-from action_completer import Empty
 from mercury_ocip.automate.base_automation import AutomationResult
 
 from rich.table import Table
@@ -11,7 +11,6 @@ from rich import box
 from rich.text import Text
 
 console = MERCURY_CLI.console()
-completer = MERCURY_CLI.completer()
 
 
 def _format_user_digest_output(result: AutomationResult[UserDigestResult]) -> None:
@@ -253,14 +252,8 @@ def _print_devices(user_details) -> None:
         )
 
 
-@completer.automations.action(
-    "user_digest", display_meta="Perform a comprehensive audit of a user"
-)
-@completer.param(
-    Empty,
-    display_meta="User ID",
-    cast=str,
-)
+@cli.command("automations user_digest", meta="Perform a comprehensive audit of a user")
+@cli.param("user_id", meta="User ID")
 def _user_digest(user_id: str):
     """
     Perform a comprehensive audit of a user.
@@ -268,23 +261,13 @@ def _user_digest(user_id: str):
     Args:
         user_id: The ID of the user to audit.
     """
-    with console.status(
-        "[cyan]Performing user digest...", spinner="dots", spinner_style="cyan"
-    ) as status:
-        try:
-            result = MERCURY_CLI.agent().automate.user_digest(
-                user_id=user_id,
-            )
+    with operation("Performing user digest...") as op:
+        result = MERCURY_CLI.agent().automate.user_digest(
+            user_id=user_id,
+        )
 
-            if result.ok:
-                status.stop()
-                _format_user_digest_output(result)
-            else:
-                status.stop()
-                console.print(
-                    f"✘ User digest failed for User ID '{user_id}'.", style="red"
-                )
-
-        except Exception as e:
-            status.stop()
-            console.print(f"✘ {e}", style="red")
+        if result.ok:
+            op.stop()
+            _format_user_digest_output(result)
+        else:
+            op.fail(f"User digest failed for User ID '{user_id}'.")

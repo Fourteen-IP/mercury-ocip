@@ -1,5 +1,5 @@
+from mercury_ocip.cli.core import cli, operation
 from mercury_ocip.cli.globals import MERCURY_CLI
-from action_completer import Empty
 from mercury_ocip.automate.call_center_digest import CallCenterDigestResult
 from mercury_ocip.automate.base_automation import AutomationResult
 
@@ -9,7 +9,6 @@ from rich import box
 from rich.text import Text
 
 console = MERCURY_CLI.console()
-completer = MERCURY_CLI.completer()
 
 
 def _format_call_center_digest_output(
@@ -217,15 +216,11 @@ def _get_acd_state_color(state: str | None) -> str:
     return state_colors.get(state, "label")
 
 
-@completer.automations.action(
-    "call_center_digest",
-    display_meta="Perform a comprehensive digest of a call center",
+@cli.command(
+    "automations call_center_digest",
+    meta="Perform a comprehensive digest of a call center",
 )
-@completer.param(
-    Empty,
-    display_meta="Service User ID",
-    cast=str,
-)
+@cli.param("service_user_id", meta="Service User ID")
 def _call_center_digest(service_user_id: str):
     """
     Perform a comprehensive digest of a call center.
@@ -233,26 +228,13 @@ def _call_center_digest(service_user_id: str):
     Args:
         service_user_id: The service user ID of the call center.
     """
-    with console.status(
-        "[cyan]Performing call center digest...",
-        spinner="dots",
-        spinner_style="cyan",
-    ) as status:
-        try:
-            result = MERCURY_CLI.agent().automate.call_center_digest(
-                service_user_id=service_user_id,
-            )
+    with operation("Performing call center digest...") as op:
+        result = MERCURY_CLI.agent().automate.call_center_digest(
+            service_user_id=service_user_id,
+        )
 
-            if result.ok:
-                status.stop()
-                _format_call_center_digest_output(result)
-            else:
-                status.stop()
-                console.print(
-                    f"✘ Call center digest failed for '{service_user_id}'.",
-                    style="red",
-                )
-
-        except Exception as e:
-            status.stop()
-            console.print(f"✘ {e}", style="red")
+        if result.ok:
+            op.stop()
+            _format_call_center_digest_output(result)
+        else:
+            op.fail(f"Call center digest failed for '{service_user_id}'.")

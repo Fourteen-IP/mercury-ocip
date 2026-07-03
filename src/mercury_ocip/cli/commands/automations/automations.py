@@ -1,7 +1,5 @@
-from mercury_ocip.cli.globals import MERCURY_CLI
+from mercury_ocip.cli.core import cli
 
-completer = MERCURY_CLI.completer()
-
-completer.automations.display_meta = (
-    "Automations for various entities such as Users and Groups"
+cli.describe(
+    "automations", "Automations for various entities such as Users and Groups"
 )

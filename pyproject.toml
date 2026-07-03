@@ -59,7 +59,6 @@ dependencies = [
     "prompt-toolkit>=3.0.52",
     "argparse>=1.4.0",
     "asciimatics>=1.15.0",
-    "fourteen-prompt-toolkit-action-completer>=1.2.2",
     "rich>=14.2.0",
 ]
 

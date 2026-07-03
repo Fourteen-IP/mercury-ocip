@@ -9,6 +9,16 @@ from rich.prompt import Prompt
 from rich.text import Text
 
 from mercury_ocip.cli.commands.misc.plugins import load_plugins
+from mercury_ocip.cli.core import (
+    CommandAborted,
+    CommandSyntaxError,
+    IncompleteCommandError,
+    UnknownCommandError,
+    cli,
+    dispatch,
+    make_bottom_toolbar,
+)
+from mercury_ocip.cli.core.errors import CLIError
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.utils.egg import main as egg_main  # noqa: F401
 from mercury_ocip.exceptions import MError, MErrorSocketTimeout
@@ -25,13 +35,16 @@ SPLASH_ART = """
 # CSS Style for the CLI
 console = MERCURY_CLI.console()
 
-parser = argparse.ArgumentParser()  # For non interactive commands
-parser.add_argument("--no-login", required=False, action="store_true")
-parser.add_argument("--username", required=False, type=str)
-parser.add_argument("--password-env", required=False, type=str)
-parser.add_argument("--host", required=False, type=str)
-parser.add_argument("--action", required=False, type=str)
-args = parser.parse_args()
+def parse_args(argv=None):
+    """Parse CLI flags. Kept out of module import so importing this module
+    (e.g. from tests) never consumes sys.argv."""
+    parser = argparse.ArgumentParser()  # For non interactive commands
+    parser.add_argument("--no-login", required=False, action="store_true")
+    parser.add_argument("--username", required=False, type=str)
+    parser.add_argument("--password-env", required=False, type=str)
+    parser.add_argument("--host", required=False, type=str)
+    parser.add_argument("--action", required=False, type=str)
+    return parser.parse_args(argv)
 
 
 def show_splash() -> None:
@@ -87,6 +100,7 @@ def main():
 
     Handles user authentication, session creation, and command processing loop.
     """
+    args = parse_args()
     show_splash()
 
     if args.username and args.password_env and args.host:
@@ -104,7 +118,7 @@ def main():
             )
 
             if args.action:  # Run single action and exit
-                MERCURY_CLI.completer().run_action(args.action)
+                dispatch(args.action, interactive=False)
                 sys.exit()
         except Exception as e:
             console.print(f"[error]Authentication failed: {e}[/error]")
@@ -135,6 +149,7 @@ def main():
         refresh_interval=1,
         completer=MERCURY_CLI.completer(),
         auto_suggest=AutoSuggestFromHistory(),
+        bottom_toolbar=make_bottom_toolbar(cli),
     )
 
     try:
@@ -174,27 +189,30 @@ def command_loop() -> None:
                     continue
                 case _:  # Default case to run any other command
                     try:
-                        MERCURY_CLI.completer().run_action(text)
+                        dispatch(text)
                     except MErrorSocketTimeout:
                         MERCURY_CLI.client().authenticated = False
-                    except ValueError as ve:
-                        # Check if this is actually a "command not found" error
-                        if (
-                            "not found" in str(ve).lower()
-                            or "no action" in str(ve).lower()
-                        ):
+                    except CommandAborted:
+                        pass  # User cancelled a prompt (Ctrl+C) — back to the loop
+                    except UnknownCommandError as e:
+                        console.print(
+                            f"[error]{e}[/error] Type 'help' for a list of commands."
+                        )
+                    except IncompleteCommandError as e:
+                        console.print(f"[error]{e}[/error]")
+                        if e.subcommands:
                             console.print(
-                                f"[error]Unknown command \"{text}\". Type 'help' for a list of commands.[/error]"
+                                f"Available: {', '.join(e.subcommands)}"
                             )
-                        else:
-                            # Other ValueError (like spinner terminal size issues)
-                            console.print(f"[error]Error: {ve}[/error]")
+                    except (CommandSyntaxError, CLIError) as e:
+                        console.print(f"[error]{e}[/error]")
                     except Exception as e:
                         console.print(f"[error]Error executing command: {e}[/error]")
 
         except (KeyboardInterrupt, EOFError):
             console.print("Exiting mercury_cli. Goodbye!")
-            MERCURY_CLI.client().disconnect()  # Mercury Client Cleanup
+            if MERCURY_CLI.client():
+                MERCURY_CLI.client().disconnect()  # Mercury Client Cleanup
             sys.exit()
 
         except Exception as e:

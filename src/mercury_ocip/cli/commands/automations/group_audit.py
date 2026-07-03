@@ -1,7 +1,8 @@
+from mercury_ocip.cli.core import cli, operation
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.cli.utils.service_group_id_callable import (
-    _get_group_id_completions,
-    _get_service_provider_id_completions,
+    group_ids,
+    service_provider_ids,
 )
 from mercury_ocip.automate.base_automation import AutomationResult
 
@@ -11,7 +12,6 @@ from rich import box
 from rich.text import Text
 
 console = MERCURY_CLI.console()
-completer = MERCURY_CLI.completer()
 
 
 def _format_audit_output(result: AutomationResult) -> None:
@@ -174,15 +174,9 @@ def _format_audit_output(result: AutomationResult) -> None:
         )
 
 
-@completer.automations.action(
-    "group_audit", display_meta="Perform a comprehensive audit of a group"
-)
-@completer.param(
-    _get_service_provider_id_completions,
-    display_meta="Service Provider ID",
-    cast=str,
-)
-@completer.param(_get_group_id_completions, display_meta="Group ID", cast=str)
+@cli.command("automations group_audit", meta="Perform a comprehensive audit of a group")
+@cli.param("service_provider_id", source=service_provider_ids, meta="Service Provider ID")
+@cli.param("group_id", source=group_ids, meta="Group ID")
 def _group_audit(service_provider_id: str, group_id: str):
     """
     Perform a comprehensive audit of a group.
@@ -191,24 +185,14 @@ def _group_audit(service_provider_id: str, group_id: str):
         service_provider_id: The ID of the service provider.
         group_id: The ID of the group to audit.
     """
-    with console.status(
-        "[cyan]Performing group audit...", spinner="dots", spinner_style="cyan"
-    ) as status:
-        try:
-            result = MERCURY_CLI.agent().automate.audit_group(
-                service_provider_id=service_provider_id,
-                group_id=group_id,
-            )
+    with operation("Performing group audit...") as op:
+        result = MERCURY_CLI.agent().automate.audit_group(
+            service_provider_id=service_provider_id,
+            group_id=group_id,
+        )
 
-            if result.ok:
-                status.stop()
-                _format_audit_output(result)
-            else:
-                status.stop()
-                console.print(
-                    f"✘ Group audit failed for Group ID '{group_id}'.", style="red"
-                )
-
-        except Exception as e:
-            status.stop()
-            console.print(f"✘ {e}", style="red")
+        if result.ok:
+            op.stop()
+            _format_audit_output(result)
+        else:
+            op.fail(f"Group audit failed for Group ID '{group_id}'.")
