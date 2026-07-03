@@ -23,7 +23,18 @@ from mercury_ocip.cli.core.errors import (
     UnknownCommandError,
 )
 from mercury_ocip.cli.core.tree import CommandRegistry, CompletionContext, Param
-from mercury_ocip.cli.core.ui import Operation, debug, debug_enabled, operation
+from mercury_ocip.cli.core.ui import (
+    Operation,
+    append_status,
+    debug,
+    debug_enabled,
+    kv_table,
+    operation,
+    report_header,
+    section_panel,
+    simple_table,
+    status_icon,
+)
 
 cli = CommandRegistry()
 
@@ -40,6 +51,12 @@ __all__ = [
     "Operation",
     "debug",
     "debug_enabled",
+    "report_header",
+    "section_panel",
+    "kv_table",
+    "simple_table",
+    "status_icon",
+    "append_status",
     "CommandRegistry",
     "CompletionContext",
     "Param",

@@ -2,6 +2,7 @@ import sys
 
 from mercury_ocip.cli.core import cli, debug, debug_enabled
 from mercury_ocip.cli.globals import MERCURY_CLI
+from mercury_ocip.commands.commands import SystemSoftwareVersionGetResponse
 
 console = MERCURY_CLI.console()
 
@@ -9,7 +10,9 @@ console = MERCURY_CLI.console()
 @cli.command("sysver", meta="Gives the current system version")
 def _sysver():
     version = MERCURY_CLI.client().raw_command("SystemSoftwareVersionGetRequest")
-    console.print(f"Current system version: [cyan]{version.version}")
+    console.print(
+        f"Current system version: [cyan]{version.version if isinstance(version, SystemSoftwareVersionGetResponse) else 'Unknown'}"
+    )
 
 
 @cli.command("exit", meta="Exits the CLI")

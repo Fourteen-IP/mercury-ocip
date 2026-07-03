@@ -2,7 +2,7 @@ import inspect
 
 from prompt_toolkit.completion import Completer
 
-from mercury_ocip.cli.core import CompletionContext, Param, cli
+from mercury_ocip.cli.core import CompletionContext, Param, cli, simple_table
 from mercury_ocip.cli.globals import MERCURY_CLI
 from mercury_ocip.utils.defines import to_snake_case
 
@@ -12,8 +12,11 @@ cli.describe("plugin", "Used to view and manage plugins")
 @cli.command("plugin list", meta="List all available plugins")
 def _list_plugins():
     plugins = MERCURY_CLI.agent().list_plugins()
-    for plugin in plugins:
-        print(plugin.name)
+    table = simple_table(
+        [("Name", {"style": "value"}), ("Entry Point", {"style": "label"})],
+        [(plugin.name, plugin.value) for plugin in plugins],
+    )
+    MERCURY_CLI.console().print(table)
 
 
 def _adapt_source(source):
@@ -48,30 +51,24 @@ def _adapt_source(source):
     return source
 
 
-def _create_plugin_command(plugin_instance, command_class, full_command_name):
+def _create_plugin_command(plugin_instance, command_class):
     """Create a command function that executes the plugin command.
 
     Args:
         plugin_instance: The instantiated plugin object
         command_class: The command class to instantiate
-        full_command_name: Full name for reference (e.g., 'module.Plugin.command')
 
     Returns:
         A function that instantiates and executes the command
     """
 
     def command_function(**kwargs):
-        try:
-            command_instance = command_class(plugin_instance)
-        except Exception as e:
-            print(f"Error instantiating command class {command_class}: {e}")
-            raise
-
-        try:
-            return command_instance.execute(**kwargs)
-        except Exception as e:
-            print(f"Error executing command {full_command_name}: {e}")
-            raise
+        # Exceptions propagate untouched so the dispatcher's caller (the
+        # command loop) prints them once, in the themed style, and so
+        # special-cased exception types (e.g. MErrorSocketTimeout) are
+        # still recognised there.
+        command_instance = command_class(plugin_instance)
+        return command_instance.execute(**kwargs)
 
     return command_function
 
@@ -87,11 +84,7 @@ def load_plugins() -> None:
             continue
 
         for command_name, command_class in plugin_instance.get_commands().items():
-            full_command_name = f"{plugin_class.__name__}.{command_name}"
-
-            command_func = _create_plugin_command(
-                plugin_instance, command_class, full_command_name
-            )
+            command_func = _create_plugin_command(plugin_instance, command_class)
 
             cmd_params = getattr(command_class, "params", {}) or {}
             params = [
@@ -102,6 +95,7 @@ def load_plugins() -> None:
                     meta=param_info.get("help", param_info.get("description", "")),
                     required=param_info.get("required", True),
                     default=param_info.get("default"),
+                    greedy=param_info.get("greedy", False),
                 )
                 for param_name, param_info in cmd_params.items()
             ]

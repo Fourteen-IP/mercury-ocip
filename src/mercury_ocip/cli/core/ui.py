@@ -18,7 +18,12 @@ include full tracebacks.
 
 import traceback
 from contextlib import contextmanager
-from typing import Iterator
+from typing import Iterable, Iterator
+
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+from rich import box
 
 _debug = False
 
@@ -64,7 +69,7 @@ class Operation:
 
     def warn(self, message: str) -> None:
         self.stop()
-        self._console.print(f"⚠ {message}", style="yellow")
+        self._console.print(f"⚠ {message}", style="warning")
 
     def print(self, *args, **kwargs) -> None:
         self.stop()
@@ -86,3 +91,88 @@ def operation(message: str) -> Iterator[Operation]:
             console.print(f"[dim]{traceback.format_exc()}[/]")
     finally:
         op.stop()
+
+
+def report_header(title: str) -> Panel:
+    """The centred title panel every automation report opens with."""
+    return Panel(Text(title, style="header", justify="center"), style="divider")
+
+
+def section_panel(content, title: str | None = None) -> Panel:
+    """A bordered section panel with a themed (accent) title.
+
+    Replaces the repeated `Panel(..., title="[bold #d8bbff]X[/]",
+    border_style="divider")` pattern so panel styling lives in one place.
+    """
+    kwargs = {"border_style": "divider"}
+    if title:
+        kwargs["title"] = f"[accent]{title}[/]"
+    return Panel(content, **kwargs)
+
+
+def kv_table(items: Iterable[tuple[str, str]], columns: int = 1, label_width: int = 20) -> Table:
+    """A borderless label/value table, `columns` label/value pairs per row.
+
+    `items` is a flat sequence of (label, value) pairs; it's chunked into
+    rows of `columns` pairs each (the last row is padded if ragged).
+    """
+    table = Table(box=None, show_header=False, padding=(0, 2), expand=True)
+    for _ in range(columns):
+        table.add_column(style="label", width=label_width)
+        table.add_column(style="value")
+
+    items = list(items)
+    for i in range(0, len(items), columns):
+        row_items = items[i : i + columns]
+        cells: list[str] = []
+        for label, value in row_items:
+            cells.append(label)
+            cells.append(value)
+        cells.extend([""] * (columns * 2 - len(cells)))
+        table.add_row(*cells)
+    return table
+
+
+def simple_table(
+    columns: Iterable[str | tuple[str, dict]], rows: Iterable[Iterable]
+) -> Table:
+    """A headered `box.SIMPLE` table.
+
+    Each entry in `columns` is either a header string, or a
+    `(header, add_column_kwargs)` tuple for styled/justified/min-width columns.
+    """
+    table = Table(box=box.SIMPLE, show_header=True, expand=True)
+    for col in columns:
+        if isinstance(col, tuple):
+            header, kwargs = col
+        else:
+            header, kwargs = col, {}
+        table.add_column(header, **kwargs)
+
+    for row in rows:
+        table.add_row(*("" if cell is None else str(cell) for cell in row))
+    return table
+
+
+def status_icon(ok: bool, true_style: str = "success", false_style: str = "error") -> str:
+    """A themed ✓/✗ marker, replacing ad-hoc emoji/hex-coded status text.
+
+    Returns Rich *markup* (e.g. "[success]✓[/]") — safe to drop into an
+    f-string passed to console.print()/Panel()/Table cells/Tree labels,
+    which all parse markup. It is NOT safe to pass to Text.append(), which
+    treats the string as literal characters instead of parsing the tags —
+    use append_status() for that.
+    """
+    return f"[{true_style}]✓[/]" if ok else f"[{false_style}]✗[/]"
+
+
+def append_status(
+    text: Text, ok: bool, true_style: str = "success", false_style: str = "error"
+) -> None:
+    """Append a themed ✓/✗ glyph to a rich Text object.
+
+    Text.append() doesn't parse markup (unlike Panel/Table/Tree), so
+    status_icon()'s markup string would print its tags literally here —
+    this applies the style directly instead.
+    """
+    text.append("✓" if ok else "✗", style=true_style if ok else false_style)
