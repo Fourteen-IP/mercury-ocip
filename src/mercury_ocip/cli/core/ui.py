@@ -37,6 +37,24 @@ def debug_enabled() -> bool:
     return _debug
 
 
+_quit_hint = False
+
+
+def set_quit_hint(active: bool) -> None:
+    """Arms/disarms the "press Ctrl+C again to quit" bottom-toolbar hint.
+
+    Kept as toggleable state (like debug()) rather than a printed line, so
+    the main loop's first Ctrl+C doesn't scroll a new line into the
+    terminal — the toolbar just updates in place on the next prompt.
+    """
+    global _quit_hint
+    _quit_hint = active
+
+
+def quit_hint_active() -> bool:
+    return _quit_hint
+
+
 def _console():
     # Imported lazily to avoid a circular import (globals imports core).
     from mercury_ocip.cli.globals import MERCURY_CLI
@@ -176,3 +194,28 @@ def append_status(
     this applies the style directly instead.
     """
     text.append("✓" if ok else "✗", style=true_style if ok else false_style)
+
+
+def _hex_to_rgb(color: str) -> tuple[int, int, int]:
+    color = color.lstrip("#")
+    return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+
+
+def gradient_text(text: str, start: str, end: str) -> Text:
+    """Colour each line of `text` along a gradient from `start` to `end` (hex).
+
+    Used for the startup splash art so it reads as one deliberate piece of
+    branding instead of a flat block of a single colour.
+    """
+    lines = text.split("\n")
+    steps = max(len(lines) - 1, 1)
+    c1, c2 = _hex_to_rgb(start), _hex_to_rgb(end)
+
+    result = Text()
+    for i, line in enumerate(lines):
+        t = i / steps
+        r, g, b = (round(c1[c] + (c2[c] - c1[c]) * t) for c in range(3))
+        result.append(line, style=f"#{r:02x}{g:02x}{b:02x}")
+        if i < len(lines) - 1:
+            result.append("\n")
+    return result

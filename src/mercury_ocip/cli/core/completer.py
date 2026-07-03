@@ -13,6 +13,7 @@ from mercury_ocip.cli.core.tree import (
     Group,
     Param,
 )
+from mercury_ocip.cli.core.ui import quit_hint_active
 
 
 class MercuryCompleter(Completer):
@@ -156,9 +157,16 @@ def make_bottom_toolbar(registry: CommandRegistry):
         from prompt_toolkit.application import get_app
 
         text = get_app().current_buffer.document.text_before_cursor
+
+        # An armed "press Ctrl+C again to quit" takes over the (otherwise
+        # idle) toolbar on an empty line; typing anything falls straight
+        # through to the normal hints below instead of fighting for space.
+        if quit_hint_active() and not text:
+            return [("class:muted", " Press Ctrl+C again to quit ")]
+
         fragments = param_hint_fragments(registry, text)
         if fragments is None:
-            return [("", " Tab: complete · 'help' lists all commands")]
+            fragments = [("", " Tab: complete · 'help' lists all commands")]
         return fragments
 
     return toolbar
