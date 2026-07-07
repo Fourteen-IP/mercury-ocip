@@ -139,9 +139,9 @@ def mock_receive_response():
             # Return an instance of ErrorResponse with a summary attribute
             return_response = ErrorResponse(
                 summary="Authentication failed",
-                summary_english="Authentication failed",
+                summaryEnglish="Authentication failed",
                 detail="Invalid credentials kahdljahsd",
-                error_code=100,
+                errorCode=100,
             )
 
             return return_response
@@ -210,7 +210,6 @@ class TestClient:
         call_args = mock_requester.send_request.call_args[0][0]
         assert "LoginRequest14sp4" in str(call_args)
 
-    @pytest.mark.skip(reason="pytest/attrs compatibility issue with frozen objects")
     def test_authentication_failure(
         self,
         mock_create_requester,

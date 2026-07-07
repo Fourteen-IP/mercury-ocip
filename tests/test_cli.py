@@ -32,10 +32,13 @@ def test_globals():
 
 def test_show_splash(capsys):
     """Test that show_splash prints to stdout."""
+    from importlib import metadata
+
     show_splash()
     captured = capsys.readouterr()
 
-    assert "Welcome to mercury_cli" in captured.out
+    version = metadata.version("mercury-ocip")
+    assert f"v{version}" in captured.out
 
 
 @patch("mercury_ocip.cli.main.Prompt.ask")

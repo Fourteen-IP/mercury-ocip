@@ -1,9 +1,29 @@
-from action_completer import ActionCompleter
 from prompt_toolkit import PromptSession
 from rich.console import Console
 from rich.theme import Theme
 
 from mercury_ocip import Agent, Client
+from mercury_ocip.cli.core import MercuryCompleter, cli
+
+# Single source of truth for semantic colours. Rich style strings ("bold
+# #rrggbb") are also valid prompt_toolkit style strings, so this dict feeds
+# both the Rich console theme below and, e.g., prompt_toolkit toolbar/prompt
+# styles in main.py — one palette, not two copies to keep in sync.
+THEME_COLORS = {
+    "header": "bold #deaaff",
+    "subheader": "bold #d8bbff",
+    "version": "bold #c0fdff",
+    "divider": "#666666",
+    "separator": "#666666",
+    "label": "#ffffff",
+    "value": "#87d787",
+    "success": "bold #C3EBC3",
+    "error": "bold #FFB6B0",
+    "warning": "bold #FFD08A",
+    "accent": "bold #d8bbff",
+    "muted": "#888888",
+    "prompt": "bold #c0fdff",
+}
 
 
 class MERCURY_CLI:
@@ -16,7 +36,7 @@ class MERCURY_CLI:
     """
 
     __instance: "MERCURY_CLI" = None
-    __completer: ActionCompleter
+    __completer: MercuryCompleter
     __client: Client = None
     __session: PromptSession = None
     __agent: Agent = None
@@ -34,25 +54,10 @@ class MERCURY_CLI:
 
     def __init__(self):
         """
-        Initializes the action completer for the CLI.
+        Initializes the completer for the CLI.
         """
-        self.__completer = ActionCompleter()
-        self.__console = Console(
-            theme=Theme(
-                {
-                    "header": "bold #deaaff",
-                    "subheader": "bold #d8bbff",
-                    "version": "bold #c0fdff",
-                    "divider": "#666666",
-                    "separator": "#666666",
-                    "label": "#ffffff",
-                    "value": "#87d787",
-                    "success": "bold #C3EBC3",
-                    "error": "bold #FFB6B0",
-                    "prompt": "bold #c0fdff",
-                }
-            )
-        )
+        self.__completer = MercuryCompleter(cli)
+        self.__console = Console(theme=Theme(THEME_COLORS))
 
     def client_auth(self, username: str, password: str, host: str, tls: bool = True):
         """
@@ -121,12 +126,12 @@ class MERCURY_CLI:
         return MERCURY_CLI.__instance.__session
 
     @staticmethod
-    def completer() -> ActionCompleter:
+    def completer() -> MercuryCompleter:
         """
-        Retrieves the action completer instance.
+        Retrieves the prompt completer instance.
 
         Returns:
-            ActionCompleter: The action completer.
+            MercuryCompleter: The completer backed by the command tree.
         """
         return MERCURY_CLI.__instance.__completer
 

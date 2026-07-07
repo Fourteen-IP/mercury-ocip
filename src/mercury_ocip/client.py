@@ -284,7 +284,9 @@ class Client(BaseClient):
                 )
             )
 
-            assert auth_resp is not None and hasattr(auth_resp, "nonce")
+            assert auth_resp is not None and hasattr(auth_resp, "nonce"), (
+                "authentication response has no nonce"
+            )
 
             authhash = hashlib.sha1(self.password.encode()).hexdigest().lower()
             signed_password = (

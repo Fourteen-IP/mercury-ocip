@@ -235,7 +235,7 @@ class SyncTCPRequester(BaseRequester):
             if self.sock is None and isinstance(connection := self.connect(), MError):
                 return connection
 
-            assert self.sock is not None
+            assert self.sock is not None, "socket is not connected"
 
             command_bytes: bytes = self.build_oci_xml(command)
 
@@ -356,7 +356,7 @@ class SyncSOAPRequester(BaseRequester):
             ):
                 return connection
 
-            assert self.zclient is not None
+            assert self.zclient is not None, "SOAP client is not connected"
 
             self.logger.debug(
                 f"Sending command over {self.__class__.__name__}: {command}"

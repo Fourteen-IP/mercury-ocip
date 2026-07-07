@@ -1,134 +1,95 @@
-from mercury_ocip.cli.globals import MERCURY_CLI
-from typing import Optional, Iterable
-from rich.tree import Tree
 from rich.text import Text
-from action_completer import Action, ActionParam
-from action_completer.utils import get_fragments
+from rich.tree import Tree
 
-completer = MERCURY_CLI.completer()
+from mercury_ocip.cli.core import cli, CompletionContext
+from mercury_ocip.cli.core.tree import Command, Group
+from mercury_ocip.cli.globals import MERCURY_CLI
+
 console = MERCURY_CLI.console()
 
 
-def _walk_tree(node, path: list[str]):
-    """Walk the command tree following the given path. Returns (node, remaining_path)."""
-    current = node
-    for i, part in enumerate(path):
-        if hasattr(current, "children") and isinstance(current.children, dict):
-            if part in current.children and part not in "params":
-                current = current.children[part]
-            else:
-                return current, path[i:]
-        else:
-            return current, path[i:]
-    return current, []
+def _help_path_completions(ctx: CompletionContext):
+    """Complete the next segment of a command path, e.g. 'help bulk cre<tab>'."""
+    node, remaining = cli.resolve(ctx.extra_tokens)
+    if remaining or isinstance(node, Command):
+        return []
+    return sorted(node.children)
 
 
-def _get_completions_for_node(node) -> list[str]:
-    """Get valid command names from a node's children."""
-    if hasattr(node, "children") and isinstance(node.children, dict):
-        return [
-            name
-            for name, child in node.children.items()
-            if name not in "params" and getattr(child, "display_meta", None)
-        ]
-    return []
-
-
-def _help_completer(
-    action: Action, param: Optional[ActionParam] = None, value: str = ""
-) -> Iterable[str]:
-    """Provide completions for help command based on current input."""
-    buffer_text = MERCURY_CLI.session().default_buffer.document.text
-    fragments = get_fragments(buffer_text)
-
-    # fragments[0] is "help", rest is the command path
-    command_path = fragments[1:] if len(fragments) > 1 else []
-
-    # Walk to the current node
-    node, remaining = _walk_tree(completer.root, command_path)
-
-    # If we're mid-word, filter completions
-    if remaining:
-        partial = remaining[-1] if remaining else ""
-        completions = _get_completions_for_node(node)
-        return [c for c in completions if c.startswith(partial)]
-
-    return _get_completions_for_node(node)
-
-
-def _print_node_help(node, path: str):
-    """Print help for a single node."""
-    description = getattr(node, "display_meta", None) or "No description"
+def _print_command_help(command: Command, path: str) -> None:
     console.print(f"\n[bold cyan]{path}[/bold cyan]")
-    console.print(f"  {description}")
+    console.print(f"  {command.meta or 'No description'}")
 
-    # Show params if it's an executable action
-    if (
-        hasattr(node, "params")
-        and isinstance(node.params, (list, tuple))
-        and node.params
-    ):
+    if command.params:
         console.print("\n[bold]Parameters:[/bold]")
-        for p in node.params:
-            name = getattr(p, "display", None) or "arg"
-            desc = getattr(p, "display_meta", None) or "No description"
-            console.print(f"  [magenta]<{name}>[/magenta] - {desc}")
+        for param in command.params:
+            optional = "" if param.required else " (optional)"
+            console.print(
+                f"  [magenta]<{param.name}>[/magenta]{optional} - "
+                f"{param.meta or 'No description'}"
+            )
 
-    # Show subcommands if it has children
-    children = _get_completions_for_node(node)
-    if children:
-        console.print("\n[bold]Subcommands:[/bold]")
-        for name in sorted(children):
-            child = node.children[name]
-            child_desc = getattr(child, "display_meta", None) or ""
-            console.print(f"  [yellow]{name}[/yellow] - {child_desc}")
+    usage = " ".join([path] + [f"<{p.name}>" for p in command.params])
+    console.print(f"\n[bold]Usage:[/bold] {usage}")
 
 
-def _print_all_commands(node, prefix: str = "", tree: Tree = None, root: bool = True):
-    """Recursively print all commands as a tree."""
-    if root:
-        tree = Tree("[bold cyan]commands[/bold cyan]")
+def _print_group_help(group: Group, path: str) -> None:
+    console.print(f"\n[bold cyan]{path}[/bold cyan]")
+    console.print(f"  {group.meta or 'No description'}")
 
-    children = _get_completions_for_node(node)
-    for name in sorted(children):
-        child = node.children[name]
-        desc = getattr(child, "display_meta", None) or ""
+    console.print("\n[bold]Subcommands:[/bold]")
+    for name in sorted(group.children):
+        child = group.children[name]
+        console.print(f"  [yellow]{name}[/yellow] - {child.meta or ''}")
+
+
+def _print_all_commands() -> None:
+    tree = Tree("[bold cyan]commands[/bold cyan]")
+    _add_children(cli.root, tree)
+
+    console.print()
+    console.print("[bold]Mercury CLI - Available Commands[/bold]")
+    console.print(tree)
+    console.print("\n[dim]Use [cyan]help <command>[/cyan] for details[/dim]")
+
+
+def _add_children(group: Group, tree: Tree) -> None:
+    for name in sorted(group.children):
+        child = group.children[name]
         label = Text()
         label.append(name, style="bold yellow")
-        if desc:
-            label.append(f" - {desc}", style="dim")
+        if child.meta:
+            label.append(f" - {child.meta}", style="dim")
         branch = tree.add(label)
 
-        # Recurse
-        grandchildren = _get_completions_for_node(child)
-        if grandchildren:
-            _print_all_commands(child, f"{prefix}{name} ", branch, root=False)
-
-    if root:
-        console.print()
-        console.print("[bold]Mercury CLI - Available Commands[/bold]")
-        console.print(tree)
-        console.print("\n[dim]Use [cyan]help <command>[/cyan] for details[/dim]")
+        if isinstance(child, Group):
+            _add_children(child, branch)
 
 
-@completer.action("help", display_meta="Gives a list of all commands")
-@completer.param(_help_completer, cast=str, display_meta="Command path")
-def _help(command_path: Optional[str] = None):
-    """Show help for commands."""
+@cli.command("help", meta="Gives a list of all commands")
+@cli.param(
+    "command_path",
+    source=_help_path_completions,
+    meta="Command path",
+    required=False,
+    default="",
+    greedy=True,
+)
+def _help(command_path: str = ""):
+    """Show help for all commands or a specific command path."""
+    parts = command_path.split()
 
-    buffer_text = MERCURY_CLI.session().default_buffer.document.text
-    fragments = get_fragments(buffer_text)
+    if not parts:
+        _print_all_commands()
+        return
 
-    # fragments[0] is "help", rest is the command path
-    path_parts = fragments[1:] if len(fragments) > 1 else []
+    node, remaining = cli.resolve(parts)
+    if remaining:
+        console.print(f"[error]Unknown command:[/error] {command_path}")
+        return
 
-    if path_parts:
-        node, remaining = _walk_tree(completer.root, path_parts)
-
-        if remaining:
-            console.print(f"[red]Unknown command:[/red] {' '.join(path_parts)}")
-            return
-
-        _print_node_help(node, " ".join(path_parts))
+    path = " ".join(parts)
+    if isinstance(node, Command):
+        _print_command_help(node, path)
     else:
-        _print_all_commands(completer.root)
+        _print_group_help(node, path)

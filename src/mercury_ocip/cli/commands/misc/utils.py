@@ -1,23 +1,35 @@
 import sys
-from mercury_ocip.cli.globals import MERCURY_CLI
 
-completer = MERCURY_CLI.completer()
+from mercury_ocip.cli.core import cli, debug, debug_enabled
+from mercury_ocip.cli.globals import MERCURY_CLI
+from mercury_ocip.commands.commands import SystemSoftwareVersionGetResponse
+
 console = MERCURY_CLI.console()
 
 
-@completer.action("sysver", display_meta="Gives the current system version")
+@cli.command("sysver", meta="Gives the current system version")
 def _sysver():
     version = MERCURY_CLI.client().raw_command("SystemSoftwareVersionGetRequest")
-    print(f"Current system version: {version.version}")
+    console.print(
+        f"Current system version: [cyan]{version.version if isinstance(version, SystemSoftwareVersionGetResponse) else 'Unknown'}"
+    )
 
 
-@completer.action("exit", display_meta="Exits the CLI")
+@cli.command("exit", meta="Exits the CLI")
 def _exit():
-    print("Exiting mercury_cli. Goodbye!")
-    MERCURY_CLI.client().disconnect()
+    console.print("[dim]Exiting mercury_cli. Goodbye!")
+    if MERCURY_CLI.client():
+        MERCURY_CLI.client().disconnect()
     sys.exit()
 
 
-@completer.action("clear", display_meta="Clears the terminal screen")
+@cli.command("clear", meta="Clears the terminal screen")
 def _clear():
     console.clear()
+
+
+@cli.command("debug", meta="Toggle debug mode (full tracebacks on errors)")
+def _debug():
+    debug(not debug_enabled())
+    state = "on" if debug_enabled() else "off"
+    console.print(f"Debug mode {state}.", style="value")
