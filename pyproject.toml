@@ -46,18 +46,11 @@ keywords = [
     "mercury",
 ]
 dependencies = [
-    "asyncio>=3.4.3",
-    "attrs>=21.4.0",
-    "httpx>=0.28.1",
-    "pydantic>=2.11.7",
     "requests>=2.32.3",
     "zeep>=4.3.1",
-    "types-lxml>=2025.3.30",
-    "lxml-stubs>=0.5.1",
     "xmltodict>=1.0.2",
     # CLI dependencies
     "prompt-toolkit>=3.0.52",
-    "argparse>=1.4.0",
     "asciimatics>=1.15.0",
     "rich>=14.2.0",
 ]
