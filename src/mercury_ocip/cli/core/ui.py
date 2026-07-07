@@ -20,11 +20,11 @@ import traceback
 from contextlib import contextmanager
 from typing import Iterable, Iterator
 
+from rich import box
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-from rich import box
 
 _debug = False
 
@@ -86,21 +86,21 @@ class Operation:
         update() to describe the next step being worked on.
         """
         if ok:
-            self._console.print(f"✔ {message}", style="success")
+            self._console.print(f"🗸 {message}", style="success")
         else:
-            self._console.print(f"✘ {message}", style="error")
+            self._console.print(f"🗴 {message}", style="error")
 
     def success(self, message: str) -> None:
         self.stop()
-        self._console.print(f"✔ {message}", style="success")
+        self._console.print(f"🗸 {message}", style="success")
 
     def fail(self, message: str) -> None:
         self.stop()
-        self._console.print(f"✘ {message}", style="error")
+        self._console.print(f"🗴 {message}", style="error")
 
     def warn(self, message: str) -> None:
         self.stop()
-        self._console.print(f"⚠ {message}", style="warning")
+        self._console.print(f"🛆 {message}", style="warning")
 
     def print(self, *args, **kwargs) -> None:
         self.stop()
@@ -145,7 +145,9 @@ def section_panel(content, title: str | None = None) -> Panel:
     return Panel(content, **kwargs)
 
 
-def kv_table(items: Iterable[tuple[str, str]], columns: int = 1, label_width: int = 20) -> Table:
+def kv_table(
+    items: Iterable[tuple[str, str]], columns: int = 1, label_width: int = 20
+) -> Table:
     """A borderless label/value table, `columns` label/value pairs per row.
 
     `items` is a flat sequence of (label, value) pairs; it's chunked into
@@ -189,7 +191,9 @@ def simple_table(
     return table
 
 
-def status_icon(ok: bool, true_style: str = "success", false_style: str = "error") -> str:
+def status_icon(
+    ok: bool, true_style: str = "success", false_style: str = "error"
+) -> str:
     """A themed ✓/✗ marker, replacing ad-hoc emoji/hex-coded status text.
 
     Returns Rich *markup* (e.g. "[success]✓[/]") — safe to drop into an
